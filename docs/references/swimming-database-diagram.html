@@ -140,37 +140,41 @@ const SCHEMA = [
    {c:"location_en",t:"varchar",k:"",n:false},
    {c:"location_ar",t:"varchar",k:"",n:true},
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
-  {name:"app_user",note:"account: headCoach, captain, or swimmer",cols:[
+  {name:"app_user",note:"base person + login + role (all users)",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"username",t:"varchar",k:"U",n:false},
-   {c:"email",t:"varchar",k:"",n:false},
-   {c:"display_name",t:"varchar",k:"",n:false},
-   {c:"role",t:"user_role",k:"",n:false,note:"headCoach | captain | swimmer"},
-   {c:"avatar_initials",t:"varchar(4)",k:"",n:true},
-   {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
-   {c:"active_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:true},
-   {c:"created_at",t:"timestamptz",k:"",n:false}]},
-  {name:"captain_club",note:"captain to many clubs junction",cols:[
-   {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"user_id",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
-   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
-   {c:"(user_id, club_id)",t:"—",k:"U",n:false,note:"one row per captain+club"}]}
- ]},
- {schema:"swimmers",color:"--swimmers",tables:[
-  {name:"swimmer",note:"core swimmer record",cols:[
-   {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
-   {c:"championship_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+   {c:"username",t:"varchar",k:"U",n:true},
+   {c:"email",t:"varchar",k:"U",n:true},
+   {c:"password_hash",t:"text",k:"",n:true,note:"null when no login"},
    {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true},
    {c:"national_id",t:"varchar(14)",k:"U",n:false},
-   {c:"uid",t:"varchar",k:"U",n:false},
-   {c:"gender",t:"gender",k:"",n:false,note:"male | female"},
-   {c:"dob",t:"date",k:"",n:false},
-   {c:"blood_type",t:"varchar(3)",k:"",n:false},
-   {c:"phone",t:"varchar",k:"",n:false},
+   {c:"gender",t:"gender",k:"",n:true,note:"male | female"},
+   {c:"dob",t:"date",k:"",n:true},
+   {c:"phone",t:"varchar",k:"",n:true},
    {c:"avatar_initials",t:"varchar(4)",k:"",n:true},
+   {c:"role",t:"user_role",k:"",n:false,note:"headCoach | captain | swimmer"},
+   {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
+   {c:"active_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"captain",note:"captain profile — person attrs on app_user",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
+   {c:"captain_type",t:"captain_type",k:"",n:true,note:"head | assistant"},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"captain_club",note:"captain ↔ clubs (composite key)",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"captain_id",t:"uuid",k:"FK",fk:"identity.captain.id",n:false},
+   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+   {c:"(captain_id, club_id)",t:"—",k:"U",n:false,note:"one row per captain+club"}]}
+ ]},
+ {schema:"swimmers",color:"--swimmers",tables:[
+  {name:"swimmer",note:"swimmer subtype — person attrs on app_user",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
+   {c:"uid",t:"varchar",k:"U",n:false},
+   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+   {c:"championship_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+   {c:"blood_type",t:"varchar(3)",k:"",n:true},
    {c:"created_at",t:"timestamptz",k:"",n:false},
    {c:"updated_at",t:"timestamptz",k:"",n:false}]},
   {name:"guardian",note:"father/mother of a swimmer",cols:[
@@ -317,7 +321,8 @@ const SCHEMA = [
 ];
 const RELATIONSHIPS = [
  {from:"identity.club",to:"identity.captain_club",card:"1-N",label:"managed by"},
- {from:"identity.app_user",to:"identity.captain_club",card:"1-N",label:"assigned"},
+ {from:"identity.app_user",to:"identity.captain",card:"1-1",label:"is"},
+ {from:"identity.captain",to:"identity.captain_club",card:"1-N",label:"assigned"},
  {from:"identity.club",to:"identity.app_user",card:"1-N",label:"active club of"},
  {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"trains"},
  {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"represents"},
