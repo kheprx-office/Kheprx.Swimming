@@ -32,23 +32,23 @@ erDiagram
         boolean is_first_login
         timestamptz created_at
     }
-    captain {
+    captain_profile {
         uuid id PK
         uuid user_id FK,UK
         captain_type captain_type
         varchar(14) national_id UK
         timestamptz created_at
     }
-    head_coach {
+    head_coach_profile {
         uuid id PK
         uuid user_id FK,UK
         varchar(14) national_id UK
         timestamptz created_at
     }
-    app_user ||--o| captain : "is"
-    app_user ||--o| head_coach : "is"
+    app_user ||--o| captain_profile : "is"
+    app_user ||--o| head_coach_profile : "is"
 
-    swimmer {
+    swimmer_profile {
         uuid id PK
         uuid user_id FK,UK
         varchar uid UK
@@ -95,13 +95,13 @@ erDiagram
         uuid stroke_id FK,UK
     }
 
-    club ||--o{ swimmer : "trains"
-    club ||--o{ swimmer : "represents"
-    app_user ||--o| swimmer : "logs in as"
-    swimmer ||--o{ guardian : "has"
-    swimmer ||--o{ medical_exam : "examined in"
-    swimmer ||--o{ body_measurement : "measured in"
-    swimmer ||--o{ swimmer_specialization : "specializes"
+    club ||--o{ swimmer_profile : "trains"
+    club ||--o{ swimmer_profile : "represents"
+    app_user ||--o| swimmer_profile : "logs in as"
+    swimmer_profile ||--o{ guardian : "has"
+    swimmer_profile ||--o{ medical_exam : "examined in"
+    swimmer_profile ||--o{ body_measurement : "measured in"
+    swimmer_profile ||--o{ swimmer_specialization : "specializes"
     stroke ||--o{ swimmer_specialization : "chosen in"
 
     inbody_reading {
@@ -155,11 +155,11 @@ erDiagram
         date entry_date
     }
 
-    swimmer ||--o{ inbody_reading : "records"
-    swimmer ||--o{ health_reading : "records"
+    swimmer_profile ||--o{ inbody_reading : "records"
+    swimmer_profile ||--o{ health_reading : "records"
     medical_test ||--o{ health_reading : "measured by"
-    swimmer ||--o{ observation : "noted on"
-    swimmer ||--o{ feedback_entry : "receives"
+    swimmer_profile ||--o{ observation : "noted on"
+    swimmer_profile ||--o{ feedback_entry : "receives"
 
     attendance_session {
         uuid id PK
@@ -180,7 +180,7 @@ erDiagram
     club ||--o{ attendance_session : "holds"
     stroke ||--o{ attendance_session : "grouped by"
     attendance_session ||--o{ attendance_record : "includes"
-    swimmer ||--o{ attendance_record : "attends"
+    swimmer_profile ||--o{ attendance_record : "attends"
 
     competition_event {
         uuid id PK
@@ -229,12 +229,12 @@ erDiagram
     }
 
     competition_event ||--o{ championship_enrollment : "enrolls"
-    swimmer ||--o{ championship_enrollment : "enrolled in"
+    swimmer_profile ||--o{ championship_enrollment : "enrolled in"
     competition_event ||--o{ competition_day : "spans"
     competition_day ||--o{ race_session : "schedules"
     stroke ||--o{ race_session : "of stroke"
     distance ||--o{ race_session : "of distance"
     race_session ||--o{ race_assignment : "assigns"
-    swimmer ||--o{ race_assignment : "swims in"
+    swimmer_profile ||--o{ race_assignment : "swims in"
     race_session ||--o{ race_result : "produces"
-    swimmer ||--o{ race_result : "achieves"
+    swimmer_profile ||--o{ race_result : "achieves"

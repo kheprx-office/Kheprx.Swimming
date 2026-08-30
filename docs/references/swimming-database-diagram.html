@@ -153,18 +153,18 @@ const SCHEMA = [
    {c:"role",t:"user_role",k:"",n:false,note:"headCoach | captain | swimmer"},
    {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
-  {name:"captain",note:"captain profile — person attrs on app_user",cols:[
+  {name:"captain_profile",note:"captain profile — person attrs on app_user",cols:[
   {c:"id",t:"uuid",k:"PK",n:false},
   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
   {c:"captain_type",t:"captain_type",k:"",n:true,note:"head | assistant"},
   {c:"national_id",t:"varchar(14)",k:"U",n:false},
   {c:"created_at",t:"timestamptz",k:"",n:false}]},
-  {name:"head_coach",note:"head coach profile — person attrs on app_user",cols:[
+  {name:"head_coach_profile",note:"head coach profile — person attrs on app_user",cols:[
   {c:"id",t:"uuid",k:"PK",n:false},
   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
   {c:"national_id",t:"varchar(14)",k:"U",n:false},
   {c:"created_at",t:"timestamptz",k:"",n:false}]},
-  {name:"swimmer",note:"swimmer subtype — person attrs on app_user",cols:[
+  {name:"swimmer_profile",note:"swimmer subtype — person attrs on app_user",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
    {c:"uid",t:"varchar",k:"U",n:false},
@@ -177,14 +177,14 @@ const SCHEMA = [
  {schema:"athlete",color:"--athlete",tables:[
   {name:"guardian",note:"father/mother of a swimmer",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"relation",t:"guardian_relation",k:"",n:false,note:"father | mother"},
    {c:"name",t:"varchar",k:"",n:false},
    {c:"national_id",t:"varchar(14)",k:"",n:false},
    {c:"phone",t:"varchar",k:"",n:false}]},
   {name:"medical_exam",note:"dated fitness assessment from registration",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"exam_date",t:"date",k:"",n:false},
    {c:"internal_med",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
    {c:"heart_assess",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
@@ -195,7 +195,7 @@ const SCHEMA = [
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
   {name:"body_measurement",note:"dated physiological measurements (left/right split)",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"measured_at",t:"date",k:"",n:false},
    {c:"right_arm_cm",t:"numeric(5,1)",k:"",n:false},
    {c:"left_arm_cm",t:"numeric(5,1)",k:"",n:false},
@@ -205,14 +205,14 @@ const SCHEMA = [
    {c:"bust_diameter_cm",t:"numeric(5,1)",k:"",n:false},
    {c:"waist_diameter_cm",t:"numeric(5,1)",k:"",n:false}]},
   {name:"swimmer_specialization",note:"swimmer to stroke many-to-many (composite key)",cols:[
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"stroke_id",t:"uuid",k:"FK",fk:"reference.stroke.id",n:false},
    {c:"(swimmer_id, stroke_id)",t:"—",k:"U",n:false,note:"one row per swimmer+stroke"}]}
  ]},
  {schema:"health",color:"--health",tables:[
   {name:"inbody_reading",note:"body-composition InBody reading per session",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"reading_date",t:"date",k:"",n:false},
    {c:"height_cm",t:"numeric(5,1)",k:"",n:false},
    {c:"weight_kg",t:"numeric(5,1)",k:"",n:false},
@@ -233,14 +233,14 @@ const SCHEMA = [
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
   {name:"health_reading",note:"a swimmer's test result (severity derived vs bounds)",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"medical_test_id",t:"uuid",k:"FK",fk:"health.medical_test.id",n:false},
    {c:"value",t:"numeric(8,2)",k:"",n:false},
    {c:"reading_date",t:"date",k:"",n:false},
    {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
   {name:"observation",note:"unified allergy/surgery/chronic/autoimmune/flag record",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"category",t:"observation_category",k:"",n:false,note:"allergy | surgery | chronic | autoimmune | composition | flag | other"},
    {c:"field_label",t:"varchar",k:"",n:false},
    {c:"value",t:"varchar",k:"",n:false},
@@ -249,7 +249,7 @@ const SCHEMA = [
    {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
   {name:"feedback_entry",note:"coach performance evaluation for a swimmer",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"rating",t:"smallint",k:"",n:false},
    {c:"category",t:"feedback_category",k:"",n:false,note:"Technique | Endurance | Attitude | Punctuality | Other"},
    {c:"comment",t:"text",k:"",n:false},
@@ -266,7 +266,7 @@ const SCHEMA = [
   {name:"attendance_record",note:"per-swimmer attendance status for a session",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"session_id",t:"uuid",k:"FK",fk:"attendance.attendance_session.id",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"status",t:"attendance_status",k:"",n:false,note:"present | late | absent | excused"},
    {c:"coach_note_en",t:"text",k:"",n:true},
    {c:"coach_note_ar",t:"text",k:"",n:true},
@@ -286,7 +286,7 @@ const SCHEMA = [
   {name:"championship_enrollment",note:"swimmer enrolled in a competition event",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"event_id",t:"uuid",k:"FK",fk:"championships.competition_event.id",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"(event_id, swimmer_id)",t:"—",k:"U",n:false,note:"one enrollment per swimmer per event"}]},
   {name:"competition_day",note:"a single day within a competition event",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
@@ -303,12 +303,12 @@ const SCHEMA = [
   {name:"race_assignment",note:"swimmer assigned to swim in a race session",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"race_session_id",t:"uuid",k:"FK",fk:"championships.race_session.id",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"(race_session_id, swimmer_id)",t:"—",k:"U",n:false,note:"one assignment per swimmer per race"}]},
   {name:"race_result",note:"a swimmer's finish time in a race",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"race_session_id",t:"uuid",k:"FK",fk:"championships.race_session.id",n:false},
-   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"time_ms",t:"integer",k:"",n:false},
    {c:"points",t:"integer",k:"",n:false},
    {c:"rank",t:"integer",k:"",n:false},
@@ -318,35 +318,35 @@ const SCHEMA = [
  ]}
 ];
 const RELATIONSHIPS = [
- {from:"identity.app_user",to:"identity.captain",card:"1-1",label:"is"},
- {from:"identity.app_user",to:"identity.head_coach",card:"1-1",label:"is"},
- {from:"identity.club",to:"identity.swimmer",card:"1-N",label:"trains"},
- {from:"identity.club",to:"identity.swimmer",card:"1-N",label:"represents"},
- {from:"identity.app_user",to:"identity.swimmer",card:"1-1",label:"logs in as"},
- {from:"identity.swimmer",to:"athlete.guardian",card:"1-N",label:"has"},
- {from:"identity.swimmer",to:"athlete.medical_exam",card:"1-N",label:"examined in"},
- {from:"identity.swimmer",to:"athlete.body_measurement",card:"1-N",label:"measured in"},
- {from:"identity.swimmer",to:"athlete.swimmer_specialization",card:"1-N",label:"specializes"},
+ {from:"identity.app_user",to:"identity.captain_profile",card:"1-1",label:"is"},
+ {from:"identity.app_user",to:"identity.head_coach_profile",card:"1-1",label:"is"},
+ {from:"identity.club",to:"identity.swimmer_profile",card:"1-N",label:"trains"},
+ {from:"identity.club",to:"identity.swimmer_profile",card:"1-N",label:"represents"},
+ {from:"identity.app_user",to:"identity.swimmer_profile",card:"1-1",label:"logs in as"},
+ {from:"identity.swimmer_profile",to:"athlete.guardian",card:"1-N",label:"has"},
+ {from:"identity.swimmer_profile",to:"athlete.medical_exam",card:"1-N",label:"examined in"},
+ {from:"identity.swimmer_profile",to:"athlete.body_measurement",card:"1-N",label:"measured in"},
+ {from:"identity.swimmer_profile",to:"athlete.swimmer_specialization",card:"1-N",label:"specializes"},
  {from:"reference.stroke",to:"athlete.swimmer_specialization",card:"1-N",label:"chosen in"},
- {from:"identity.swimmer",to:"health.inbody_reading",card:"1-N",label:"records"},
- {from:"identity.swimmer",to:"health.health_reading",card:"1-N",label:"records"},
+ {from:"identity.swimmer_profile",to:"health.inbody_reading",card:"1-N",label:"records"},
+ {from:"identity.swimmer_profile",to:"health.health_reading",card:"1-N",label:"records"},
  {from:"health.medical_test",to:"health.health_reading",card:"1-N",label:"measured by"},
- {from:"identity.swimmer",to:"health.observation",card:"1-N",label:"noted on"},
- {from:"identity.swimmer",to:"health.feedback_entry",card:"1-N",label:"receives"},
+ {from:"identity.swimmer_profile",to:"health.observation",card:"1-N",label:"noted on"},
+ {from:"identity.swimmer_profile",to:"health.feedback_entry",card:"1-N",label:"receives"},
  {from:"identity.club",to:"attendance.attendance_session",card:"1-N",label:"holds"},
  {from:"reference.stroke",to:"attendance.attendance_session",card:"1-N",label:"grouped by"},
  {from:"attendance.attendance_session",to:"attendance.attendance_record",card:"1-N",label:"includes"},
- {from:"identity.swimmer",to:"attendance.attendance_record",card:"1-N",label:"attends"},
+ {from:"identity.swimmer_profile",to:"attendance.attendance_record",card:"1-N",label:"attends"},
  {from:"championships.competition_event",to:"championships.championship_enrollment",card:"1-N",label:"enrolls"},
- {from:"identity.swimmer",to:"championships.championship_enrollment",card:"1-N",label:"enrolled in"},
+ {from:"identity.swimmer_profile",to:"championships.championship_enrollment",card:"1-N",label:"enrolled in"},
  {from:"championships.competition_event",to:"championships.competition_day",card:"1-N",label:"spans"},
  {from:"championships.competition_day",to:"championships.race_session",card:"1-N",label:"schedules"},
  {from:"reference.stroke",to:"championships.race_session",card:"1-N",label:"of stroke"},
  {from:"reference.distance",to:"championships.race_session",card:"1-N",label:"of distance"},
  {from:"championships.race_session",to:"championships.race_assignment",card:"1-N",label:"assigns"},
- {from:"identity.swimmer",to:"championships.race_assignment",card:"1-N",label:"swims in"},
+ {from:"identity.swimmer_profile",to:"championships.race_assignment",card:"1-N",label:"swims in"},
  {from:"championships.race_session",to:"championships.race_result",card:"1-N",label:"produces"},
- {from:"identity.swimmer",to:"championships.race_result",card:"1-N",label:"achieves"}
+ {from:"identity.swimmer_profile",to:"championships.race_result",card:"1-N",label:"achieves"}
 ];
 </script>
 <script type="module">
