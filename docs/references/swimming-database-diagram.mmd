@@ -32,7 +32,6 @@ erDiagram
         varchar(4) avatar_initials
         user_role role
         boolean is_first_login
-        uuid active_club_id FK
         timestamptz created_at
     }
     captain {
@@ -41,16 +40,7 @@ erDiagram
         captain_type captain_type
         timestamptz created_at
     }
-    captain_club {
-        uuid id PK
-        uuid captain_id FK,UK
-        uuid club_id FK,UK
-    }
-
     app_user ||--o| captain : "is"
-    captain ||--o{ captain_club : "assigned"
-    club ||--o{ captain_club : "managed by"
-    club ||--o{ app_user : "active club of"
 
     swimmer {
         uuid id PK

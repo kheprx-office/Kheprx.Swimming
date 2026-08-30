@@ -154,18 +154,12 @@ const SCHEMA = [
    {c:"avatar_initials",t:"varchar(4)",k:"",n:true},
    {c:"role",t:"user_role",k:"",n:false,note:"headCoach | captain | swimmer"},
    {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
-   {c:"active_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
   {name:"captain",note:"captain profile — person attrs on app_user",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
    {c:"captain_type",t:"captain_type",k:"",n:true,note:"head | assistant"},
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
-  {name:"captain_club",note:"captain ↔ clubs (composite key)",cols:[
-   {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"captain_id",t:"uuid",k:"FK",fk:"identity.captain.id",n:false},
-   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
-   {c:"(captain_id, club_id)",t:"—",k:"U",n:false,note:"one row per captain+club"}]}
  ]},
  {schema:"swimmers",color:"--swimmers",tables:[
   {name:"swimmer",note:"swimmer subtype — person attrs on app_user",cols:[
@@ -320,10 +314,7 @@ const SCHEMA = [
  ]}
 ];
 const RELATIONSHIPS = [
- {from:"identity.club",to:"identity.captain_club",card:"1-N",label:"managed by"},
  {from:"identity.app_user",to:"identity.captain",card:"1-1",label:"is"},
- {from:"identity.captain",to:"identity.captain_club",card:"1-N",label:"assigned"},
- {from:"identity.club",to:"identity.app_user",card:"1-N",label:"active club of"},
  {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"trains"},
  {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"represents"},
  {from:"identity.app_user",to:"swimmers.swimmer",card:"1-1",label:"logs in as"},

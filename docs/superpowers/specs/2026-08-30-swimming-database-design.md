@@ -77,7 +77,6 @@ explicitly a later, separate effort — not part of this work.
 | avatar_initials | varchar(4) | nullable |
 | role | enum `user_role` | headCoach \| captain \| swimmer |
 | is_first_login | boolean | default true |
-| active_club_id | uuid | FK → club (nullable; captain's current club) |
 | created_at | timestamptz | |
 
 **captain** — subtype for captain role (1-1 with app_user)
@@ -87,14 +86,6 @@ explicitly a later, separate effort — not part of this work.
 | user_id | uuid | FK,U → identity.app_user.id |
 | captain_type | enum `captain_type` | nullable; head \| assistant |
 | created_at | timestamptz | |
-
-**captain_club** — captain ↔ many clubs
-| column | type | notes |
-|---|---|---|
-| id | uuid | PK |
-| captain_id | uuid | FK,U → identity.captain.id |
-| club_id | uuid | FK,U → club |
-| — | | UK(captain_id, club_id) |
 
 ## 6. Module 2 — Swimmers
 
@@ -319,11 +310,10 @@ explicitly a later, separate effort — not part of this work.
 
 ## 11. Relationships (cardinalities)
 
-**24 tables / 31 relationships.**
+**23 tables / 28 relationships.**
 
-- club 1—* swimmer; club 1—* attendance_session; club 1—* captain_club.
+- club 1—* swimmer; club 1—* attendance_session.
 - app_user 1—1 swimmer (via swimmer.user_id); app_user 1—1 captain (via captain.user_id).
-- captain 1—* captain_club (via captain_id); club 1—* captain_club.
 - swimmer 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.
 - swimmer *—* stroke (swimmer_specialization); swimmer *—* competition_event (championship_enrollment).
 - medical_test 1—* health_reading.
