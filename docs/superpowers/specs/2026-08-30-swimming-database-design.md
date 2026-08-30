@@ -89,8 +89,8 @@ explicitly a later, separate effort — not part of this work.
 | id | uuid | PK |
 | user_id | uuid | FK,U → identity.app_user.id |
 | uid | varchar | UK, e.g. `SW-2026-4KD91` |
-| club_id | uuid | FK → club (training club) |
-| championship_club_id | uuid | FK → club (nullable) |
+| training_club_id | uuid | FK → club (training club) |
+| represent_championship_club_id | uuid | FK → club (nullable) |
 | blood_type_id | uuid | FK → reference.blood_type; nullable |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |

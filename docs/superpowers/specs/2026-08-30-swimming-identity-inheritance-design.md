@@ -60,8 +60,8 @@ Removed vs the base spec's `app_user`: `display_name` (→ `name_en`) and `swimm
 | id | uuid | PK | no | swimmer-related tables keep FK'ing this |
 | user_id | uuid | FK,U → identity.app_user.id | no | **1-1 to base user; person attrs live on app_user** |
 | uid | varchar | U | no | `SW-2026-…` |
-| club_id | uuid | FK → identity.club.id | no | training club |
-| championship_club_id | uuid | FK → identity.club.id | yes | |
+| training_club_id | uuid | FK → identity.club.id | no | training club |
+| represent_championship_club_id | uuid | FK → identity.club.id | yes | |
 | blood_type | varchar(3) | | yes | |
 | created_at | timestamptz | | no | |
 | updated_at | timestamptz | | no | |

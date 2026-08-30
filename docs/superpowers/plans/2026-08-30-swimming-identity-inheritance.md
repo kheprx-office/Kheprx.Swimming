@@ -14,7 +14,7 @@
 
 - **DB model / docs only** — no backend/EF code.
 - **Net result:** 24 tables (add `captain`), 31 relationships. New enum `captain_type` (head | assistant).
-- **The change, exactly:** base `app_user` gains person columns (`name_en, name_ar, national_id, gender, dob, phone, avatar_initials, email, password_hash`) and loses `display_name` + `swimmer_id`; `swimmer` gains `user_id (FK,U → identity.app_user.id)` and loses those person columns (keeps `uid, club_id, championship_club_id, blood_type, timestamps`); new `captain` subtype (`id, user_id FK,U, captain_type, created_at`); `captain_club` re-points `user_id` → `captain_id (FK,U → identity.captain.id)`.
+- **The change, exactly:** base `app_user` gains person columns (`name_en, name_ar, national_id, gender, dob, phone, avatar_initials, email, password_hash`) and loses `display_name` + `swimmer_id`; `swimmer` gains `user_id (FK,U → identity.app_user.id)` and loses those person columns (keeps `uid, training_club_id, represent_championship_club_id, blood_type, timestamps`); new `captain` subtype (`id, user_id FK,U, captain_type, created_at`); `captain_club` re-points `user_id` → `captain_id (FK,U → identity.captain.id)`.
 - **Relationship delta:** keep `app_user ||--o| swimmer`; add `app_user ||--o| captain`; add `captain ||--o{ captain_club`; remove `app_user ||--o{ captain_club`. All authorship FKs stay on base `app_user`.
 - **Schema placement:** `captain` in the **identity** schema; `swimmer` stays in **swimmers**.
 - **Explorer:** only the `<script id="appdata">` block changes — the app module JS must remain untouched.
@@ -38,7 +38,7 @@ Replace the `app_user` row list with the base-user columns from the identity spe
 
 - [ ] **Step 2: Rewrite the `swimmer` table (§6) and add the `captain` table (§5)**
 
-`swimmer` (§6) → `id` PK; `user_id` FK,U → identity.app_user (1-1; person attrs on app_user); `uid` UK; `club_id` FK→club; `championship_club_id` FK→club (null); `blood_type`; `created_at`; `updated_at`. Remove `name_en, name_ar, national_id, gender, dob, phone, avatar_initials`.
+`swimmer` (§6) → `id` PK; `user_id` FK,U → identity.app_user (1-1; person attrs on app_user); `uid` UK; `training_club_id` FK→club; `represent_championship_club_id` FK→club (null); `blood_type`; `created_at`; `updated_at`. Remove `name_en, name_ar, national_id, gender, dob, phone, avatar_initials`.
 Add a `captain` table to §5: `id` PK; `user_id` FK,U → identity.app_user; `captain_type` enum (null); `created_at`.
 Change `captain_club` (§5): `captain_id` FK,U → identity.captain (was `user_id` → app_user); keep `club_id` FK,U; UK(captain_id, club_id).
 
@@ -116,8 +116,8 @@ Replace the three existing entity blocks with these, and add the new `captain` b
         uuid id PK
         uuid user_id FK,UK
         varchar uid UK
-        uuid club_id FK
-        uuid championship_club_id FK
+        uuid training_club_id FK
+        uuid represent_championship_club_id FK
         varchar(3) blood_type
         timestamptz created_at
         timestamptz updated_at
@@ -202,8 +202,8 @@ Replace the `swimmer` table with:
   {c:"id",t:"uuid",k:"PK",n:false},
   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
   {c:"uid",t:"varchar",k:"U",n:false},
-  {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
-  {c:"championship_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+  {c:"training_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+  {c:"represent_championship_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
   {c:"blood_type",t:"varchar(3)",k:"",n:true},
   {c:"created_at",t:"timestamptz",k:"",n:false},
   {c:"updated_at",t:"timestamptz",k:"",n:false}]},
