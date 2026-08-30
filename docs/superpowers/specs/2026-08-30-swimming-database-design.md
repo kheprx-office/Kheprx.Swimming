@@ -27,7 +27,7 @@ explicitly a later, separate effort — not part of this work.
 | Axis | Decision |
 |------|----------|
 | Deliverable | Schema design (this spec) + Mermaid `erDiagram` HTML doc; implement later |
-| Organization | By modular-monolith modules: Identity & Clubs, Swimmers, Health & Records, Attendance, Championships, + shared Reference |
+| Organization | By modular-monolith modules: Identity & Clubs, Athlete, Health & Records, Attendance, Championships, + shared Reference |
 | Domain source | Local Magic Patterns snapshot `v7esayw7` |
 | Normalization | **Approach C (pragmatic hybrid)** — normalize the mock's duplicated shapes into canonical tables; keep genuinely-distinct structures (InBody, medical-test catalog, free-form observations) as their own tables |
 
@@ -38,7 +38,7 @@ explicitly a later, separate effort — not part of this work.
 - **Timestamps:** `created_at timestamptz`, and `updated_at timestamptz` on mutable entities.
 - **Authorship:** `recorded_by` / `created_by uuid` → `app_user.id` where a coach/headCoach authors data.
 - **Module boundaries (important):** foreign keys are DB-enforced **only within a module**.
-  Cross-module references (e.g. `swimmer_id` inside Attendance, `club_id` inside Swimmers) are
+  Cross-module references (e.g. `swimmer_id` inside Attendance, `club_id` inside Athlete) are
   **logical/soft references by id** — each module owns its own schema and `DbContext`, exactly as
   Electric did. The ERD still draws these as relationships, marked as cross-module.
 - **Derived, never stored** (computed at query time): roster `health_status`; reading `severity`
@@ -73,7 +73,6 @@ explicitly a later, separate effort — not part of this work.
 | gender | enum `gender` | nullable; male \| female |
 | dob | date | nullable |
 | phone | varchar | nullable |
-| avatar_initials | varchar(4) | nullable |
 | role | enum `user_role` | headCoach \| captain \| swimmer |
 | is_first_login | boolean | default true |
 | created_at | timestamptz | |
@@ -95,8 +94,6 @@ explicitly a later, separate effort — not part of this work.
 | national_id | varchar(14) | UK |
 | created_at | timestamptz | |
 
-## 6. Module 2 — Swimmers
-
 **swimmer** — subtype for swimmer role (1-1 with app_user); person attrs live on app_user.
 | column | type | notes |
 |---|---|---|
@@ -109,11 +106,13 @@ explicitly a later, separate effort — not part of this work.
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
+## 6. Module 2 — Athlete
+
 **guardian** — normalizes father/mother into rows
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | relation | enum `guardian_relation` | father \| mother |
 | name | varchar | |
 | national_id | varchar(14) | |
@@ -123,7 +122,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | exam_date | date | |
 | internal_med | enum `fitness_assessment` | fit \| unfit |
 | heart_assess | enum `fitness_assessment` | fit \| unfit |
@@ -137,7 +136,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | measured_at | date | |
 | right_arm_cm / left_arm_cm | numeric(5,1) | |
 | right_leg_cm / left_leg_cm | numeric(5,1) | |
@@ -148,7 +147,7 @@ explicitly a later, separate effort — not part of this work.
 **swimmer_specialization** — swimmer ↔ stroke (many-to-many)
 | column | type | notes |
 |---|---|---|
-| swimmer_id | uuid | FK → swimmer |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | stroke_id | uuid | FK → stroke (Reference) — cross-module |
 | — | | UK(swimmer_id, stroke_id) |
 
@@ -158,7 +157,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | reading_date | date | |
 | height_cm | numeric(5,1) | |
 | weight_kg | numeric(5,1) | |
@@ -184,7 +183,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | medical_test_id | uuid | FK → medical_test |
 | value | numeric(8,2) | |
 | reading_date | date | |
@@ -194,7 +193,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | category | enum `observation_category` | allergy \| surgery \| chronic \| autoimmune \| composition \| flag \| other |
 | field_label | varchar | e.g. "Penicillin" |
 | value | varchar | e.g. "Severe" |
@@ -206,7 +205,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | rating | smallint | 1–5 |
 | category | enum `feedback_category` | Technique \| Endurance \| Attitude \| Punctuality \| Other |
 | comment | text | |
@@ -229,7 +228,7 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | session_id | uuid | FK → attendance_session |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | status | enum `attendance_status` | present \| late \| absent \| excused |
 | coach_note_en | text | |
 | coach_note_ar | text | |
@@ -252,7 +251,7 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | event_id | uuid | FK → competition_event |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | — | | UK(event_id, swimmer_id) |
 
 **competition_day**
@@ -277,7 +276,7 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | race_session_id | uuid | FK → race_session |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | — | | UK(race_session_id, swimmer_id) |
 
 **race_result** — replaces `RaceResult` + `SessionResult` + `ChampionshipRace`
@@ -285,7 +284,7 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | race_session_id | uuid | FK → race_session |
-| swimmer_id | uuid | FK → swimmer (cross-module) |
+| swimmer_id | uuid | FK → identity.swimmer (cross-module) |
 | time_ms | integer | canonical finish time (ms); display `MM:SS.ss` derived |
 | points | integer | FINA-style points |
 | rank | integer | entered finishing rank |
@@ -295,7 +294,7 @@ explicitly a later, separate effort — not part of this work.
 
 ## 10. Reference (shared lookups) + enums
 
-**stroke** — unifies the mock's `Specialization` and `Stroke` (IM = Medley); used by Swimmers + Championships
+**stroke** — unifies the mock's `Specialization` and `Stroke` (IM = Medley); used by Athlete + Championships
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
