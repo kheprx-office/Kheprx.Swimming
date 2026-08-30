@@ -1,0 +1,41 @@
+erDiagram
+    stroke {
+        uuid id PK
+        varchar code
+        varchar name_en
+        varchar name_ar
+    }
+    distance {
+        uuid id PK
+        varchar code
+        integer meters
+    }
+    club {
+        uuid id PK
+        varchar name_en
+        varchar name_ar
+        varchar location_en
+        varchar location_ar
+        timestamptz created_at
+    }
+    app_user {
+        uuid id PK
+        varchar username UK
+        varchar email
+        varchar display_name
+        user_role role
+        varchar(4) avatar_initials
+        boolean is_first_login
+        uuid active_club_id FK
+        uuid swimmer_id FK
+        timestamptz created_at
+    }
+    captain_club {
+        uuid id PK
+        uuid user_id FK,UK
+        uuid club_id FK,UK
+    }
+
+    app_user ||--o{ captain_club : "assigned to"
+    club ||--o{ captain_club : "managed by"
+    club ||--o{ app_user : "active club of"

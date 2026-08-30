@@ -9,3 +9,4 @@
 
 # Electric API publish output (build artifact — regenerate with `dotnet publish`)
 publish-electric/
+docs/references/.diagram-check.*
