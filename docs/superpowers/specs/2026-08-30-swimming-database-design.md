@@ -303,8 +303,6 @@ explicitly a later, separate effort — not part of this work.
 | id | uuid | PK |
 | name_en | varchar | |
 | name_ar | varchar | |
-| location_en | varchar | |
-| location_ar | varchar | |
 | created_at | timestamptz | |
 
 _Seed rows — fixed Egyptian clubs (~70). English `name_en` transliterations are best-effort; correct as needed._
