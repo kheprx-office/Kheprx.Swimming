@@ -307,6 +307,46 @@ explicitly a later, separate effort — not part of this work.
 | location_ar | varchar | |
 | created_at | timestamptz | |
 
+_Seed rows — fixed Egyptian clubs (~70). English `name_en` transliterations are best-effort; correct as needed._
+
+| # | name_en | name_ar | | # | name_en | name_ar |
+|---|---|---|---|---|---|---|
+| 1 | Al Ahly | الأهلي | | 36 | El Shams | الشمس |
+| 2 | Zamalek | الزمالك | | 37 | El Nasr | النصر |
+| 3 | Pyramids | بيراميدز | | 38 | El Obour | العبور |
+| 4 | Al Ittihad Alexandria | الاتحاد السكندري | | 39 | El Merreikh | المريخ |
+| 5 | Al Masry (Port Said) | المصري البورسعيدي | | 40 | Port Fouad | بورفؤاد |
+| 6 | Ismaily | الإسماعيلي | | 41 | Eastern Company | إيسترن كومباني |
+| 7 | Smouha | سموحة | | 42 | El Nogoom | النجوم |
+| 8 | ENPPI | إنبي | | 43 | Gomhoreyet Shebin | جمهورية شبين |
+| 9 | Wadi Degla | وادي دجلة | | 44 | Benha | بنها |
+| 10 | ZED FC | زد إف سي | | 45 | El Plastic | البلاستيك |
+| 11 | Ceramica Cleopatra | سيراميكا كليوباترا | | 46 | Sporting Alexandria | سبورتنج السكندري |
+| 12 | Modern Sport | مودرن سبورت | | 47 | El Olympi | الأوليمبي |
+| 13 | National Bank of Egypt | البنك الأهلي المصري | | 48 | El Hammam | الحمام |
+| 14 | El Gouna | الجونة | | 49 | Damanhour | دمنهور |
+| 15 | Pharco | فاركو | | 50 | Kafr El Sheikh | كفر الشيخ |
+| 16 | Petrojet | بتروجت | | 51 | Damietta | دمياط |
+| 17 | Ghazl El Mahalla | غزل المحلة | | 52 | Dekernes | دكرنس |
+| 18 | Haras El Hodood | حرس الحدود | | 53 | Beni Ebeid | بني عبيد |
+| 19 | Tala'ea El Gaish | طلائع الجيش | | 54 | Nabaroh | نبروه |
+| 20 | Arab Contractors | المقاولون العرب | | 55 | El Minya | المنيا |
+| 21 | Ismailia Electricity | كهرباء الإسماعيلية | | 56 | El Fayoum | الفيوم |
+| 22 | El Tersana | الترسانة | | 57 | Misr El Makkasa | مصر المقاصة |
+| 23 | Tanta | طنطا | | 58 | Beni Suef Telecom | تليفونات بني سويف |
+| 24 | El Sekka El Hadeed (Railways) | السكة الحديد | | 59 | Aluminium | الألومنيوم |
+| 25 | Aswan | أسوان | | 60 | Kima Aswan | كيما أسوان |
+| 26 | El Qanah | القناة | | 61 | Tahta | طهطا |
+| 27 | La Viena | لافيينا | | 62 | Luxor | الأقصر |
+| 28 | Abu Qir Fertilizers | أبو قير للأسمدة | | 63 | El Nasr Mining | النصر للتعدين |
+| 29 | Telecom Egypt | المصرية للاتصالات | | 64 | Asyut Cement | أسمنت أسيوط |
+| 30 | Asyut Petroleum | بترول أسيوط | | 65 | Shoban Muslimeen Qena | شبان مسلمين قنا |
+| 31 | El Mansoura | المنصورة | | 66 | El Badari | البداري |
+| 32 | Baladeyet El Mahalla | بلدية المحلة | | 67 | Aviation Club | نادي الطيران |
+| 33 | El Dakhleya | الداخلية | | 68 | Shooting Club | نادي الصيد |
+| 34 | El Entag El Harby | الإنتاج الحربي | | 69 | Palm Hills | بالم هيلز |
+| 35 | Suez Team | منتخب السويس | | 70 | 6th of October Club | نادي 6 أكتوبر |
+
 **gender** — gender lookup
 | column | type | notes |
 |---|---|---|
