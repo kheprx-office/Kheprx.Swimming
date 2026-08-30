@@ -70,7 +70,6 @@ explicitly a later, separate effort — not part of this work.
 | password_hash | text | nullable; null when no login |
 | name_en | varchar | |
 | name_ar | varchar | nullable |
-| national_id | varchar(14) | UK |
 | gender | enum `gender` | nullable; male \| female |
 | dob | date | nullable |
 | phone | varchar | nullable |
@@ -85,6 +84,15 @@ explicitly a later, separate effort — not part of this work.
 | id | uuid | PK |
 | user_id | uuid | FK,U → identity.app_user.id |
 | captain_type | enum `captain_type` | nullable; head \| assistant |
+| national_id | varchar(14) | UK |
+| created_at | timestamptz | |
+
+**head_coach** — subtype for head coach role (1-1 with app_user)
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | FK,U → identity.app_user.id |
+| national_id | varchar(14) | UK |
 | created_at | timestamptz | |
 
 ## 6. Module 2 — Swimmers
@@ -310,10 +318,10 @@ explicitly a later, separate effort — not part of this work.
 
 ## 11. Relationships (cardinalities)
 
-**23 tables / 28 relationships.**
+**24 tables / 29 relationships.**
 
 - club 1—* swimmer; club 1—* attendance_session.
-- app_user 1—1 swimmer (via swimmer.user_id); app_user 1—1 captain (via captain.user_id).
+- app_user 1—1 swimmer (via swimmer.user_id); app_user 1—1 captain (via captain.user_id); app_user 1—1 head_coach (via head_coach.user_id).
 - swimmer 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.
 - swimmer *—* stroke (swimmer_specialization); swimmer *—* competition_event (championship_enrollment).
 - medical_test 1—* health_reading.

@@ -147,7 +147,6 @@ const SCHEMA = [
    {c:"password_hash",t:"text",k:"",n:true,note:"null when no login"},
    {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true},
-   {c:"national_id",t:"varchar(14)",k:"U",n:false},
    {c:"gender",t:"gender",k:"",n:true,note:"male | female"},
    {c:"dob",t:"date",k:"",n:true},
    {c:"phone",t:"varchar",k:"",n:true},
@@ -156,10 +155,16 @@ const SCHEMA = [
    {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
   {name:"captain",note:"captain profile — person attrs on app_user",cols:[
-   {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
-   {c:"captain_type",t:"captain_type",k:"",n:true,note:"head | assistant"},
-   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {c:"id",t:"uuid",k:"PK",n:false},
+  {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
+  {c:"captain_type",t:"captain_type",k:"",n:true,note:"head | assistant"},
+  {c:"national_id",t:"varchar(14)",k:"U",n:false},
+  {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"head_coach",note:"head coach profile — person attrs on app_user",cols:[
+  {c:"id",t:"uuid",k:"PK",n:false},
+  {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
+  {c:"national_id",t:"varchar(14)",k:"U",n:false},
+  {c:"created_at",t:"timestamptz",k:"",n:false}]},
  ]},
  {schema:"swimmers",color:"--swimmers",tables:[
   {name:"swimmer",note:"swimmer subtype — person attrs on app_user",cols:[
@@ -315,6 +320,7 @@ const SCHEMA = [
 ];
 const RELATIONSHIPS = [
  {from:"identity.app_user",to:"identity.captain",card:"1-1",label:"is"},
+ {from:"identity.app_user",to:"identity.head_coach",card:"1-1",label:"is"},
  {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"trains"},
  {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"represents"},
  {from:"identity.app_user",to:"swimmers.swimmer",card:"1-1",label:"logs in as"},

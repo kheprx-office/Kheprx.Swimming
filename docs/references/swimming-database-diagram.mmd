@@ -25,7 +25,6 @@ erDiagram
         text password_hash
         varchar name_en
         varchar name_ar
-        varchar(14) national_id UK
         gender gender
         date dob
         varchar phone
@@ -38,9 +37,17 @@ erDiagram
         uuid id PK
         uuid user_id FK,UK
         captain_type captain_type
+        varchar(14) national_id UK
+        timestamptz created_at
+    }
+    head_coach {
+        uuid id PK
+        uuid user_id FK,UK
+        varchar(14) national_id UK
         timestamptz created_at
     }
     app_user ||--o| captain : "is"
+    app_user ||--o| head_coach : "is"
 
     swimmer {
         uuid id PK
