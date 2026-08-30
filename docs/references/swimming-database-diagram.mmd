@@ -21,38 +21,44 @@ erDiagram
     app_user {
         uuid id PK
         varchar username UK
-        varchar email
-        varchar display_name
-        user_role role
+        varchar email UK
+        text password_hash
+        varchar name_en
+        varchar name_ar
+        varchar(14) national_id UK
+        gender gender
+        date dob
+        varchar phone
         varchar(4) avatar_initials
+        user_role role
         boolean is_first_login
         uuid active_club_id FK
-        uuid swimmer_id FK
+        timestamptz created_at
+    }
+    captain {
+        uuid id PK
+        uuid user_id FK,UK
+        captain_type captain_type
         timestamptz created_at
     }
     captain_club {
         uuid id PK
-        uuid user_id FK,UK
+        uuid captain_id FK,UK
         uuid club_id FK,UK
     }
 
-    app_user ||--o{ captain_club : "assigned to"
+    app_user ||--o| captain : "is"
+    captain ||--o{ captain_club : "assigned"
     club ||--o{ captain_club : "managed by"
     club ||--o{ app_user : "active club of"
 
     swimmer {
         uuid id PK
+        uuid user_id FK,UK
+        varchar uid UK
         uuid club_id FK
         uuid championship_club_id FK
-        varchar name_en
-        varchar name_ar
-        varchar(14) national_id UK
-        varchar uid UK
-        gender gender
-        date dob
         varchar(3) blood_type
-        varchar phone
-        varchar(4) avatar_initials
         timestamptz created_at
         timestamptz updated_at
     }
