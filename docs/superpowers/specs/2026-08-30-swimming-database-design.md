@@ -60,10 +60,10 @@ explicitly a later, separate effort — not part of this work.
 | password_hash | text | nullable; null when no login |
 | name_en | varchar | |
 | name_ar | varchar | nullable |
-| gender | enum `gender` | nullable; male \| female |
+| gender_id | uuid | FK → reference.gender; nullable |
 | dob | date | nullable |
 | phone | varchar | nullable |
-| role | enum `user_role` | headCoach \| captain \| swimmer |
+| role_id | uuid | FK → reference.role |
 | is_first_login | boolean | default true |
 | created_at | timestamptz | |
 
@@ -72,7 +72,6 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | user_id | uuid | FK,U → identity.app_user.id |
-| captain_type | enum `captain_type` | nullable; head \| assistant |
 | national_id | varchar(14) | UK |
 | created_at | timestamptz | |
 
@@ -92,7 +91,7 @@ explicitly a later, separate effort — not part of this work.
 | uid | varchar | UK, e.g. `SW-2026-4KD91` |
 | club_id | uuid | FK → club (training club) |
 | championship_club_id | uuid | FK → club (nullable) |
-| blood_type | varchar(3) | nullable; e.g. `O+` |
+| blood_type_id | uuid | FK → reference.blood_type; nullable |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
@@ -308,17 +307,40 @@ explicitly a later, separate effort — not part of this work.
 | location_ar | varchar | |
 | created_at | timestamptz | |
 
-**Enum types:** `user_role` (headCoach|captain|swimmer), `gender` (male|female),
-`captain_type` (head|assistant),
-`guardian_relation` (father|mother), `fitness_assessment` (fit|unfit),
+**gender** — gender lookup
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar | e.g. `male`, `female` |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+
+**role** — user role lookup
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar | e.g. `headCoach`, `captain`, `swimmer` |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+
+**blood_type** — blood type lookup
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar | e.g. `O+`, `A-`, `AB+` |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+
+**Enum types:** `guardian_relation` (father|mother), `fitness_assessment` (fit|unfit),
 `observation_category` (allergy|surgery|chronic|autoimmune|composition|flag|other),
 `record_status` (normal|watch|out), `feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
 `attendance_status` (present|late|absent|excused), `competition_status` (upcoming|completed).
 
 ## 11. Relationships (cardinalities)
 
-**24 tables / 29 relationships.**
+**27 tables / 32 relationships.**
 
+- gender 1—* app_user; role 1—* app_user; blood_type 1—* swimmer_profile.
 - club 1—* swimmer_profile; club 1—* attendance_session.
 - app_user 1—1 swimmer_profile (via swimmer_profile.user_id); app_user 1—1 captain_profile (via captain_profile.user_id); app_user 1—1 head_coach_profile (via head_coach_profile.user_id).
 - swimmer_profile 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.

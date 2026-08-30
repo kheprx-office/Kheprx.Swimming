@@ -137,7 +137,22 @@ const SCHEMA = [
    {c:"name_ar",t:"varchar",k:"",n:true},
    {c:"location_en",t:"varchar",k:"",n:false},
    {c:"location_ar",t:"varchar",k:"",n:true},
-   {c:"created_at",t:"timestamptz",k:"",n:false}]}
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"gender",note:"lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"male | female"},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"role",note:"lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"headCoach | captain | swimmer"},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"blood_type",note:"lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"A+ | A- | B+ | B- | AB+ | AB- | O+ | O-"},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]}
  ]},
  {schema:"identity",color:"--identity",tables:[
   {name:"app_user",note:"base person + login + role (all users)",cols:[
@@ -147,16 +162,15 @@ const SCHEMA = [
    {c:"password_hash",t:"text",k:"",n:true,note:"null when no login"},
    {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true},
-   {c:"gender",t:"gender",k:"",n:true,note:"male | female"},
+   {c:"gender_id",t:"uuid",k:"FK",fk:"reference.gender.id",n:true},
    {c:"dob",t:"date",k:"",n:true},
    {c:"phone",t:"varchar",k:"",n:true},
-   {c:"role",t:"user_role",k:"",n:false,note:"headCoach | captain | swimmer"},
+   {c:"role_id",t:"uuid",k:"FK",fk:"reference.role.id",n:false},
    {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
    {c:"created_at",t:"timestamptz",k:"",n:false}]},
   {name:"captain_profile",note:"captain profile — person attrs on app_user",cols:[
   {c:"id",t:"uuid",k:"PK",n:false},
   {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
-  {c:"captain_type",t:"captain_type",k:"",n:true,note:"head | assistant"},
   {c:"national_id",t:"varchar(14)",k:"U",n:false},
   {c:"created_at",t:"timestamptz",k:"",n:false}]},
   {name:"head_coach_profile",note:"head coach profile — person attrs on app_user",cols:[
@@ -170,7 +184,7 @@ const SCHEMA = [
    {c:"uid",t:"varchar",k:"U",n:false},
    {c:"club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:false},
    {c:"championship_club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:true},
-   {c:"blood_type",t:"varchar(3)",k:"",n:true},
+   {c:"blood_type_id",t:"uuid",k:"FK",fk:"reference.blood_type.id",n:true},
    {c:"created_at",t:"timestamptz",k:"",n:false},
    {c:"updated_at",t:"timestamptz",k:"",n:false}]},
  ]},
@@ -346,7 +360,10 @@ const RELATIONSHIPS = [
  {from:"championships.race_session",to:"championships.race_assignment",card:"1-N",label:"assigns"},
  {from:"identity.swimmer_profile",to:"championships.race_assignment",card:"1-N",label:"swims in"},
  {from:"championships.race_session",to:"championships.race_result",card:"1-N",label:"produces"},
- {from:"identity.swimmer_profile",to:"championships.race_result",card:"1-N",label:"achieves"}
+ {from:"identity.swimmer_profile",to:"championships.race_result",card:"1-N",label:"achieves"},
+ {from:"reference.gender",to:"identity.app_user",card:"1-N",label:"of"},
+ {from:"reference.role",to:"identity.app_user",card:"1-N",label:"of"},
+ {from:"reference.blood_type",to:"identity.swimmer_profile",card:"1-N",label:"of"}
 ];
 </script>
 <script type="module">

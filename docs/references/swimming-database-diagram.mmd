@@ -18,6 +18,24 @@ erDiagram
         varchar location_ar
         timestamptz created_at
     }
+    gender {
+        uuid id PK
+        varchar code
+        varchar name_en
+        varchar name_ar
+    }
+    role {
+        uuid id PK
+        varchar code
+        varchar name_en
+        varchar name_ar
+    }
+    blood_type {
+        uuid id PK
+        varchar code
+        varchar name_en
+        varchar name_ar
+    }
     app_user {
         uuid id PK
         varchar username UK
@@ -25,17 +43,16 @@ erDiagram
         text password_hash
         varchar name_en
         varchar name_ar
-        gender gender
+        uuid gender_id FK
         date dob
         varchar phone
-        user_role role
+        uuid role_id FK
         boolean is_first_login
         timestamptz created_at
     }
     captain_profile {
         uuid id PK
         uuid user_id FK,UK
-        captain_type captain_type
         varchar(14) national_id UK
         timestamptz created_at
     }
@@ -54,7 +71,7 @@ erDiagram
         varchar uid UK
         uuid club_id FK
         uuid championship_club_id FK
-        varchar(3) blood_type
+        uuid blood_type_id FK
         timestamptz created_at
         timestamptz updated_at
     }
@@ -238,3 +255,6 @@ erDiagram
     swimmer_profile ||--o{ race_assignment : "swims in"
     race_session ||--o{ race_result : "produces"
     swimmer_profile ||--o{ race_result : "achieves"
+    gender ||--o{ app_user : "of"
+    role ||--o{ app_user : "of"
+    blood_type ||--o{ swimmer_profile : "of"
