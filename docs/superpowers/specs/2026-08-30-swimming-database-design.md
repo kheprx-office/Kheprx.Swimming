@@ -295,6 +295,8 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | code | varchar | `50m` … `10000m` (50, 100, 200, 400, 800, 1000, 1500, 5000, 7000, 7500, 10000) |
+| name_en | varchar | |
+| name_ar | varchar | |
 | meters | integer | |
 
 **club** — swimming club or academy
