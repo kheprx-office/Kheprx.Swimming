@@ -179,3 +179,60 @@ erDiagram
     stroke ||--o{ attendance_session : "grouped by"
     attendance_session ||--o{ attendance_record : "includes"
     swimmer ||--o{ attendance_record : "attends"
+
+    competition_event {
+        uuid id PK
+        varchar name_en
+        varchar name_ar
+        date start_date
+        date end_date
+        varchar location_en
+        varchar location_ar
+        competition_status status
+        uuid created_by FK
+    }
+    championship_enrollment {
+        uuid id PK
+        uuid event_id FK,UK
+        uuid swimmer_id FK,UK
+    }
+    competition_day {
+        uuid id PK
+        uuid event_id FK
+        varchar label_en
+        varchar label_ar
+        date day_date
+    }
+    race_session {
+        uuid id PK
+        uuid day_id FK
+        uuid stroke_id FK
+        uuid distance_id FK
+        time scheduled_time
+    }
+    race_assignment {
+        uuid id PK
+        uuid race_session_id FK,UK
+        uuid swimmer_id FK,UK
+    }
+    race_result {
+        uuid id PK
+        uuid race_session_id FK,UK
+        uuid swimmer_id FK,UK
+        integer time_ms
+        integer points
+        integer rank
+        boolean is_personal_best
+        uuid recorded_by FK
+    }
+
+    competition_event ||--o{ championship_enrollment : "enrolls"
+    swimmer ||--o{ championship_enrollment : "enrolled in"
+    competition_event ||--o{ competition_day : "spans"
+    competition_day ||--o{ race_session : "schedules"
+    stroke ||--o{ race_session : "of stroke"
+    distance ||--o{ race_session : "of distance"
+    race_session ||--o{ race_assignment : "assigns"
+    swimmer ||--o{ race_assignment : "swims in"
+    race_session ||--o{ race_result : "produces"
+    swimmer ||--o{ race_result : "achieves"
