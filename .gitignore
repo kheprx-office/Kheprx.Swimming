@@ -1,0 +1,11 @@
+# Visual-companion brainstorming scratch (superpowers)
+.superpowers/
+
+# One-time DB provisioning tool (throwaway, never committed)
+/tools/
+
+# Claude Code transient agent worktrees
+.claude/worktrees/
+
+# Electric API publish output (build artifact — regenerate with `dotnet publish`)
+publish-electric/

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module Anatomy — Kheprx.BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    /* backend layer colors */
+    --dom: #166534;   --dom-bg: #dcfce7;   /* Domain */
+    --app: #5b21b6;   --app-bg: #ede9fe;   /* Application */
+    --inf: #9a3412;   --inf-bg: #ffedd5;   /* Infrastructure */
+    --con: #0f766e;   --con-bg: #ccfbf1;   /* Contracts */
+    --host: #2563eb;  --host-bg: #eaf1ff;  /* Host/Api */
+    --shared: #475569; --shared-bg: #e2e8f0; /* SharedKernel */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { padding: 40px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.95rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 22px 0 6px; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; font-size: 0.8rem; align-items: center; }
+  .legend .lab { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); }
+  .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); }
+  .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); }
+  .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  h2.section { font-size: 1.22rem; margin: 42px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p.lead { color: var(--muted); margin: 0 0 18px; }
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 8px 0 6px; }
+  .node { border: 1px solid var(--border); border-left-width: 5px; background: var(--card); border-radius: 10px; padding: 12px 16px; }
+  .node .nh { font-weight: 700; font-size: 0.98rem; }
+  .node .nf { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; color: var(--muted); }
+  .node.dom { border-left-color: var(--dom); } .node.app { border-left-color: var(--app); }
+  .node.inf { border-left-color: var(--inf); } .node.con { border-left-color: var(--con); }
+  .node.host { border-left-color: var(--host); } .node.shared { border-left-color: var(--shared); }
+  .arrow { align-self: center; color: var(--muted); font-size: 0.78rem; padding: 6px 0; text-align: center; }
+  .arrow .down { font-size: 1.1rem; line-height: 1; }
+  .arrow .what { display: inline-block; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; font-size: 0.72rem; margin-left: 6px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-c { color: #94a3b8; } .tok-k { color: #93c5fd; } .tok-s { color: #86efac; } .tok-t { color: #fca5a5; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 12px 14px 12px 52px; margin: 10px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  ol.steps > li b { display: block; margin-bottom: 2px; }
+  table.conv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 6px 0; }
+  table.conv th, table.conv td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.conv th { background: #f0f3f6; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  /* ===== docs cross-page navigation (added to every page) ===== */
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  .topnav .nl.active { background: rgba(255,255,255,.24); opacity: 1; font-weight: 600; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 44px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid #e1e4e8; background: #ffffff; border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: #2563eb; }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: #2563eb; margin-top: 3px; }
+  .more { margin: 10px 0 0; font-size: 0.86rem; } .more a { color: #2563eb; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl active" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Kheprx.BaseBackend</span> — Module Anatomy</h1>
+      <p>Every module is four projects. Copy <code class="inline">Catalog</code> to start a new one.</p>
+    </header>
+
+    <div class="banner"><strong>One module = four projects.</strong> Domain, Application, Infrastructure, and Contracts. The split enforces the dependency rules that the architecture tests verify on every build.</div>
+
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag dom">Domain</span><span class="tag app">Application</span>
+      <span class="tag inf">Infrastructure</span><span class="tag con">Contracts</span>
+      <span class="tag host">Host / Api</span><span class="tag shared">SharedKernel</span>
+    </div>
+
+    <div class="banner"><strong>Module internals — deep dives:</strong>
+      <a href="MODULE_DOMAIN.html">Domain</a> ·
+      <a href="MODULE_APPLICATION.html">Application</a> ·
+      <a href="MODULE_INFRASTRUCTURE.html">Infrastructure</a> ·
+      <a href="MODULE_CONTRACTS.html">Contracts</a> ·
+      <a href="SHAREDKERNEL.html">SharedKernel</a> ·
+      <a href="IMODULE_CONVENTION.html">The IModule convention</a> ·
+      <a href="HOST_API.html">Host / Api</a>
+    </div>
+
+    <h2 class="section">Module folder structure</h2>
+    <p class="lead">The Catalog module as the canonical example — every new module mirrors this layout.</p>
+<pre>src/Modules/Catalog/
+├── Kheprx.BaseBackend.Catalog.Domain/
+│   ├── Entities/
+│   │   └── Product.cs
+│   ├── Exceptions/
+│   │   └── InvalidProductException.cs
+│   └── Repositories/
+│       └── IProductRepository.cs     ← repository port (interface)
+├── Kheprx.BaseBackend.Catalog.Application/
+│   ├── DTOs/
+│   │   └── ProductDtos.cs
+│   ├── Mappings/
+│   │   └── CatalogMapper.cs          ← Mapperly source-gen mapper
+│   ├── Services/
+│   │   ├── Interfaces/
+│   │   │   └── IProductService.cs
+│   │   └── ProductService.cs         ← use-case implementation
+│   ├── Validators/
+│   │   └── ProductRequestValidators.cs
+│   └── Resources/
+│       └── ProductMessages.cs        ← localized message strings
+├── Kheprx.BaseBackend.Catalog.Infrastructure/
+│   ├── CatalogModule.cs              ← IModule entry point
+│   ├── Configurations/
+│   │   └── ProductConfiguration.cs
+│   ├── Data/
+│   │   ├── CatalogDbContext.cs
+│   │   └── CatalogDbContextFactory.cs
+│   ├── Migrations/                   ← EF Core auto-generated
+│   │   ├── 20260626150922_InitialCatalog.cs
+│   │   └── CatalogDbContextModelSnapshot.cs
+│   ├── Repositories/
+│   │   └── ProductRepository.cs      ← EF Core implementation
+│   └── Services/
+│       └── CatalogModuleApi.cs       ← implements ICatalogModule
+└── Kheprx.BaseBackend.Catalog.Contracts/
+    └── ICatalogModule.cs</pre>
+
+    <h2 class="section">The four projects</h2>
+    <p class="lead">Each project has a single responsibility and strict inbound dependency rules.</p>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>Kheprx.BaseBackend.Catalog.Domain</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/</div>
+      <p>The innermost layer. Contains the pure business model: aggregate roots (e.g. <code class="inline">Product</code> extending <code class="inline">BaseEntity</code>), value objects, and domain exceptions (e.g. <code class="inline">InvalidProductException</code> extending <code class="inline">DomainException</code>). No NuGet packages beyond SharedKernel. Business invariants — rules that must always hold regardless of how the domain object was created — live here as validation inside entity constructors or methods.</p>
+      <p><strong>May depend on:</strong> <code class="inline">SharedKernel</code> only.</p>
+      <p class="more"><a href="MODULE_DOMAIN.html">Read more — Domain in detail →</a></p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>Kheprx.BaseBackend.Catalog.Application</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/</div>
+      <p>Defines the use-case contracts <em>and their implementations</em>: <code class="inline">IProductService</code> with its <code class="inline">ProductService</code> implementation (the orchestration), <code class="inline">ProductDtos.cs</code> (request/response records), <code class="inline">CatalogMapper</code> (Mapperly source-generated mapper annotated with <code class="inline">[Mapper]</code>), and <code class="inline">ProductRequestValidators</code> (FluentValidation rules). Consumes the repository port declared in Domain. No EF Core or database references allowed.</p>
+      <p><strong>May depend on:</strong> <code class="inline">Domain</code>, <code class="inline">SharedKernel</code>.</p>
+      <p class="more"><a href="MODULE_APPLICATION.html">Read more — Application in detail →</a></p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>Kheprx.BaseBackend.Catalog.Infrastructure</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/</div>
+      <p>Implements the data-access ports and wires up the module. Key files: <code class="inline">CatalogDbContext</code> (module-scoped EF Core context), <code class="inline">ProductRepository</code> (implements <code class="inline">IProductRepository</code> from Domain), <code class="inline">CatalogModuleApi</code> (implements <code class="inline">ICatalogModule</code> from Contracts), and <code class="inline">CatalogModule</code> (implements <code class="inline">IModule</code> — the DI registration entry point). The <code class="inline">Migrations/</code> subfolder is auto-generated by the EF Core tooling.</p>
+      <p><strong>May depend on:</strong> <code class="inline">Domain</code>, <code class="inline">Application</code>, <code class="inline">Contracts</code>, <code class="inline">SharedKernel</code>.</p>
+      <p class="more"><a href="MODULE_INFRASTRUCTURE.html">Read more — Infrastructure in detail →</a></p>
+    </div>
+
+    <div class="card con">
+      <div class="ch"><span class="tag con">Contracts</span><h3>Kheprx.BaseBackend.Catalog.Contracts</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Contracts/</div>
+      <p>A deliberately thin project containing only the interface(s) that other modules or the host may reference — for example <code class="inline">ICatalogModule</code>. This is the only project in the module that external assemblies may take a project reference to. Keeping it thin enforces the module boundary: other modules cannot accidentally depend on domain entities, EF contexts, or service implementations.</p>
+      <p><strong>May depend on:</strong> <code class="inline">SharedKernel</code> only (no Domain or Application types leak out).</p>
+      <p class="more"><a href="MODULE_CONTRACTS.html">Read more — Contracts in detail →</a></p>
+    </div>
+
+    <h2 class="section">Folder-by-folder reference</h2>
+    <p class="lead">What lives in each folder of a module, and the naming convention to follow — taken from the Catalog module.</p>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>Kheprx.BaseBackend.Catalog.Domain</h3></div>
+      <table class="conv">
+        <tr><th>Folder</th><th>What lives here</th><th>Naming convention</th><th>Example</th></tr>
+        <tr><td><code class="inline">Entities/</code></td><td>Aggregate roots &amp; entities extending <code class="inline">BaseEntity</code>; one file per aggregate. Business invariants live as guards in their methods.</td><td><code class="inline">&lt;Entity&gt;.cs</code></td><td><code class="inline">Product.cs</code></td></tr>
+        <tr><td><code class="inline">Exceptions/</code></td><td>Domain exceptions extending <code class="inline">DomainException</code>, thrown when an invariant is violated.</td><td><code class="inline">Invalid&lt;Entity&gt;Exception.cs</code></td><td><code class="inline">InvalidProductException.cs</code></td></tr>
+        <tr><td><code class="inline">Repositories/</code></td><td>Repository <em>ports</em> (interfaces) for the module's aggregates — implemented by Infrastructure. They speak only in domain entities.</td><td><code class="inline">I&lt;Entity&gt;Repository.cs</code></td><td><code class="inline">IProductRepository.cs</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>Kheprx.BaseBackend.Catalog.Application</h3></div>
+      <table class="conv">
+        <tr><th>Folder</th><th>What lives here</th><th>Naming convention</th><th>Example</th></tr>
+        <tr><td><code class="inline">DTOs/</code></td><td>Request &amp; response records (the transport shape, not the entity).</td><td><code class="inline">&lt;Entity&gt;Dtos.cs</code> · <code class="inline">Create&lt;Entity&gt;Request</code></td><td><code class="inline">ProductDtos.cs</code></td></tr>
+        <tr><td><code class="inline">Validators/</code></td><td>One <code class="inline">AbstractValidator&lt;TRequest&gt;</code> per request DTO (FluentValidation).</td><td><code class="inline">&lt;Request&gt;Validator</code></td><td><code class="inline">ProductRequestValidators.cs</code></td></tr>
+        <tr><td><code class="inline">Mappings/</code></td><td>Mapperly <code class="inline">[Mapper]</code> partial classes (entity → DTO).</td><td><code class="inline">&lt;Module&gt;Mapper.cs</code></td><td><code class="inline">CatalogMapper.cs</code></td></tr>
+        <tr><td><code class="inline">Services/Interfaces/</code></td><td>Use-case service contracts.</td><td><code class="inline">I&lt;Entity&gt;Service.cs</code></td><td><code class="inline">IProductService.cs</code></td></tr>
+        <tr><td><code class="inline">Services/</code></td><td>Use-case service implementations (orchestration). Persistence-ignorant — no EF Core.</td><td><code class="inline">&lt;Entity&gt;Service.cs</code></td><td><code class="inline">ProductService.cs</code></td></tr>
+        <tr><td><code class="inline">Resources/</code></td><td>Static <code class="inline">&hellip;Messages</code> classes (nested <code class="inline">Errors</code>/<code class="inline">Success</code>, one method per message, <code class="inline">lang</code>-switch: <code class="inline">"ar"</code> → Arabic, default → English). Identity: <code class="inline">AuthMessages</code>, <code class="inline">UserMessages</code>, <code class="inline">RoleMessages</code>. Catalog: <code class="inline">ProductMessages</code>.</td><td><code class="inline">&lt;Feature&gt;Messages.cs</code></td><td><code class="inline">ProductMessages.cs</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>Kheprx.BaseBackend.Catalog.Infrastructure</h3></div>
+      <table class="conv">
+        <tr><th>Folder / file</th><th>What lives here</th><th>Naming convention</th><th>Example</th></tr>
+        <tr><td><code class="inline">Data/</code></td><td>The module-scoped EF Core context and its design-time factory.</td><td><code class="inline">&lt;Module&gt;DbContext.cs</code></td><td><code class="inline">CatalogDbContext.cs</code></td></tr>
+        <tr><td><code class="inline">Configurations/</code></td><td>One <code class="inline">IEntityTypeConfiguration&lt;T&gt;</code> per entity (Fluent API); applied via <code class="inline">ApplyConfigurationsFromAssembly</code>.</td><td><code class="inline">&lt;Entity&gt;Configuration.cs</code></td><td><code class="inline">ProductConfiguration.cs</code></td></tr>
+        <tr><td><code class="inline">Repositories/</code></td><td>EF Core repository implementations (the port lives in Domain).</td><td><code class="inline">&lt;Entity&gt;Repository</code></td><td><code class="inline">ProductRepository.cs</code></td></tr>
+        <tr><td><code class="inline">Services/</code></td><td>The module's public Contracts facade (implements <code class="inline">ICatalogModule</code>).</td><td><code class="inline">&lt;Module&gt;ModuleApi.cs</code></td><td><code class="inline">CatalogModuleApi.cs</code></td></tr>
+        <tr><td><code class="inline">Migrations/</code></td><td>EF Core auto-generated migrations &amp; model snapshot — do not hand-edit.</td><td>EF timestamped</td><td><code class="inline">..._InitialCatalog.cs</code></td></tr>
+        <tr><td><code class="inline">&lt;Module&gt;Module.cs</code></td><td>Project root: the <code class="inline">IModule</code> entry point that registers everything into DI.</td><td><code class="inline">&lt;Module&gt;Module.cs</code></td><td><code class="inline">CatalogModule.cs</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card con">
+      <div class="ch"><span class="tag con">Contracts</span><h3>Kheprx.BaseBackend.Catalog.Contracts</h3></div>
+      <table class="conv">
+        <tr><th>Folder / file</th><th>What lives here</th><th>Naming convention</th><th>Example</th></tr>
+        <tr><td>(project root)</td><td>The public interface(s) other modules or the host may reference — and nothing else. No subfolders; kept deliberately thin.</td><td><code class="inline">I&lt;Module&gt;Module.cs</code></td><td><code class="inline">ICatalogModule.cs</code></td></tr>
+      </table>
+    </div>
+
+    <h2 class="section">SharedKernel building blocks</h2>
+    <p class="lead">Cross-cutting types in <code class="inline">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/</code> — used by every module, never module-specific.</p>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>Kheprx.BaseBackend.SharedKernel</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/</div>
+      <p><strong><code class="inline">ApiResponse&lt;T&gt;</code></strong> — the HTTP response envelope. Every endpoint returns this type. Has two static factories: <code class="inline">.Success(message, data)</code> and <code class="inline">.Failure(message, errorCode)</code>. Defined in <code class="inline">Responses/ApiResponse.cs</code>.</p>
+      <p><strong><code class="inline">BaseEntity</code></strong> — abstract base class for aggregate roots. Provides an <code class="inline">int Id</code>, <code class="inline">CreatedAt</code>, and <code class="inline">UpdatedAt</code> so entities don't repeat these common properties. Defined in <code class="inline">Domain/BaseEntity.cs</code>.</p>
+      <p><strong><code class="inline">DomainException</code></strong> — base class for all domain-level errors. <code class="inline">ExceptionHandlingMiddleware</code> catches this type and converts it to a 400 Bad Request response. Defined in <code class="inline">Domain/DomainException.cs</code>.</p>
+      <p><strong><code class="inline">IModule</code></strong> — the registration contract every module entry point must implement. Declares a single method: <code class="inline">IServiceCollection Register(IServiceCollection, IConfiguration)</code>. Defined in <code class="inline">Modules/IModule.cs</code>.</p>
+      <p><strong><code class="inline">AddModules()</code></strong> — the <code class="inline">IServiceCollection</code> extension method called in <code class="inline">Program.cs</code>. Uses <code class="inline">ModuleRegistration.Discover</code> to scan all loaded <code class="inline">Kheprx.BaseBackend.*.dll</code> assemblies for <code class="inline">IModule</code> implementations and calls <code class="inline">Register</code> on each. Defined in <code class="inline">Modules/ModuleRegistration.cs</code>.</p>
+      <p class="more"><a href="SHAREDKERNEL.html">Read more — SharedKernel in detail →</a></p>
+    </div>
+
+    <h2 class="section">The IModule convention</h2>
+    <p class="lead">Every module exposes exactly one <code class="inline">IModule</code> implementation in its Infrastructure project. The host auto-discovers any class implementing <code class="inline">IModule</code> in any <code class="inline">Kheprx.BaseBackend.*.dll</code> assembly loaded at startup via <code class="inline">ModuleRegistration.Discover</code> called by <code class="inline">AddModules()</code>.</p>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>CatalogModule — real Register body</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/CatalogModule.cs</div>
+      <p>Registers the module's EF Core context, the Mapperly mapper singleton, the repository, the service, and the public Contracts implementation in one place. No other project needs to know about the module's internals.</p>
+<pre><span class="tok-k">public sealed class</span> CatalogModule : IModule
+{
+    <span class="tok-k">public</span> IServiceCollection Register(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext&lt;CatalogDbContext&gt;(options =&gt;
+            options.UseNpgsql(configuration.GetConnectionString(<span class="tok-s">"Postgres"</span>)));
+
+        services.AddSingleton&lt;CatalogMapper&gt;();
+        services.AddScoped&lt;IProductRepository, ProductRepository&gt;();
+        services.AddScoped&lt;IProductService, ProductService&gt;();
+        services.AddScoped&lt;ICatalogModule, CatalogModuleApi&gt;();
+        <span class="tok-k">return</span> services;
+    }
+}</pre>
+      <p>Note: <code class="inline">CatalogMapper</code> is registered as a singleton because it is a Mapperly source-generated class — it holds no mutable state and is safe to share across requests.</p>
+      <p class="more"><a href="IMODULE_CONVENTION.html">Read more — the IModule convention in detail →</a></p>
+    </div>
+
+    <h2 class="section">The Mapperly mapper</h2>
+    <p class="lead"><code class="inline">CatalogMapper</code> is a source-generated, zero-reflection mapper from <strong>Riok.Mapperly</strong>. The compiler generates the mapping implementations at build time — no runtime reflection, no magic strings.</p>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>CatalogMapper</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Mappings/CatalogMapper.cs</div>
+<pre><span class="tok-k">[Mapper]</span>
+<span class="tok-k">public partial class</span> CatalogMapper
+{
+    <span class="tok-k">public partial</span> ProductDto ToDto(Product product);
+    <span class="tok-k">public partial</span> IReadOnlyList&lt;ProductDto&gt; ToDtoList(IReadOnlyList&lt;Product&gt; products);
+}</pre>
+      <p>The <code class="inline">[Mapper]</code> attribute (from <code class="inline">Riok.Mapperly.Abstractions</code>) triggers source generation. The <code class="inline">partial</code> keyword lets the compiler fill in the implementations. Property names are matched by convention — if names differ, use <code class="inline">[MapProperty]</code>.</p>
+    </div>
+
+    <h2 class="section">Add a new module</h2>
+    <p class="lead">Use the Catalog module as the template. Replace <code class="inline">Catalog</code> with your new module name throughout.</p>
+    <ol class="steps">
+      <li>
+        <b>Create the four projects under <code class="inline">src/Modules/&lt;Name&gt;/</code></b>
+        Run <code class="inline">dotnet new classlib</code> four times for <code class="inline">Kheprx.BaseBackend.&lt;Name&gt;.Domain</code>, <code class="inline">.Application</code>, <code class="inline">.Infrastructure</code>, and <code class="inline">.Contracts</code>. Add them to the solution with <code class="inline">dotnet sln add</code>. Wire project references following the dependency table: Domain ← Application ← Infrastructure, Contracts ← Infrastructure.
+      </li>
+      <li>
+        <b>Implement the Domain layer</b>
+        Add your aggregate root entity extending <code class="inline">BaseEntity</code> from SharedKernel. Add domain exception(s) extending <code class="inline">DomainException</code>. Keep this project free of NuGet dependencies beyond SharedKernel.
+      </li>
+      <li>
+        <b>Implement the Application layer</b>
+        Add DTOs (request/response records), a FluentValidation validator per request type, a <code class="inline">[Mapper]</code>-annotated Mapperly mapper class, and a service interface (e.g. <code class="inline">I&lt;Name&gt;Service</code>).
+      </li>
+      <li>
+        <b>Add the Contracts layer</b>
+        Define the public module interface (e.g. <code class="inline">I&lt;Name&gt;Module</code>) that the host or other modules may use. Keep it thin — only methods other assemblies genuinely need.
+      </li>
+      <li>
+        <b>Implement the Infrastructure layer</b>
+        Create a module-scoped <code class="inline">DbContext</code>, Fluent API entity configuration, repository implementing the interface from Application, service implementing the service interface, <code class="inline">&lt;Name&gt;ModuleApi</code> implementing the Contracts interface, and <code class="inline">class &lt;Name&gt;Module : IModule</code> that wires all of the above into DI.
+      </li>
+      <li>
+        <b>Reference Infrastructure from the host</b>
+        Add a project reference from <code class="inline">Kheprx.BaseBackend.Api</code> to <code class="inline">Kheprx.BaseBackend.&lt;Name&gt;.Infrastructure</code> so that <code class="inline">AddModules()</code> can discover and load the new <code class="inline">IModule</code> at runtime.
+      </li>
+      <li>
+        <b>Add an EF Core migration</b>
+        Run <code class="inline">dotnet ef migrations add Initial&lt;Name&gt; --project Kheprx.BaseBackend.&lt;Name&gt;.Infrastructure --startup-project Kheprx.BaseBackend.Api</code>. Commit the generated migration files. Apply with <code class="inline">dotnet ef database update</code>.
+      </li>
+      <li>
+        <b>Add unit and architecture test coverage</b>
+        Create <code class="inline">tests/Kheprx.BaseBackend.&lt;Name&gt;.UnitTests/</code> mirroring the Catalog unit tests. The existing <code class="inline">Kheprx.BaseBackend.ArchitectureTests</code> will automatically pick up the new module's assemblies — confirm the boundary and convention tests still pass.
+      </li>
+      <li>
+        <b>Run <code class="inline">dotnet test</code></b>
+        Confirm all tests pass: <code class="inline">dotnet test Kheprx.BaseBackend.sln</code>. A green build proves the new module satisfies all dependency rules and the solution is still warning-clean (<code class="inline">TreatWarningsAsErrors=true</code>).
+      </li>
+    </ol>
+
+    <div class="pager">
+      <a href="PROJECT_LIBRARIES.html"><span class="dir">← Previous</span><span class="ttl">Project Libraries</span></a>
+      <a class="next" href="REQUEST_FLOW.html"><span class="dir">Next →</span><span class="ttl">Request Flow</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<div class="flex h-screen w-full overflow-hidden bg-canvas text-ink" dir="rtl">
+
+  <!-- Mobile overlay -->
+  @if (isMobileMenuOpen()) {
+    <div
+      class="fixed inset-0 bg-ink/40 z-40 lg:hidden"
+      (click)="isMobileMenuOpen.set(false)">
+    </div>
+  }
+
+  <!-- Sidebar -->
+  <aside
+    [class]="
+      'fixed lg:static inset-y-0 right-0 z-50 ' +
+      'bg-ink text-surface transition-all duration-200 ease-in-out ' +
+      (isMobileMenuOpen() ? 'translate-x-0' : 'translate-x-full lg:translate-x-0') + ' ' +
+      (isSidebarOpen() ? 'w-64' : 'lg:w-20') + ' ' +
+      'flex flex-col border-l border-white/10'
+    ">
+
+    <!-- Sidebar header -->
+    <div class="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+      <div [class]="'font-bold text-lg flex items-center gap-2 ' + (!isSidebarOpen() ? 'lg:hidden' : '')">
+        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white text-base shrink-0">
+          ⚡
+        </div>
+        <span class="truncate">النور كهرباء</span>
+      </div>
+      @if (!isSidebarOpen()) {
+        <div class="hidden lg:flex w-8 h-8 bg-accent rounded-lg items-center justify-center text-white mx-auto">
+          ⚡
+        </div>
+      }
+      <button
+        (click)="isMobileMenuOpen.set(false)"
+        class="lg:hidden text-white/60 hover:text-surface">
+        <svg [lucideIcon]="XIcon" [size]="20" />
+      </button>
+    </div>
+
+    <!-- Nav items -->
+    <nav class="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      @for (item of navItems(); track item.label; let idx = $index) {
+        @if (item.route) {
+          <button
+            [routerLink]="item.route"
+            [style.animation-delay]="idx * 30 + 'ms'"
+            [class]="
+              'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-right animate-slide-in-right ' +
+              (isActive(item.route)
+                ? 'bg-primary text-surface font-medium shadow-sm'
+                : 'text-white/60 hover:bg-white/10 hover:text-surface hover:translate-x-0.5')
+            "
+            [title]="!isSidebarOpen() ? item.label : ''">
+            <svg [lucideIcon]="item.icon" [size]="20" class="shrink-0" />
+            <span [class]="!isSidebarOpen() ? 'lg:hidden' : ''">{{ item.label }}</span>
+          </button>
+        } @else {
+          <button
+            disabled
+            title="قريباً"
+            [style.animation-delay]="idx * 30 + 'ms'"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-right animate-slide-in-right text-white/30 cursor-not-allowed">
+            <svg [lucideIcon]="item.icon" [size]="20" class="shrink-0" />
+            <span [class]="!isSidebarOpen() ? 'lg:hidden' : ''">{{ item.label }}</span>
+          </button>
+        }
+      }
+    </nav>
+
+    <!-- Sidebar footer -->
+    <div class="p-3 border-t border-white/10 space-y-1">
+      <button
+        (click)="signOut()"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-white/60 hover:bg-white/10 hover:text-surface text-sm transition-all"
+        [title]="!isSidebarOpen() ? 'تسجيل الخروج' : ''">
+        <svg [lucideIcon]="LogOutIcon" [size]="18" class="shrink-0" />
+        <span [class]="!isSidebarOpen() ? 'lg:hidden' : ''">تسجيل الخروج</span>
+      </button>
+      <button
+        (click)="isSidebarOpen.set(!isSidebarOpen())"
+        class="hidden lg:flex w-full items-center justify-center gap-2 px-2 py-2 rounded text-white/60 hover:bg-white/10 hover:text-surface text-xs">
+        <svg [lucideIcon]="MenuIcon" [size]="16" />
+        <span [class]="!isSidebarOpen() ? 'hidden' : ''">طي القائمة</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content area -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Header -->
+    <header class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 lg:px-6 z-30 shrink-0 gap-3">
+      <div class="flex items-center gap-4 flex-1 min-w-0">
+        <button
+          (click)="isMobileMenuOpen.set(true)"
+          class="text-text-secondary hover:text-primary lg:hidden">
+          <svg [lucideIcon]="MenuIcon" [size]="24" />
+        </button>
+
+        <!-- Search (disabled placeholder — search not yet implemented) -->
+        <div class="hidden md:block relative max-w-md flex-1">
+          <div class="flex items-center bg-canvas rounded-md px-3 py-1.5 border border-border transition-all">
+            <svg [lucideIcon]="SearchIcon" [size]="16" class="text-text-muted ml-2 shrink-0" />
+            <input
+              type="text"
+              disabled
+              placeholder="بحث (قريباً)"
+              class="bg-transparent border-none outline-none text-sm w-full placeholder:text-text-muted cursor-not-allowed" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile button -->
+      <button
+        [routerLink]="'/account'"
+        class="flex items-center gap-2 rounded-full transition-transform hover:scale-105"
+        [title]="roleLabel()"
+        aria-label="الملف الشخصي">
+        <div class="w-9 h-9 rounded-full bg-primary text-surface flex items-center justify-center font-semibold text-sm shrink-0">
+          {{ userInitial() }}
+        </div>
+      </button>
+    </header>
+
+    <!-- Page content -->
+    <main class="relative flex-1 overflow-y-auto p-4 lg:p-8">
+      <router-outlet />
+    </main>
+  </div>
+</div>

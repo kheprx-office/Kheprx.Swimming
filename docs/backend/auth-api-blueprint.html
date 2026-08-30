@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kheprx — Auth API Blueprint</title>
+<style>
+  :root,[data-theme="dark"]{
+    --identity:#2563eb;--projects:#059669;--inventory:#d97706;--attendance:#7c3aed;--finance:#dc2626;--reference:#64748b;
+    --bg:#0f172a;--panel:#0b1220;--card:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;
+    --codebg:#0b1220;--accent:#60a5fa;--active:#172033;--pk:#fbbf24;--fk:#60a5fa;--u:#34d399;
+  }
+  [data-theme="light"]{
+    --identity:#1d4ed8;--projects:#047857;--inventory:#b45309;--attendance:#6d28d9;--finance:#b91c1c;--reference:#475569;
+    --bg:#f8fafc;--panel:#ffffff;--card:#ffffff;--line:#cbd5e1;--text:#0f172a;--muted:#475569;
+    --codebg:#f1f5f9;--accent:#1d4ed8;--active:#e2e8f0;--pk:#b45309;--fk:#1d4ed8;--u:#047857;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:inherit}
+  header{position:sticky;top:0;z-index:10;display:flex;gap:.6rem;align-items:center;
+    padding:.6rem 1rem;background:var(--panel);border-bottom:1px solid var(--line)}
+  header h1{font-size:1rem;margin:0;font-weight:600}
+  .btn{padding:.35rem .7rem;border-radius:6px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);cursor:pointer;font-size:.8rem}
+  .btn:hover{border-color:var(--accent)}
+  .layout{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 50px)}
+  .tree{border-inline-end:1px solid var(--line);background:var(--panel);position:sticky;top:50px;
+    height:calc(100vh - 50px);overflow:auto;padding:.5rem}
+  .treehead{position:sticky;top:0;background:var(--panel);padding:.1rem 0 .5rem}
+  #filter{width:100%;padding:.4rem .6rem;border-radius:6px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);font-size:.82rem}
+  .tgrp{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;margin:.7rem .4rem .2rem;font-weight:700}
+  .tnode{display:block;padding:.25rem .5rem;border-radius:5px;text-decoration:none;font-size:.84rem;color:var(--text)}
+  .tnode:hover{background:var(--card)}
+  .tnode.active{background:var(--accent);color:#fff}
+  .tglobal{font-weight:600}
+  .pane{padding:1rem 1.4rem;overflow:auto}
+  .breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:.8rem}
+  .breadcrumb b{color:var(--text)}
+  .thead{display:flex;gap:.5rem;align-items:baseline;flex-wrap:wrap;margin-bottom:.6rem}
+  .ttitle{font-size:1.15rem;font-weight:600}
+  .muted{color:var(--muted)}.small{font-size:.78rem}
+  .subtabs{display:flex;gap:.3rem;border-bottom:1px solid var(--line);margin-bottom:.9rem;
+    position:sticky;top:0;background:var(--bg);padding-top:.2rem;flex-wrap:wrap}
+  .subtab{padding:.4rem .9rem;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;
+    text-decoration:none;font-size:.85rem;color:var(--muted)}
+  .subtab:hover{color:var(--text)}
+  .subtab.on{color:var(--text);background:var(--card);border-color:var(--line)}
+  table.cols{width:100%;border-collapse:collapse;font-size:.84rem}
+  table.cols th,table.cols td{text-align:start;padding:.35rem .8rem;border-top:1px solid var(--line);vertical-align:top}
+  table.cols th{color:var(--muted);background:var(--active)}
+  .badge{font-size:.65rem;padding:.05rem .35rem;border-radius:4px;border:1px solid currentColor;
+    margin-inline-end:.25rem;white-space:nowrap}
+  .pk{color:var(--pk)}.fk{color:var(--fk)}.u{color:var(--u)}.nn{color:var(--muted)}
+  .ar{unicode-bidi:plaintext}
+  .erd-box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem;
+    margin-bottom:1rem;overflow:auto}
+  .summary{display:flex;gap:.7rem;flex-wrap:wrap}
+  .scard{display:block;background:var(--card);border:1px solid var(--line);border-inline-start-width:5px;
+    border-radius:8px;padding:.6rem .9rem;min-width:130px;text-decoration:none}
+  .scard:hover{border-color:var(--accent)}
+  .scard-h{font-weight:700;text-transform:uppercase;font-size:.72rem;letter-spacing:.05em}
+  .scard-n{font-size:.8rem;color:var(--muted);margin-top:.2rem}
+  .codewrap{position:relative}
+  .code{background:var(--codebg);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;
+    font-family:Consolas,Monaco,monospace;font-size:.8rem;white-space:pre;overflow:auto;margin:0}
+  .copy{position:absolute;top:.5rem;right:.5rem;background:var(--card);border:1px solid var(--line);
+    border-radius:5px;padding:.2rem .6rem;color:var(--text);cursor:pointer;font-size:.72rem}
+  .copy:hover{border-color:var(--accent)}
+  .relcols{display:flex;gap:1.2rem;flex-wrap:wrap}
+  .relcols>div{flex:1;min-width:240px;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:.7rem .9rem}
+  .relcols h4{margin:.1rem 0 .5rem;font-size:.8rem;color:var(--accent)}
+  .rellink{display:block;padding:.2rem 0;color:var(--fk);text-decoration:none}
+  .rellink:hover{text-decoration:underline}
+  .ixsec h4{margin:.8rem 0 .3rem;font-size:.82rem;color:var(--accent)}
+  .ixsec ul{margin:.2rem 0;padding-inline-start:1.2rem;font-size:.84rem}
+  .enumgrp{margin-bottom:1rem;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .enumtab{background:var(--active);padding:.4rem .8rem;font-weight:600}
+  .enumtab a{text-decoration:none}
+  .enumrow{display:flex;gap:.8rem;padding:.35rem .8rem;border-top:1px solid var(--line);flex-wrap:wrap}
+  .enumcol{font-weight:600;min-width:160px}
+  .enumval{display:inline-block;background:var(--active);border:1px solid var(--line);border-radius:10px;
+    padding:.05rem .5rem;margin:.1rem;font-size:.78rem}
+  .treetoggle{display:none}
+  footer{padding:1rem 0 0;color:var(--muted);font-size:.74rem;border-top:1px solid var(--line);margin-top:1.5rem}
+  @media (max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .tree{position:static;height:auto;max-height:60vh;display:none}
+    html[data-tree="open"] .tree{display:block}
+    .treetoggle{display:inline-block}
+  }
+  @media print{
+    header,.tree{display:none!important}
+    .layout{grid-template-columns:1fr}
+    .pane{overflow:visible}
+    body{background:#fff;color:#000}
+  }
+  .banner{background:var(--card);border:1px solid var(--line);border-inline-start:4px solid var(--accent);
+    border-radius:8px;padding:.7rem .9rem;margin:.2rem 0 1rem;font-size:.86rem}
+  .seclbl{margin:1.1rem 0 .4rem;font-size:.82rem;color:var(--accent)}
+  .mono{font-family:Consolas,Monaco,monospace}
+  table.eptable td{vertical-align:middle}
+  .mbadge{display:inline-block;min-width:54px;text-align:center;font-size:.66rem;font-weight:700;
+    padding:.12rem .4rem;border-radius:5px;color:#fff}
+  .m-get{background:#059669}.m-post{background:#2563eb}.m-put{background:#d97706}
+  .m-patch{background:#7c3aed}.m-del{background:#dc2626}
+  .rbadge{display:inline-block;font-size:.64rem;padding:.04rem .35rem;border:1px solid var(--line);
+    border-radius:10px;margin-inline-end:.2rem;color:var(--muted)}
+  .rolebadge{display:inline-block;font-size:.64rem;font-weight:700;padding:.05rem .4rem;border-radius:5px;
+    text-transform:uppercase;letter-spacing:.03em;color:#fff;margin-inline-start:.3rem}
+  .rolebadge.master{background:#2563eb}.rolebadge.transactional{background:#7c3aed}
+  .rolebadge.lookup{background:#64748b}.rolebadge.join{background:#0f766e}.rolebadge.balance{background:#b45309}
+  .layerdiag{display:flex;gap:.4rem;align-items:stretch;flex-wrap:wrap;margin-bottom:1rem}
+  .lbox{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:8px;
+    padding:.5rem .6rem;font-size:.78rem;text-align:center}
+  .lbox b{display:block;font-size:.72rem;color:var(--accent)}
+  .larrow{align-self:center;color:var(--muted)}
+  pre.tree{background:var(--codebg);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;
+    font-family:Consolas,Monaco,monospace;font-size:.78rem;white-space:pre;overflow:auto;margin:0 0 1rem}
+  .treemode{display:flex;gap:.3rem;margin:0 0 .5rem}
+  .tmbtn{flex:1;font-size:.74rem;padding:.25rem .4rem;cursor:pointer}
+  .tmbtn.on{border-color:var(--accent);color:var(--accent)}
+  .sbadge{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;margin-inline-start:.4rem;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <h1>Kheprx — Auth API Blueprint</h1>
+  <span style="flex:1"></span>
+  <button id="treeToggle" class="btn treetoggle">☰ Modules</button>
+  <button id="themeToggle" class="btn" title="Toggle light / dark theme">◐ Theme</button>
+</header>
+<div class="layout">
+  <aside class="tree">
+    <div class="treehead"><input id="filter" type="search" placeholder="Filter modules / resources…  ( / )" /></div>
+    <div id="treelist"></div>
+  </aside>
+  <main class="pane">
+    <div id="breadcrumb" class="breadcrumb"></div>
+    <div id="view">Auth — API Blueprint</div>
+    <footer>API blueprint · <span id="footFeatures"></span> features · <span id="footResources"></span> resources · <span id="footModules"></span> schemas · .NET modular monolith · PostgreSQL · single self-contained offline file.</footer>
+  </main>
+</div>
+<script id="appdata">
+const SCHEMA = [
+ {schema:"identity",color:"--identity",tables:[
+  {name:"Users",note:"canonical person + login identity (owned by the Identity module). Login is OPTIONAL — null Email/PasswordHash = a login-less person (e.g. field worker). Role-specific profiles (Manager/Moqawel/Worker) attach via UserId in a later People/HR feature. [G5: unified identity]",cols:[
+   {c:"Id",t:"uuid",k:"PK",n:false,d:"gen_random_uuid()"},
+   {c:"Email",t:"text",k:"U",n:true,note:"login email (unique); null for login-less persons"},
+   {c:"PasswordHash",t:"text",k:"",n:true,note:"PBKDF2 hash; null when the person has no login"},
+   {c:"FullName",t:"text",k:"",n:false},
+   {c:"Phone",t:"text",k:"",n:true},
+   {c:"RoleId",t:"uuid",k:"FK",fk:"identity.Roles.Id",n:false},
+   {c:"IsActive",t:"boolean",k:"",n:false,d:"true"},
+   {c:"MustChangePassword",t:"boolean",k:"",n:false,d:"false",note:"seeded accounts start true → force change on first login [G7]"},
+   {c:"LastLoginAt",t:"timestamptz",k:"",n:true},
+   {c:"CreatedAt",t:"timestamptz",k:"",n:false,d:"now()"},
+   {c:"UpdatedAt",t:"timestamptz",k:"",n:false,d:"now()"}]},
+  {name:"Roles",note:"lookup — admin | manager | moqawel | worker",cols:[
+   {c:"Id",t:"uuid",k:"PK",n:false,d:"gen_random_uuid()"},
+   {c:"Code",t:"text",k:"U",n:false,note:"admin | manager | moqawel | worker"},
+   {c:"LabelAr",t:"text",k:"",n:true},
+   {c:"LabelEn",t:"text",k:"",n:true},
+   {c:"SortOrder",t:"int",k:"",n:false,d:"0"},
+   {c:"IsActive",t:"boolean",k:"",n:false,d:"true"}]},
+  {name:"RefreshTokens",note:"rotating refresh tokens for JWT renewal",cols:[
+   {c:"Id",t:"uuid",k:"PK",n:false,d:"gen_random_uuid()"},
+   {c:"UserId",t:"uuid",k:"FK",fk:"identity.Users.Id",n:false},
+   {c:"TokenHash",t:"text",k:"U",n:false,note:"SHA-256 of the opaque refresh token"},
+   {c:"ExpiresAt",t:"timestamptz",k:"",n:false},
+   {c:"CreatedAt",t:"timestamptz",k:"",n:false,d:"now()"},
+   {c:"RevokedAt",t:"timestamptz",k:"",n:true},
+   {c:"ReplacedByTokenHash",t:"text",k:"",n:true,note:"set on rotation"}]}
+ ]}
+];
+
+const RELATIONSHIPS = [
+ {from:"identity.Roles",to:"identity.Users",card:"1-N",label:"has"},
+ {from:"identity.Users",to:"identity.RefreshTokens",card:"1-N",label:"issues"}
+];
+
+const API = [
+ { module:"Identity", schema:"identity", purpose:"Authentication, JWT sessions, roles, and admin user management.",
+   resources:[
+     {name:"Auth", entity:"Auth", role:"transactional",
+       endpoints:[
+         {m:"POST", p:"/api/auth/login", s:"Email + password → access + refresh JWT", req:"LoginRequest", res:"SessionDto", auth:["anonymous"], codes:[200,400,401]},
+         {m:"POST", p:"/api/auth/refresh", s:"Rotate refresh token → new tokens", req:"RefreshRequest", res:"SessionDto", auth:["anonymous"], codes:[200,401]},
+         {m:"POST", p:"/api/auth/logout", s:"Revoke ALL the caller's refresh tokens — sign out everywhere [G9]", req:"—", res:"—", auth:["any"], codes:[200,401]},
+         {m:"GET",  p:"/api/auth/me", s:"Current user + role from JWT", res:"CurrentUserDto", auth:["any"], codes:[200,401]},
+         {m:"POST", p:"/api/auth/change-password", s:"Change own password (old → new)", req:"ChangePasswordRequest", res:"—", auth:["any"], codes:[200,400,401]}],
+       dtos:[
+         {name:"LoginRequest", kind:"request", fields:[
+           {f:"email",t:"string",rules:"NotEmpty; EmailAddress"},
+           {f:"password",t:"string",rules:"NotEmpty"}]},
+         {name:"RefreshRequest", kind:"request", fields:[
+           {f:"refreshToken",t:"string",rules:"NotEmpty"}]},
+         {name:"ChangePasswordRequest", kind:"request", fields:[
+           {f:"currentPassword",t:"string",rules:"NotEmpty"},
+           {f:"newPassword",t:"string",rules:"NotEmpty; MinLength(8)"}]},
+         {name:"SessionDto", kind:"response", fields:[
+           {f:"accessToken",t:"string",rules:"short-lived JWT (e.g. 15 min)"},
+           {f:"refreshToken",t:"string",rules:"opaque; rotated on refresh"},
+           {f:"role",t:"string",rules:"admin | manager | moqawel | worker"},
+           {f:"userId",t:"Guid",rules:"identity.Users.Id"},
+           {f:"mustChangePassword",t:"bool",rules:"true → client must redirect to change-password [G7]"}]},
+         {name:"CurrentUserDto", kind:"response", fields:[
+           {f:"userId",t:"Guid",rules:""},
+           {f:"email",t:"string",rules:""},
+           {f:"fullName",t:"string",rules:""},
+           {f:"role",t:"string",rules:""}]}],
+       files:[
+         ["src/Modules/Identity/Kheprx.BaseBackend.Identity.Application/Auth/IAuthService.cs","login/refresh/logout/me/password service interface"],
+         ["src/Modules/Identity/Kheprx.BaseBackend.Identity.Application/Auth/AuthService.cs","credential check, JWT issue, refresh rotation"],
+         ["src/Modules/Identity/Kheprx.BaseBackend.Identity.Application/Auth/Dtos.cs","LoginRequest/RefreshRequest/SessionDto/CurrentUserDto/…"],
+         ["src/Modules/Identity/Kheprx.BaseBackend.Identity.Application/Auth/Validators.cs","FluentValidation for the request DTOs"],
+         ["src/Modules/Identity/Kheprx.BaseBackend.Identity.Infrastructure/Auth/JwtTokenService.cs","JWT issue + validate; signing key from config"],
+         ["src/Modules/Identity/Kheprx.BaseBackend.Identity.Infrastructure/Auth/PasswordHasher.cs","PBKDF2 hash + verify"],
+         ["Kheprx.BaseBackend.Api/Controllers/AuthController.cs","api/auth/* endpoints (ApiResponse<T>)"]],
+       wiring:`// IdentityModuleRegistration.cs — Auth is a service over Users/RefreshTokens (no Auth entity)
+services.AddScoped<IAuthService, AuthService>();
+services.AddScoped<IJwtTokenService, JwtTokenService>();
+services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+// Program.cs — JWT bearer auth + role policies
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(/* signing key from .NET user-secrets / env — never committed (AD secrets) */);
+builder.Services.AddAuthorization();`,
+     },
+     {name:"Users", entity:"User", role:"master",
+       endpoints:[
+         {m:"GET",  p:"/api/users", s:"List/filter users (paged)", res:"PagedResult<UserDto>", auth:["admin"], codes:[200,401,403]},
+         {m:"GET",  p:"/api/users/{id}", s:"Get user by id", res:"UserDto", auth:["admin"], codes:[200,404]},
+         {m:"POST", p:"/api/users", s:"Create user (role + temp password)", req:"CreateUserRequest", res:"UserDto", auth:["admin"], codes:[200,400]},
+         {m:"PUT",  p:"/api/users/{id}", s:"Update user (name/phone/active)", req:"UpdateUserRequest", res:"UserDto", auth:["admin"], codes:[200,400,404]},
+         {m:"PUT",  p:"/api/users/{id}/role", s:"Assign role", req:"AssignRoleRequest", res:"UserDto", auth:["admin"], codes:[200,400,404]},
+         {m:"DELETE",p:"/api/users/{id}", s:"Deactivate / soft-delete user", auth:["admin"], codes:[200,404,409]}],
+       dtos:[
+         {name:"UserDto", kind:"response", fields:[
+           {f:"id",t:"Guid",rules:""},
+           {f:"email",t:"string",rules:""},
+           {f:"fullName",t:"string",rules:""},
+           {f:"phone",t:"string?",rules:""},
+           {f:"role",t:"string",rules:"admin | manager | moqawel | worker"},
+           {f:"isActive",t:"bool",rules:""}]},
+         {name:"CreateUserRequest", kind:"request", fields:[
+           {f:"email",t:"string",rules:"NotEmpty; EmailAddress"},
+           {f:"fullName",t:"string",rules:"NotEmpty; MaxLength(200)"},
+           {f:"phone",t:"string?",rules:""},
+           {f:"roleId",t:"Guid",rules:"NotEmpty; exists in identity.Roles"},
+           {f:"temporaryPassword",t:"string",rules:"NotEmpty; MinLength(8)"}]},
+         {name:"UpdateUserRequest", kind:"request", fields:[
+           {f:"fullName",t:"string",rules:"NotEmpty; MaxLength(200)"},
+           {f:"phone",t:"string?",rules:""},
+           {f:"isActive",t:"bool",rules:""}]},
+         {name:"AssignRoleRequest", kind:"request", fields:[
+           {f:"roleId",t:"Guid",rules:"NotEmpty; exists in identity.Roles"}]}],
+     },
+     {name:"Roles", entity:"Role", role:"lookup",
+       endpoints:[
+         {m:"GET", p:"/api/roles", s:"List roles (?activeOnly)", res:"List<RoleDto>", auth:["any"], codes:[200]}]
+     }
+   ]}
+];
+
+const FEATURES = [
+ {key:"login", en:"Login & Sessions", ar:"تسجيل الدخول", color:"--identity",
+  flow:"[Phase 1] A user signs in with email + password; the API verifies the hash, issues a short-lived access JWT plus a rotating refresh token, and records LastLoginAt.",
+  resources:["Identity.Auth","Identity.Users","Identity.Roles"],
+  gaps:[
+   {id:"AUTH-01", phase:"p1", type:"missing endpoint", severity:"blocker", direction:"implement POST /api/auth/login issuing access + refresh JWT (backend currently has NO authentication of any kind)"},
+   {id:"AUTH-02", phase:"p1", type:"missing module", severity:"blocker", direction:"create the Identity module (Domain/Application/Contracts/Infrastructure) by copying the Catalog module; note Catalog's BaseEntity uses int Id while the Identity schema uses Guid PKs — give the Identity entities Guid keys rather than inheriting the int BaseEntity"},
+   {id:"AUTH-03", phase:"p1", type:"missing table", severity:"important", direction:"add identity.RefreshTokens with rotation columns (TokenHash, ExpiresAt, RevokedAt, ReplacedByTokenHash)"}]},
+ {key:"refresh-logout", en:"Refresh & Logout", ar:"تجديد الجلسة والخروج", color:"--identity",
+  flow:"[Phase 1] Before the access token expires the client exchanges its refresh token for a new pair; logout revokes the refresh token server-side.",
+  resources:["Identity.Auth"],
+  gaps:[
+   {id:"AUTH-04", phase:"p1", type:"missing endpoint", severity:"important", direction:"add POST /api/auth/refresh (rotate) and POST /api/auth/logout (revoke) backed by identity.RefreshTokens"}]},
+ {key:"authorization", en:"Roles & Authorization", ar:"الصلاحيات", color:"--identity",
+  flow:"[Phase 1] Every endpoint declares which of the four roles may call it; the host validates the JWT and enforces role policies.",
+  resources:["Identity.Roles","Identity.Users","Identity.Auth"],
+  gaps:[
+   {id:"AUTH-05", phase:"p1", type:"missing config", severity:"blocker", direction:"wire AddAuthentication(JwtBearer) + AddAuthorization policies in the API host; add [Authorize] to controllers"},
+   {id:"AUTH-06", phase:"p1", type:"data/seed", severity:"important", direction:"seed identity.Roles with admin/manager/moqawel/worker and seed an initial admin user"}]},
+ {key:"passwords", en:"Password Management", ar:"كلمات المرور", color:"--identity",
+  flow:"[Phase 1] Change-own-password — seeded accounts must change their password on first login (G7).",
+  resources:["Identity.Auth"],
+  gaps:[
+   {id:"AUTH-07", phase:"p1", type:"missing endpoint", severity:"important", direction:"add the change-password endpoint (authenticated; satisfies G7 forced first-login)"}]},
+ {key:"user-management", en:"User Management", ar:"إدارة المستخدمين", color:"--identity",
+  flow:"[Phase 2] An admin lists, creates, updates, deactivates users and assigns each a role.",
+  resources:["Identity.Users","Identity.Roles"],
+  gaps:[
+   {id:"AUTH-08", phase:"p2", type:"missing endpoint", severity:"important", direction:"add /api/users CRUD + PUT /api/users/{id}/role, admin-only"}]}
+];
+</script>
+<script type="module">
+"use strict";
+// ====== HELPERS ======
+const cssVar = (v) => v && v.startsWith("--") ? `var(${v})` : v;
+const isArabic = (s) => /[؀-ۿ]/.test(s || "");
+function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){ return navigator.clipboard.writeText(text); }
+  const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand("copy"); } finally{ document.body.removeChild(ta); }
+  return Promise.resolve();
+}
+function indent(s){ return s.split("\n").map(l=>l?("    "+l):l).join("\n"); }
+function codeBox(code){
+  return `<div class="codewrap"><button class="copy" data-copy="${encodeURIComponent(code)}">⧉ copy</button>`
+    + `<pre class="code">${escapeHtml(code)}</pre></div>`;
+}
+// ====== DERIVATIONS ======
+const SCHEMA_TO_MODULE = {identity:"Identity",projects:"Projects",inventory:"Inventory",
+  attendance:"Attendance",finance:"Finance",reference:"Reference"};
+const tablesByKey = {};
+SCHEMA.forEach(s => s.tables.forEach(t => {
+  tablesByKey[`${s.schema}.${t.name}`] = {schema:s.schema, color:s.color, table:t};
+}));
+const incomingFks = {};
+SCHEMA.forEach(s => s.tables.forEach(t => {
+  const fromKey = `${s.schema}.${t.name}`;
+  t.cols.forEach(c => { if(c.fk){
+    const p = c.fk.split("."); const target = p[0]+"."+p[1];
+    (incomingFks[target] = incomingFks[target] || []).push({from:fromKey, column:c.c});
+  }});
+}));
+const resourceByKey = {};
+API.forEach(m => m.resources.forEach(r => {
+  resourceByKey[`${m.module}.${r.name}`] = {
+    module:m.module, schema:m.schema, color:`--${m.schema}`, res:r,
+    table: tablesByKey[`${m.schema}.${r.name}`] || null };
+}));
+const TOTAL_RESOURCES = API.reduce((n,m)=>n+m.resources.length,0);
+const MODULE_COUNT = API.length;
+const featureByKey = {};
+FEATURES.forEach(f => { featureByKey[f.key] = f; });
+const featuresByResource = {};
+FEATURES.forEach(f => f.resources.forEach(rk => {
+  (featuresByResource[rk] = featuresByResource[rk] || []).push(f.key);
+}));
+FEATURES.forEach(f => f.resources.forEach(rk => {
+  if(!resourceByKey[rk]) console.warn(`FEATURES: unresolved resource key ${rk} in feature ${f.key}`);
+}));
+const FEATURE_COUNT = FEATURES.length;
+function csType(col){
+  const t = col.t; let base;
+  if(t==="uuid") base="Guid";
+  else if(t==="int") base="int";
+  else if(t==="boolean") base="bool";
+  else if(t==="date") base="DateOnly";
+  else if(t==="time") base="TimeOnly";
+  else if(t==="timestamptz") base="DateTime";
+  else if(/^numeric/.test(t)) base="decimal";
+  else base="string"; // text and anything else
+  return base + (col.n===true ? "?" : "");
+}
+function entityOf(moduleName, tableName){
+  const e = resourceByKey[`${moduleName}.${tableName}`];
+  return e ? e.res.entity : tableName;
+}
+function realCols(entry){ return entry.table.table.cols.filter(c=>c.t!=="—"); }
+// ====== ENDPOINT / DTO / FILE / WIRING DERIVATIONS ======
+// Resolve a resource by name across ALL modules (some parent/nested links cross
+// modules, e.g. Inventory.ProjectProductBalances is nested under Projects.Projects).
+function findResource(name){
+  for(const m of API){ if(m.resources.some(x=>x.name===name)) return resourceByKey[`${m.module}.${name}`]; }
+  return null;
+}
+const METHOD = {GET:"m-get",POST:"m-post",PUT:"m-put",PATCH:"m-patch",DELETE:"m-del"};
+const ENVELOPE_NOTE = `<p class="small muted">All responses are wrapped in <code>ApiResponse&lt;T&gt;</code> `
+  + `(<code>SuccessStatus</code>, <code>Message</code>, <code>Error</code>, <code>Data</code>).</p>`;
+
+function deriveEndpoints(key){
+  const e = resourceByKey[key], r = e.res, dto = r.entity, base = `/api/${r.name}`;
+  if (r.endpoints) return r.endpoints.map(ep => ({
+    m: ep.m, p: ep.p, s: ep.s, req: ep.req || null, res: ep.res || "—",
+    auth: ep.auth || ["any"], codes: ep.codes || [200]
+  }));
+  const eps = [];
+  if(r.role==="lookup"){
+    eps.push({m:"GET",  p:base, s:`List ${r.name} (?activeOnly)`, res:`List<${dto}Dto>`, auth:["any"], codes:[200]});
+    eps.push({m:"GET",  p:`${base}/{id}`, s:`Get ${dto} by id`, res:`${dto}Dto`, auth:["any"], codes:[200,404]});
+    eps.push({m:"POST", p:base, s:`Create ${dto}`, req:`Create${dto}Request`, res:`${dto}Dto`, auth:["owner"], codes:[200,400]});
+    eps.push({m:"PUT",  p:`${base}/{id}`, s:`Update ${dto}`, req:`Update${dto}Request`, res:`${dto}Dto`, auth:["owner"], codes:[200,400,404]});
+    eps.push({m:"PATCH",p:`${base}/{id}/active`, s:`Toggle IsActive`, auth:["owner"], codes:[200,404]});
+  } else if(r.role==="master"){
+    eps.push({m:"GET",  p:base, s:`List/filter ${r.name} (paged)`, res:`PagedResult<${dto}Dto>`, auth:["owner","manager"], codes:[200]});
+    eps.push({m:"GET",  p:`${base}/{id}`, s:`Get ${dto} by id`, res:`${dto}Dto`, auth:["owner","manager"], codes:[200,404]});
+    eps.push({m:"POST", p:base, s:`Create ${dto}`, req:`Create${dto}Request`, res:`${dto}Dto`, auth:["owner"], codes:[200,400]});
+    eps.push({m:"PUT",  p:`${base}/{id}`, s:`Update ${dto}`, req:`Update${dto}Request`, res:`${dto}Dto`, auth:["owner"], codes:[200,400,404]});
+    eps.push({m:"DELETE",p:`${base}/{id}`, s:`Delete / soft-delete ${dto}`, auth:["owner"], codes:[200,404,409]});
+  } else if(r.role==="transactional"){
+    eps.push({m:"GET",  p:base, s:`List/filter ${r.name} (paged)`, res:`PagedResult<${dto}Dto>`, auth:["owner","manager"], codes:[200]});
+    eps.push({m:"GET",  p:`${base}/{id}`, s:`Get ${dto} by id`, res:`${dto}Dto`, auth:["owner","manager"], codes:[200,404]});
+    eps.push({m:"POST", p:base, s:`Create ${dto}`, req:`Create${dto}Request`, res:`${dto}Dto`, auth:["owner","manager"], codes:[200,400]});
+  } else if(r.role==="join" || r.role==="balance"){
+    const parent = findResource(r.parent);
+    const pe = parent.res.entity, pbase = `/api/${parent.res.name}/{id}/${r.path}`;
+    eps.push({m:"GET", p:pbase, s:`List ${r.name} for a ${pe}`, res:`List<${dto}Dto>`, auth:["owner","manager"], codes:[200,404]});
+    if(r.role!=="balance"){
+      eps.push({m:"POST",  p:pbase, s:`Add ${dto} to ${pe}`, req:`Add${dto}Request`, res:`${dto}Dto`, auth:["owner","manager"], codes:[200,400,404]});
+      eps.push({m:"DELETE",p:`${pbase}/{childId}`, s:`Remove ${dto}`, auth:["owner","manager"], codes:[200,404]});
+    }
+  }
+  (r.actions||[]).forEach(a=>eps.push({m:a.m, p:`${base}/{id}/${a.suffix}`, s:a.summary,
+    req:a.req||null, res:`${dto}Dto`, auth:a.auth||["manager"], codes:a.codes||[200,400,404]}));
+  return eps;
+}
+
+function endpointsHtml(key){
+  const eps = deriveEndpoints(key);
+  const rows = eps.map(ep=>`<tr>
+    <td><span class="mbadge ${METHOD[ep.m]}">${ep.m}</span></td>
+    <td class="mono small">${escapeHtml(ep.p)}</td>
+    <td>${escapeHtml(ep.s)}</td>
+    <td>${(ep.auth||[]).map(a=>`<span class="rbadge">${a}</span>`).join("")}</td>
+    <td class="mono small">${ep.req?escapeHtml(ep.req)+" → ":""}${escapeHtml(ep.res||"—")}</td>
+    <td class="small muted">${(ep.codes||[]).join(", ")}</td></tr>`).join("");
+  const r = resourceByKey[key].res, mod = resourceByKey[key].module;
+  const nested = (r.nested||[]).map(n=>{
+    const cr = findResource(n.child); const cm = cr ? cr.module : mod;
+    return `<a class="rellink" href="#/resource/${cm}.${n.child}">↳ ${n.child} (/${n.path})</a>`;
+  }).join("");
+  return `<table class="cols eptable"><thead><tr><th>Method</th><th>Path</th><th>Summary</th><th>Auth</th><th>Req → Res</th><th>Codes</th></tr></thead><tbody>${rows}</tbody></table>`
+    + (nested?`<div class="ixsec"><h4 class="seclbl">Nested resources</h4>${nested}</div>`:"");
+}
+
+function dtoTable(name, kind, fields){
+  const rows = fields.map(x=>`<tr><td class="mono">${escapeHtml(x.f)}</td><td class="mono small">${escapeHtml(x.t)}</td>
+    <td class="${isArabic(x.rules)?'ar':''} small muted">${escapeHtml(x.rules||"")}</td></tr>`).join("");
+  return `<h4 class="seclbl">${escapeHtml(name)} <span class="muted small">(${kind})</span></h4>
+    <table class="cols"><thead><tr><th>Field</th><th>Type</th><th>${kind==="request"?"Validation":"Notes"}</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function reqRule(c){
+  const out=[];
+  if(c.n===false && c.t==="text") out.push("NotEmpty");
+  if(c.t==="text") out.push("MaxLength(200)");
+  if(/^numeric/.test(c.t)) out.push("GreaterThanOrEqualTo(0)");
+  if(c.note && c.note.includes(" | ")) out.push("In: "+c.note);
+  if(c.fk){ const p=c.fk.split("."); out.push("exists via "+SCHEMA_TO_MODULE[p[0]]+" contract"); }
+  return out.join("; ");
+}
+function dtosHtml(key){
+  const e = resourceByKey[key];
+  if (e.res.dtos) return e.res.dtos.map(d => dtoTable(d.name, d.kind, d.fields)).join("") + ENVELOPE_NOTE;
+  if (!e.table) return `<p class="muted">No table backs this resource.</p>`;
+  const cols = realCols(e), ent = e.res.entity;
+  const resp = dtoTable(`${ent}Dto`, "response",
+    cols.map(c=>({f:c.c, t:csType(c), rules: c.fk?("→ "+c.fk):(c.note||"")})));
+  if(e.res.role==="balance") return resp + ENVELOPE_NOTE;
+  const skip = ["Id","CreatedAt","UpdatedAt","DeletedAt"];
+  const writable = cols.filter(c=>!skip.includes(c.c));
+  const reqName = (e.res.role==="join") ? `Add${ent}Request` : `Create${ent}Request`;
+  const req = dtoTable(reqName, "request", writable.map(c=>({f:c.c, t:csType(c), rules:reqRule(c)})));
+  return resp + req + ENVELOPE_NOTE;
+}
+
+function resourceFiles(key){
+  { const _r = resourceByKey[key].res; if (_r.files) return { files: _r.files, note: _r.note || "Files for this resource." }; }
+  const e = resourceByKey[key], r = e.res, ent = r.entity, mod = e.module;
+  const dom = `src/Modules/${mod}/Kheprx.BaseBackend.${mod}.Domain`;
+  const app = `src/Modules/${mod}/Kheprx.BaseBackend.${mod}.Application`;
+  const infra = `src/Modules/${mod}/Kheprx.BaseBackend.${mod}.Infrastructure`;
+  const files = [
+    [`${dom}/Entities/${ent}.cs`, "POCO entity (Guid Id, mapped columns)"],
+    [`${infra}/Configurations/${ent}Configuration.cs`, `IEntityTypeConfiguration — ToTable("${r.name}", "${e.schema}")`],
+    [`${infra}/Repositories/I${ent}Repository.cs`, "repository interface"],
+    [`${infra}/Repositories/${ent}Repository.cs`, "EF repository (AsNoTracking)"],
+  ];
+  if(r.role!=="join" && r.role!=="balance"){
+    files.push([`${app}/DTOs/${ent}Dto.cs`, "response DTO"]);
+    files.push([`${app}/DTOs/Create${ent}Request.cs`, "create request"]);
+    if(r.role==="master" || r.role==="lookup") files.push([`${app}/DTOs/Update${ent}Request.cs`, "update request"]);
+    files.push([`${app}/Validators/Create${ent}RequestValidator.cs`, "FluentValidation rules"]);
+    files.push([`${app}/Mappings/${ent}MappingProfile.cs`, "AutoMapper profile"]);
+    files.push([`${app}/Services/Interfaces/I${ent}Service.cs`, "service interface"]);
+    files.push([`${infra}/Services/${ent}Service.cs`, "service implementation"]);
+    files.push([`Kheprx.BaseBackend.Api/Controllers/${r.name}Controller.cs`, "controller (ApiResponse<T>)"]);
+  } else {
+    const parent = findResource(r.parent);
+    files.push([`${app}/DTOs/${ent}Dto.cs`, "nested response DTO"]);
+    if(r.role==="join") files.push([`${app}/DTOs/Add${ent}Request.cs`, "nested add request"]);
+    files.push([`Kheprx.BaseBackend.Api/Controllers/${parent.res.name}Controller.cs`, `endpoints live here, nested under /${r.path}`]);
+  }
+  const note = (r.role==="join"||r.role==="balance")
+    ? "Join / balance tables get an entity + EF config + repository but are exposed through their parent controller."
+    : "Mapped to the Catalog module pattern.";
+  return {files, note};
+}
+function filesHtml(key){
+  const {files, note} = resourceFiles(key);
+  const rows = files.map(([p,d])=>`<tr><td class="mono small">${escapeHtml(p)}</td><td class="small muted">${escapeHtml(d)}</td></tr>`).join("");
+  return `<p class="small muted">${note}</p><table class="cols"><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+// Build a nested {dir:{...}} tree from a list of slash-separated paths (file leaves are {}).
+function buildPathTree(paths){
+  const root = {};
+  paths.forEach(p=>{ let node = root; p.split("/").forEach(seg=>{ node = (node[seg] = node[seg] || {}); }); });
+  return root;
+}
+// Render a nested path tree as an ASCII folder tree (directories first, then files; each alphabetical).
+function renderAsciiTree(node, prefix){
+  prefix = prefix || "";
+  const keys = Object.keys(node).sort((a,b)=>{
+    const ad = Object.keys(node[a]).length>0, bd = Object.keys(node[b]).length>0;
+    if(ad!==bd) return ad ? -1 : 1;
+    return a.localeCompare(b);
+  });
+  return keys.map((k,i)=>{
+    const last = i===keys.length-1, child = node[k], isDir = Object.keys(child).length>0;
+    const line = prefix + (last ? "└─ " : "├─ ") + k + (isDir ? "/" : "");
+    const childPrefix = prefix + (last ? "   " : "│  ");
+    return isDir ? line + "\n" + renderAsciiTree(child, childPrefix) : line;
+  }).join("\n");
+}
+// Concrete folder tree for one module: module-level files + every resource's files (deduped).
+function moduleFolderTree(moduleName){
+  const m = API.find(x=>x.module===moduleName); if(!m) return "";
+  const mod = m.module, base = `src/Modules/${mod}`;
+  const paths = new Set([
+    `${base}/Kheprx.BaseBackend.${mod}.Contracts/I${mod}Module.cs`,
+    `${base}/Kheprx.BaseBackend.${mod}.Infrastructure/Data/${mod}DbContext.cs`,
+    `${base}/Kheprx.BaseBackend.${mod}.Infrastructure/Services/${mod}ModuleService.cs`,
+    `${base}/Kheprx.BaseBackend.${mod}.Infrastructure/${mod}ModuleRegistration.cs`,
+  ]);
+  m.resources.forEach(r=> resourceFiles(`${mod}.${r.name}`).files.forEach(([p])=>paths.add(p)));
+  return renderAsciiTree(buildPathTree([...paths]));
+}
+// Concrete folder tree for one feature: resource-level files across the feature's resources (may span several modules).
+function featureFolderTree(f){
+  const paths = new Set();
+  featureResources(f).forEach(e=> resourceFiles(`${e.module}.${e.res.name}`).files.forEach(([p])=>paths.add(p)));
+  return renderAsciiTree(buildPathTree([...paths]));
+}
+
+function wiringHtml(key){
+  { const _r = resourceByKey[key].res; if (_r.wiring) return codeBox(_r.wiring) + `<p class="small muted">Module-level wiring (Program.cs, AutoMapper, FluentValidation, migrations) is on the <a href="#/module/${resourceByKey[key].module}">${resourceByKey[key].module} module</a> page.</p>`; }
+  const e = resourceByKey[key], r = e.res, ent = r.entity, mod = e.module;
+  const lines = [
+    `// ${mod}DbContext.cs`,
+    `public DbSet<${ent}> ${r.name} => Set<${ent}>();`,
+    ``,
+    `// ${mod}ModuleRegistration.cs`,
+    `services.AddScoped<I${ent}Repository, ${ent}Repository>();`,
+  ];
+  if(r.role!=="join" && r.role!=="balance") lines.push(`services.AddScoped<I${ent}Service, ${ent}Service>();`);
+  return codeBox(lines.join("\n"))
+    + `<p class="small muted">Module-level wiring (Program.cs, AutoMapper, FluentValidation, arch-test entry, migrations) is on the <a href="#/module/${mod}">${mod} module</a> page.</p>`;
+}
+// ====== STATIC VIEWS ======
+const LAYER_DIAGRAM = `
+  <div class="lbox"><b>HTTP</b>request</div><div class="larrow">→</div>
+  <div class="lbox"><b>API host</b>Controller · ApiResponse&lt;T&gt;</div><div class="larrow">→</div>
+  <div class="lbox"><b>Application</b>IService · DTO · Validator</div><div class="larrow">→</div>
+  <div class="lbox"><b>Infrastructure</b>Repository · DbContext</div><div class="larrow">→</div>
+  <div class="lbox"><b>PostgreSQL</b>schema per module</div>`;
+
+function moduleCard(m){
+  const color = `--${m.schema}`;
+  return `<a class="scard" href="#/module/${m.module}" style="border-inline-start-color:${cssVar(color)}">
+    <div class="scard-h" style="color:${cssVar(color)}">${m.module}</div>
+    <div class="scard-n">${m.resources.length} resources · schema <span class="mono">${m.schema}</span></div>
+    <div class="scard-n">${escapeHtml(m.purpose)}</div></a>`;
+}
+function statusBadge(phase){ const M = { p1:["background:#1e3a8a;color:#bfdbfe","Planned · P1"], p2:["background:#334155;color:#cbd5e1","Deferred · P2"] }; const x = M[phase]; return x ? `<span class="badge" style="${x[0]}">${x[1]}</span>` : ""; }
+function featureCard(f){
+  const schemas = featureSchemas(f).map(s=>SCHEMA_TO_MODULE[s]||s).join(" · ");
+  return `<a class="scard" href="#/feature/${f.key}" style="border-inline-start-color:${cssVar(f.color)}">
+    <div class="scard-h" style="color:${cssVar(f.color)}">${escapeHtml(f.en)} <span class="ar muted">${escapeHtml(f.ar)}</span>`
+    + (f.gaps && f.gaps.length ? ` <span class="badge" style="background:#854d0e;color:#fde68a">${f.gaps.length} GAP${f.gaps.length === 1 ? "" : "s"}</span>` + [...new Set(f.gaps.map((g) => g.phase))].map((p) => " " + statusBadge(p)).join("") : "")
+    + `</div>
+    <div class="scard-n">${featureResources(f).length} resources · ${escapeHtml(schemas)}</div></a>`;
+}
+function renderOverview(view){
+  view.innerHTML = `<div class="thead"><span class="ttitle">Auth — API Blueprint</span>
+      <span class="muted small">· ${FEATURE_COUNT} features · ${TOTAL_RESOURCES} resources · ${MODULE_COUNT} schemas · .NET modular monolith · PostgreSQL</span></div>
+    <div class="banner">A self-contained design map of the planned REST API. Browse <b>by feature</b> (the app's menu tabs)
+      or <b>by schema</b> (the backend modules). Each resource is owned by exactly one PostgreSQL schema + DbContext;
+      cross-listed resources show a schema badge for their true owner.</div>
+    <div class="layerdiag">${LAYER_DIAGRAM}</div>
+    <h4 class="seclbl">By feature</h4>
+    <div class="summary">${FEATURES.map(featureCard).join("")}</div>
+    <h4 class="seclbl">By schema</h4>
+    <div class="summary">${API.map(moduleCard).join("")}</div>`;
+}
+
+function renderConventions(view){
+  view.innerHTML = `<div class="thead"><span class="ttitle">API Conventions</span></div>
+   <h4 class="seclbl">Routing & envelope</h4>
+   <ul class="small">
+     <li>Base route <span class="mono">api/[controller]</span> (from <span class="mono">BaseApiController</span>); <span class="mono">[ApiController]</span>, <span class="mono">[Produces("application/json")]</span>.</li>
+     <li>Every endpoint returns <span class="mono">ApiResponse&lt;T&gt;</span> via <span class="mono">.Success(...)</span> / <span class="mono">.Failure(...)</span>; messages from <span class="mono">ValidationMessages</span>.</li>
+     <li>Errors: 400 (FluentValidation auto-validation), 404 (not found), 500 (caught in controller try/catch — generic detail, never leak internals), global <span class="mono">/error</span> fallback.</li>
+   </ul>
+   <h4 class="seclbl">IDs & types (deviation from the Catalog's int Product)</h4>
+   <ul class="small">
+     <li>PKs are <span class="mono">Guid Id</span> with DB default <span class="mono">gen_random_uuid()</span> (EF <span class="mono">.HasDefaultValueSql("gen_random_uuid()")</span>, value-generated on add).</li>
+     <li>Type map: <span class="mono">uuid→Guid</span>, <span class="mono">text→string</span>, <span class="mono">int→int</span>, <span class="mono">boolean→bool</span>, <span class="mono">numeric(p,s)→decimal</span>, <span class="mono">timestamptz→DateTime</span> (timestamp with time zone), <span class="mono">date→DateOnly</span>, <span class="mono">time→TimeOnly</span>. Nullable when the column is nullable.</li>
+     <li>Column names snake_case; mapping <span class="mono">ToTable("&lt;Table&gt;", "&lt;schema&gt;")</span>; PK constraint <span class="mono">&lt;Table&gt;_pkey</span>.</li>
+   </ul>
+   <h4 class="seclbl">Lists</h4>
+   <p class="small">Lookups and small sets return <span class="mono">ApiResponse&lt;List&lt;T&gt;&gt;</span>; large collections return
+     <span class="mono">ApiResponse&lt;PagedResult&lt;T&gt;&gt;</span> with <span class="mono">?page=&pageSize=&sort=&&lt;filters&gt;</span>.
+     <span class="mono">PagedResult&lt;T&gt;</span> (Items, Page, PageSize, TotalCount) is added to SharedKernel.</p>
+   <h4 class="seclbl">Cross-module references</h4>
+   <p class="small">A foreign key to another module's table is a plain <span class="mono">Guid</span> column with
+     <b>no EF navigation across DbContexts</b>. Integrity is enforced by the cross-schema DB FK and/or validated
+     through the source module's <span class="mono">IXModule</span> contract before insert/update.
+     Module load order: Reference → Identity → Projects → Inventory → Attendance / Finance.</p>
+   <h4 class="seclbl">Auth / roles</h4>
+   <p class="small">Per-endpoint role intent draws from <span class="mono">reference.Roles</span> (admin · manager · moqawel · worker).
+     JWT validation is wired in the host; this is the auth feature itself — token issuance and login are specified here — this blueprint records
+     intended authorization, not the auth implementation.</p>`;
+}
+
+function renderFileStructure(view){
+  const tree =
+`Kheprx.BaseBackend/
+├─ Kheprx.BaseBackend.Api/
+│  ├─ Controllers/<Resource>Controller.cs        # one per top-level resource
+│  └─ Program.cs                                  # Add<Module>Module(...) line per module
+├─ src/SharedKernel/Kheprx.BaseBackend.SharedKernel/ # ApiResponse<T>, PagedResult<T>, ValidationMessages
+└─ src/Modules/<Module>/
+   ├─ Kheprx.BaseBackend.<Module>.Domain/
+   │  └─ Entities/<Entity>.cs
+   ├─ Kheprx.BaseBackend.<Module>.Application/
+   │  ├─ DTOs/<Entity>Dto.cs · Create<Entity>Request.cs · Update<Entity>Request.cs
+   │  ├─ Validators/Create<Entity>RequestValidator.cs
+   │  ├─ Mappings/<Entity>MappingProfile.cs
+   │  └─ Services/Interfaces/I<Entity>Service.cs
+   ├─ Kheprx.BaseBackend.<Module>.Contracts/
+   │  └─ I<Module>Module.cs
+   └─ Kheprx.BaseBackend.<Module>.Infrastructure/
+      ├─ Data/<Module>DbContext.cs
+      ├─ Configurations/<Entity>Configuration.cs
+      ├─ Repositories/I<Entity>Repository.cs · <Entity>Repository.cs
+      ├─ Services/<Entity>Service.cs · <Module>ModuleService.cs
+      └─ <Module>ModuleRegistration.cs`;
+  const steps =
+`1. Copy src/Modules/Catalog → src/Modules/<Module>; rename Catalog→<Module>, Product→<Entity>.
+2. Add the 4 projects to Kheprx.BaseBackend.sln (under src/Modules).
+3. Add a ProjectReference to Kheprx.BaseBackend.<Module>.Infrastructure in Kheprx.BaseBackend.Api.csproj.
+4. Program.cs: builder.Services.Add<Module>Module(builder.Configuration);
+5. Extensions/AutoMapperExtensions.cs: add typeof(<Entity>MappingProfile).Assembly to AddAutoMapper(...).
+6. Extensions/FluentValidationExtensions.cs: services.AddValidatorsFromAssembly(typeof(<Entity>...).Assembly);
+7. tests/Kheprx.BaseBackend.ArchitectureTests/ArchitectureTests.cs: add "<Module>" to the Modules[] array.
+8. dotnet build && dotnet test  (architecture rules now cover the new module).`;
+  view.innerHTML = `<div class="thead"><span class="ttitle">File structure (per module)</span></div>
+    <div class="banner">Every module is a copy of the <span class="mono">Catalog</span> module. The tree below is the
+      generic shape; the per-resource <b>Files</b> tab lists the concrete files for each resource.</div>
+    <pre class="tree">${escapeHtml(tree)}</pre>
+    <h4 class="seclbl">Add-a-module workflow (one-time per module)</h4>
+    <pre class="tree">${escapeHtml(steps)}</pre>`;
+}
+// ====== MODULE VIEW ======
+function deriveModuleContracts(moduleName){
+  const m = API.find(x=>x.module===moduleName); if(!m) return [];
+  const schema = m.schema, exposed = new Set();
+  Object.keys(incomingFks).forEach(targetKey=>{
+    const [tSchema,tTable] = targetKey.split(".");
+    if(tSchema!==schema) return;
+    if(incomingFks[targetKey].some(x=>x.from.split(".")[0]!==schema)) exposed.add(tTable);
+  });
+  return [...exposed];
+}
+function renderModule(view, moduleName){
+  const m = API.find(x=>x.module===moduleName);
+  if(!m){ view.innerHTML = `<p class="muted">Unknown module: ${escapeHtml(moduleName)}</p>`; return; }
+  const color = `--${m.schema}`, ix = `I${m.module}Module`, firstEnt = (m.resources.find(r => tablesByKey[`${m.schema}.${r.name}`]) || m.resources[0]).entity;
+  const reslist = m.resources.map(r=>
+    `<a class="rellink" href="#/resource/${m.module}.${r.name}">${r.name}<span class="rolebadge ${r.role}">${r.role}</span></a>`).join("");
+  const contracts = deriveModuleContracts(moduleName);
+  let methods = contracts.length
+    ? contracts.map(t=>`Task<bool> ${entityOf(moduleName,t)}ExistsAsync(Guid id);`).join("\n")
+    : "// leaf module — no cross-module contract surface";
+  if(m.module==="Reference") methods += `\nTask<bool> LookupExistsAsync(string set, Guid id);\nTask<string?> GetLabelAsync(string set, Guid id, string lang);`;
+  const iface = `public interface I${m.module}Module\n{\n${indent(methods)}\n}`;
+  const wiring = [
+    `// 1) Program.cs`,
+    `builder.Services.Add${m.module}Module(builder.Configuration);`,
+    ``,
+    `// 2) Extensions/AutoMapperExtensions.cs — add this assembly to AddAutoMapper(...)`,
+    `typeof(${firstEnt}MappingProfile).Assembly,`,
+    ``,
+    `// 3) Extensions/FluentValidationExtensions.cs`,
+    `services.AddValidatorsFromAssembly(typeof(${firstEnt}MappingProfile).Assembly);`,
+    ``,
+    `// 4) tests/Kheprx.BaseBackend.ArchitectureTests/ArchitectureTests.cs Modules[]`,
+    `"${m.module}",`,
+    ``,
+    `// 5) migration`,
+    `dotnet ef migrations add Init${m.module} \\`,
+    `  --project src/Modules/${m.module}/Kheprx.BaseBackend.${m.module}.Infrastructure \\`,
+    `  --startup-project Kheprx.BaseBackend.Api`,
+  ].join("\n");
+  view.innerHTML = `<div class="thead">
+      <span class="ttitle"><span style="color:${cssVar(color)}">${m.module}</span> module</span>
+      <span class="muted small">· schema <span class="mono">${m.schema}</span> · ${m.resources.length} resources · ${m.module}DbContext</span></div>
+    <div class="banner">${escapeHtml(m.purpose)}</div>
+    <h4 class="seclbl">Resources</h4><div class="relcols"><div>${reslist}</div></div>
+    <h4 class="seclbl">Folder structure</h4>
+    <p class="small muted">Concrete files for every resource in this module, plus the module-level Data / Contracts / registration. Controllers live in the <span class="mono">Kheprx.BaseBackend.Api</span> host project.</p>
+    <pre class="tree">${escapeHtml(moduleFolderTree(moduleName))}</pre>
+    <h4 class="seclbl">Cross-module contract — <span class="mono">${ix}</span></h4>
+    <p class="small muted">Derived from incoming cross-module foreign keys. Other modules call only this interface.</p>
+    ${codeBox(iface)}
+    <h4 class="seclbl">Module wiring (one-time)</h4>${codeBox(wiring)}`;
+}
+// ====== RESOURCE VIEW ======
+const RTABS = [["endpoints","Endpoints"],["dtos","DTOs"],["files","Files to create"],["wiring","Module wiring"]];
+function appearsInHtml(key){
+  const fs = featuresByResource[key] || [];
+  if(!fs.length) return "";
+  const chips = fs.map(fk=>{ const f=featureByKey[fk];
+    return `<a class="rbadge" href="#/feature/${fk}" style="border-color:${cssVar(f.color)};color:${cssVar(f.color)}">${escapeHtml(f.en)}</a>`;
+  }).join(" ");
+  return `<div class="small muted" style="margin:.2rem 0 .6rem">appears in: ${chips}</div>`;
+}
+function renderResource(view, key, tab){
+  const e = resourceByKey[key];
+  if(!e){ view.innerHTML = `<p class="muted">Unknown resource: ${escapeHtml(key)}</p>`; return; }
+  if(!RTABS.some(t=>t[0]===tab)) tab = "endpoints";
+  const bar = RTABS.map(([id,label])=>`<a class="subtab ${id===tab?'on':''}" href="#/resource/${key}/${id}">${label}</a>`).join("");
+  let body;
+  if(tab==="dtos") body = dtosHtml(key);
+  else if(tab==="files") body = filesHtml(key);
+  else if(tab==="wiring") body = wiringHtml(key);
+  else body = endpointsHtml(key);
+  const note = (e.table && e.table.table.note) ? `<span class="muted">— ${escapeHtml(e.table.table.note)}</span>` : "";
+  view.innerHTML = `<div class="thead">
+      <span class="ttitle"><span style="color:${cssVar(e.color)}">${e.module}.</span>${e.res.name}</span>
+      <span class="rolebadge ${e.res.role}">${e.res.role}</span> ${note}</div>
+    ${appearsInHtml(key)}
+    <div class="subtabs">${bar}</div><div class="subbody">${body}</div>`;
+}
+// ====== FEATURE VIEW ======
+const ROLE_ORDER = {lookup:0, master:1, transactional:2, join:3, balance:4};
+function featureResources(f){
+  return f.resources.map(rk => resourceByKey[rk]).filter(Boolean)
+    .sort((a,b)=>(ROLE_ORDER[a.res.role]??9)-(ROLE_ORDER[b.res.role]??9));
+}
+function featureSchemas(f){
+  const seen = []; featureResources(f).forEach(e=>{ if(!seen.includes(e.schema)) seen.push(e.schema); });
+  return seen;
+}
+function schemaBadge(schema){
+  const mod = SCHEMA_TO_MODULE[schema] || schema;
+  return `<span class="rbadge" style="border-color:${cssVar('--'+schema)};color:${cssVar('--'+schema)}">${mod} · ${schema}</span>`;
+}
+function featureResourcesHtml(f){
+  const groups = featureSchemas(f).map(schema=>{
+    const items = featureResources(f).filter(e=>e.schema===schema).map(e=>{
+      const key = `${e.module}.${e.res.name}`;
+      return `<a class="rellink" href="#/resource/${key}">${e.res.name}<span class="rolebadge ${e.res.role}">${e.res.role}</span></a>`;
+    }).join("");
+    return `<div><h4>${schemaBadge(schema)}</h4>${items}</div>`;
+  }).join("");
+  return `<div class="relcols">${groups}</div>`;
+}
+function featureEndpointsHtml(f){
+  const rows = featureResources(f).map(e=>{
+    const key = `${e.module}.${e.res.name}`;
+    return deriveEndpoints(key).map(ep=>`<tr>
+      <td class="small"><a class="rellink" href="#/resource/${key}">${e.res.name}</a></td>
+      <td><span class="mbadge ${METHOD[ep.m]}">${ep.m}</span></td>
+      <td class="mono small">${escapeHtml(ep.p)}</td>
+      <td>${escapeHtml(ep.s)}</td>
+      <td>${(ep.auth||[]).map(a=>`<span class="rbadge">${a}</span>`).join("")}</td>
+      <td class="small muted">${(ep.codes||[]).join(", ")}</td></tr>`).join("");
+  }).join("");
+  return `<table class="cols eptable"><thead><tr><th>Resource</th><th>Method</th><th>Path</th><th>Summary</th><th>Auth</th><th>Codes</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function featureConnectionsHtml(f){
+  const inFeature = new Set(f.resources);
+  const lines = [];
+  featureResources(f).forEach(e=>{
+    const tbl = e.table && e.table.table; if(!tbl) return;
+    (tbl.cols||[]).forEach(c=>{ if(c.fk){
+      const parts = c.fk.split("."); if(parts.length < 2) return;
+      const [tSchema,tTable] = parts;
+      const targetKey = `${SCHEMA_TO_MODULE[tSchema]||tSchema}.${tTable}`;
+      const cross = !inFeature.has(targetKey);
+      lines.push(`<a class="rellink" href="#/resource/${targetKey}">${escapeHtml(e.res.name)}.${escapeHtml(c.c)} → ${escapeHtml(targetKey)}${cross?` <span class="rbadge">cross-feature</span>`:""}</a>`);
+    }});
+  });
+  return lines.length ? `<div class="relcols"><div>${lines.join("")}</div></div>` : `<p class="muted small">No outgoing foreign keys.</p>`;
+}
+function featureBuildOrderHtml(f){
+  const items = featureResources(f).map((e,i)=>`${i+1}. ${e.res.name} <span class="muted small">(${e.res.role})</span>`).join("<br>");
+  return `<p class="small">${items}</p>`;
+}
+function renderFeature(view, key){
+  const f = featureByKey[key];
+  if(!f){ view.innerHTML = `<p class="muted">Unknown feature: ${escapeHtml(key)}</p>`; return; }
+  const badges = featureSchemas(f).map(schemaBadge).join(" ");
+  view.innerHTML = `<div class="thead">
+      <span class="ttitle" style="color:${cssVar(f.color)}">${escapeHtml(f.en)}</span>
+      <span class="ar muted">${escapeHtml(f.ar)}</span> ${badges}</div>
+    <div class="banner">${escapeHtml(f.flow)}</div>`
+    + (f.gaps && f.gaps.length ? `<h4 class="seclbl">Open gaps (backend-owned)</h4>
+    <table class="cols"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Status</th><th>Proposed direction</th></tr></thead><tbody>` +
+    f.gaps.map((g) => `<tr><td>${g.id}</td><td>${escapeHtml(g.type)}</td><td>${escapeHtml(g.severity)}</td><td>${statusBadge(g.phase)}</td><td>${escapeHtml(g.direction)}</td></tr>`).join("") +
+    `</tbody></table>` : "")
+    + `<h4 class="seclbl">Resources</h4>${featureResourcesHtml(f)}
+    <h4 class="seclbl">All endpoints in this feature</h4>${featureEndpointsHtml(f)}
+    <h4 class="seclbl">Connections</h4>${featureConnectionsHtml(f)}
+    <h4 class="seclbl">Suggested build order</h4>${featureBuildOrderHtml(f)}
+    <h4 class="seclbl">Folder structure</h4>
+    <p class="small muted">Concrete files for this feature's resources. Modules touched: ${featureSchemas(f).map(s=>SCHEMA_TO_MODULE[s]||s).join(" · ")}. Shared module-level files (DbContext, registration, contract) live on each module page.</p>
+    <pre class="tree">${escapeHtml(featureFolderTree(f))}</pre>`;
+}
+// ====== TREE ======
+let TREE_MODE = "feature";
+function treeToggleHtml(){
+  return `<div class="treemode">
+    <button class="btn tmbtn ${TREE_MODE==='feature'?'on':''}" data-mode="feature">By feature</button>
+    <button class="btn tmbtn ${TREE_MODE==='schema'?'on':''}" data-mode="schema">By schema</button></div>`;
+}
+function renderTreeList(filter){
+  filter = (filter||"").trim().toLowerCase();
+  const globals = `<a class="tnode tglobal" data-key="overview" href="#/overview">▣ Overview</a>
+    <a class="tnode tglobal" data-key="conventions" href="#/conventions">≡ Conventions</a>
+    <a class="tnode tglobal" data-key="filestructure" href="#/filestructure">⌗ File structure</a>`;
+  let groups;
+  if(TREE_MODE==="feature"){
+    groups = FEATURES.map(f=>{
+      const rs = featureResources(f).filter(e=>!filter
+        || e.res.name.toLowerCase().includes(filter)
+        || f.en.toLowerCase().includes(filter)
+        || (f.ar||"").toLowerCase().includes(filter));
+      if(!rs.length) return "";
+      const head = `<a class="tnode tgrp tglobal" data-key="feature:${f.key}" href="#/feature/${f.key}" style="color:${cssVar(f.color)}">${escapeHtml(f.en)} <span class="ar muted">${escapeHtml(f.ar)}</span></a>`;
+      const items = rs.map(e=>{
+        const key = `${e.module}.${e.res.name}`;
+        return `<a class="tnode" data-key="${key}" href="#/resource/${key}">${e.res.name}<span class="sbadge" style="background:${cssVar('--'+e.schema)}" title="${e.schema}"></span></a>`;
+      }).join("");
+      return head + items;
+    }).join("");
+  } else {
+    groups = API.map(m=>{
+      const color = `--${m.schema}`;
+      const rs = m.resources.filter(r=>!filter || r.name.toLowerCase().includes(filter) || m.module.toLowerCase().includes(filter));
+      if(!rs.length) return "";
+      return `<div class="tgrp" style="color:${cssVar(color)}">${m.module}</div>` +
+        rs.map(r=>`<a class="tnode" data-key="${m.module}.${r.name}" href="#/resource/${m.module}.${r.name}">${r.name}</a>`).join("");
+    }).join("");
+  }
+  const empty = (!groups && filter) ? `<p class="muted small" style="padding:.4rem">No matches.</p>` : "";
+  document.getElementById("treelist").innerHTML = treeToggleHtml() + globals + groups + empty;
+  setActiveTreeNode(parseHash());
+}
+function setActiveTreeNode(r){
+  document.querySelectorAll(".tnode.active").forEach(n=>n.classList.remove("active"));
+  let key;
+  if(r.view==="resource") key = r.key;
+  else if(r.view==="feature") key = "feature:"+r.key;
+  else key = r.view;
+  const esc = (window.CSS && CSS.escape) ? CSS.escape(key) : key;
+  const node = document.querySelector(`.tnode[data-key="${esc}"]`);
+  if(node) node.classList.add("active");
+}
+// ====== ROUTER ======
+function parseHash(){
+  const h = (location.hash || "").replace(/^#\/?/,"");
+  const parts = h.split("/").filter(Boolean);
+  if(parts[0]==="resource" && parts[1]) return {view:"resource", key:decodeURIComponent(parts[1]), tab:parts[2]||"endpoints"};
+  if(parts[0]==="feature" && parts[1]) return {view:"feature", key:decodeURIComponent(parts[1])};
+  if(parts[0]==="module" && parts[1]) return {view:"module", key:decodeURIComponent(parts[1])};
+  if(parts[0]==="conventions") return {view:"conventions"};
+  if(parts[0]==="filestructure") return {view:"filestructure"};
+  return {view:"overview"};
+}
+function router(){
+  const r = parseHash();
+  const view = document.getElementById("view");
+  const bc = document.getElementById("breadcrumb");
+  if(r.view==="overview"){ bc.innerHTML = "<b>Overview</b>"; renderOverview(view); }
+  else if(r.view==="conventions"){ bc.innerHTML = "<b>Conventions</b>"; renderConventions(view); }
+  else if(r.view==="filestructure"){ bc.innerHTML = "<b>File structure</b>"; renderFileStructure(view); }
+  else if(r.view==="feature"){ const f=featureByKey[r.key];
+    bc.innerHTML = f ? `<b>Features</b> / ${escapeHtml(f.en)}` : "Not found";
+    renderFeature(view, r.key); }
+  else if(r.view==="module"){ bc.innerHTML = `<b>${escapeHtml(r.key)}</b> module`; renderModule(view, r.key); }
+  else {
+    const e = resourceByKey[r.key];
+    bc.innerHTML = e ? `<a href="#/module/${e.module}">${e.module}</a> / <b>${e.res.name}</b>` : "Not found";
+    renderResource(view, r.key, r.tab);
+  }
+  setActiveTreeNode(r);
+}
+// ====== INIT ======
+function boot(){
+  document.getElementById("footResources").textContent = TOTAL_RESOURCES;
+  document.getElementById("footFeatures").textContent = FEATURE_COUNT;
+  document.getElementById("footModules").textContent = MODULE_COUNT;
+  renderTreeList("");
+  router();
+  window.addEventListener("hashchange", router);
+  const filter = document.getElementById("filter");
+  filter.addEventListener("input", e => renderTreeList(e.target.value));
+  document.addEventListener("keydown", e => {
+    if(e.key==="/" && document.activeElement !== filter){ e.preventDefault(); filter.focus(); }
+  });
+  document.getElementById("themeToggle").addEventListener("click", ()=>{
+    const html = document.documentElement;
+    html.setAttribute("data-theme", html.getAttribute("data-theme")==="light" ? "dark" : "light");
+  });
+  document.getElementById("view").addEventListener("click", e=>{
+    const b = e.target.closest(".copy"); if(!b) return;
+    copyText(decodeURIComponent(b.dataset.copy)).then(()=>{
+      const o = b.textContent; b.textContent = "copied ✓"; setTimeout(()=>b.textContent=o, 1200);
+    });
+  });
+  const treeToggle = document.getElementById("treeToggle");
+  treeToggle.addEventListener("click", ()=>{
+    const html = document.documentElement;
+    html.setAttribute("data-tree", html.getAttribute("data-tree")==="open" ? "closed" : "open");
+  });
+  document.getElementById("treelist").addEventListener("click", e=>{
+    const tm = e.target.closest(".tmbtn");
+    if(tm){ e.preventDefault(); TREE_MODE = tm.dataset.mode;
+      renderTreeList(document.getElementById("filter").value); return; }
+    if(e.target.closest(".tnode") && window.matchMedia("(max-width:760px)").matches){
+      document.documentElement.setAttribute("data-tree","closed");
+    }
+  });
+}
+boot();
+</script>
+</body>
+</html>

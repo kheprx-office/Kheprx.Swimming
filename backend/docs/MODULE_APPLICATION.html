@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application — Kheprx.BaseBackend.Catalog.Application</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    --dom: #166534; --dom-bg: #dcfce7; --app: #5b21b6; --app-bg: #ede9fe;
+    --inf: #9a3412; --inf-bg: #ffedd5; --con: #0f766e; --con-bg: #ccfbf1;
+    --host: #2563eb; --host-bg: #eaf1ff; --shared: #475569; --shared-bg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.page { padding: 30px 0 18px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.85rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .backlink { margin: 14px 0 0; font-size: 0.9rem; }
+  .backlink a { color: var(--accent); text-decoration: none; }
+  .deps { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 12px 16px; margin: 16px 0; font-size: 0.9rem; }
+  .deps b { color: var(--text); }
+  h2.section { font-size: 1.18rem; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p { font-size: 0.95rem; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); } .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); } .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); } .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .simple { background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #166534; border-radius: 10px; padding: 11px 15px; margin: 14px 0; font-size: 0.92rem; }
+  .simple b { color: #166534; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: var(--accent); }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: var(--accent); margin-top: 3px; }
+  footer.page { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer.page a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="tag app">Application</span> <span class="mono">Kheprx.BaseBackend.Catalog.Application</span></h1>
+      <p>Use-case orchestration — services, DTOs, validators, the Mapperly mapper, and localized message resources.</p>
+    </header>
+    <p class="backlink"><a href="MODULE_ANATOMY.html">← Back to Module Anatomy</a></p>
+    <div class="deps"><b>Depends on:</b> Domain, SharedKernel. &nbsp;·&nbsp; <b>Referenced by:</b> Infrastructure.</div>
+
+    <h2 class="section">Files in this project</h2>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>IProductService — the use-case contract</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Services/Interfaces/IProductService.cs</div>
+      <p>The service <b>interface</b> that Controllers depend on. It speaks in DTOs, not in domain entities, so the HTTP layer never touches <code class="inline">Product</code> directly.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Application.DTOs;
+
+namespace Kheprx.BaseBackend.Catalog.Application.Services.Interfaces;
+
+public interface IProductService
+{
+    Task&lt;IReadOnlyList&lt;ProductDto&gt;&gt; GetAllAsync(CancellationToken ct = default);
+    Task&lt;ProductDto?&gt; GetByIdAsync(int id, CancellationToken ct = default);
+    Task&lt;ProductDto&gt; CreateAsync(CreateProductRequest request, CancellationToken ct = default);
+    Task&lt;ProductDto?&gt; UpdateAsync(int id, UpdateProductRequest request, CancellationToken ct = default);
+    Task&lt;bool&gt; DeleteAsync(int id, CancellationToken ct = default);
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">IProductService</code> defines the five use-cases the Catalog module exposes (list, get, create, update, delete). The controller (in the Host / Api) injects this interface; at runtime the DI container resolves it to <code class="inline">ProductService</code>. Returning <code class="inline">null</code> on get/update/delete signals "not found" without throwing — the controller translates that to a <code class="inline">404</code>. The interface deals only in Application-layer DTOs (like <code class="inline">ProductDto</code>), never <a href="MODULE_DOMAIN.html">Domain</a> entities directly.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>ProductService — the use-case implementation</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Services/ProductService.cs</div>
+      <p>The <code class="inline">internal sealed</code> implementation of <code class="inline">IProductService</code>. It coordinates the repository and mapper but contains no business rules — those live in the <a href="MODULE_DOMAIN.html">Domain</a> entities.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Application.DTOs;
+using Kheprx.BaseBackend.Catalog.Application.Mappings;
+using Kheprx.BaseBackend.Catalog.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Catalog.Domain.Entities;
+using Kheprx.BaseBackend.Catalog.Domain.Repositories;
+
+namespace Kheprx.BaseBackend.Catalog.Application.Services;
+
+internal sealed class ProductService : IProductService
+{
+    private readonly IProductRepository _repository;
+    private readonly CatalogMapper _mapper;
+
+    public ProductService(IProductRepository repository, CatalogMapper mapper)
+    {
+        _repository = repository;
+        _mapper = mapper;
+    }
+
+    public async Task&lt;IReadOnlyList&lt;ProductDto&gt;&gt; GetAllAsync(CancellationToken ct = default)
+        =&gt; _mapper.ToDtoList(await _repository.GetAllAsync(ct));
+
+    public async Task&lt;ProductDto?&gt; GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        var product = await _repository.GetByIdAsync(id, ct);
+        return product is null ? null : _mapper.ToDto(product);
+    }
+
+    public async Task&lt;ProductDto&gt; CreateAsync(CreateProductRequest request, CancellationToken ct = default)
+    {
+        var product = new Product(request.Name, request.Price, request.Description);
+        await _repository.AddAsync(product, ct);
+        await _repository.SaveChangesAsync(ct);
+        return _mapper.ToDto(product);
+    }
+
+    public async Task&lt;ProductDto?&gt; UpdateAsync(int id, UpdateProductRequest request, CancellationToken ct = default)
+    {
+        var product = await _repository.GetByIdAsync(id, ct);
+        if (product is null) return null;
+
+        product.Rename(request.Name);
+        product.ChangePrice(request.Price);
+        product.UpdateDescription(request.Description);
+        await _repository.SaveChangesAsync(ct);
+        return _mapper.ToDto(product);
+    }
+
+    public async Task&lt;bool&gt; DeleteAsync(int id, CancellationToken ct = default)
+    {
+        var product = await _repository.GetByIdAsync(id, ct);
+        if (product is null) return false;
+
+        _repository.Remove(product);
+        await _repository.SaveChangesAsync(ct);
+        return true;
+    }
+}</pre>
+      <p><b>What's happening here:</b> the class is <code class="inline">internal sealed</code> — it cannot be referenced from outside the assembly; the DI registration in the module's extension method is the only place that wires it up. Every method follows the same pattern: call the repository (via the <a href="MODULE_DOMAIN.html">Domain</a> interface <code class="inline">IProductRepository</code>), call domain methods on the entity if needed, persist, and map the result to a DTO. <code class="inline">SaveChangesAsync</code> is called explicitly after mutations, giving the service full control over the transaction boundary. See <a href="REQUEST_FLOW.html">Request Flow</a> for how this fits into the full pipeline.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>ProductDtos — the data shapes</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/DTOs/ProductDtos.cs</div>
+      <p>Three immutable <code class="inline">record</code> types: the outbound read shape (<code class="inline">ProductDto</code>) and the two inbound write shapes (<code class="inline">CreateProductRequest</code>, <code class="inline">UpdateProductRequest</code>).</p>
+<pre>namespace Kheprx.BaseBackend.Catalog.Application.DTOs;
+
+public sealed record ProductDto(
+    int Id, string Name, string? Description, decimal Price, DateTime CreatedAt, DateTime? UpdatedAt);
+
+public sealed record CreateProductRequest(string Name, decimal Price, string? Description);
+
+public sealed record UpdateProductRequest(string Name, decimal Price, string? Description);</pre>
+      <p><b>What's happening here:</b> positional <code class="inline">record</code> types give value-based equality and a compact syntax for pure data carriers. <code class="inline">ProductDto</code> exposes every field a client might need, including <code class="inline">CreatedAt</code>/<code class="inline">UpdatedAt</code> from <code class="inline">BaseEntity</code>. The request records intentionally omit <code class="inline">Id</code> — the id always comes from the route, not the body, preventing mass-assignment bugs. <code class="inline">Description</code> is nullable in all three shapes because it is optional in the domain.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>ProductRequestValidators — FluentValidation rules</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Validators/ProductRequestValidators.cs</div>
+      <p>Two FluentValidation validators — one for create, one for update — that enforce the same shape rules on inbound requests before they reach the service.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Application.DTOs;
+using FluentValidation;
+
+namespace Kheprx.BaseBackend.Catalog.Application.Validators;
+
+public sealed class CreateProductRequestValidator : AbstractValidator&lt;CreateProductRequest&gt;
+{
+    public CreateProductRequestValidator()
+    {
+        RuleFor(x =&gt; x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x =&gt; x.Price).GreaterThan(0);
+        RuleFor(x =&gt; x.Description).MaximumLength(2000);
+    }
+}
+
+public sealed class UpdateProductRequestValidator : AbstractValidator&lt;UpdateProductRequest&gt;
+{
+    public UpdateProductRequestValidator()
+    {
+        RuleFor(x =&gt; x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x =&gt; x.Price).GreaterThan(0);
+        RuleFor(x =&gt; x.Description).MaximumLength(2000);
+    }
+}</pre>
+      <p><b>What's happening here:</b> both validators mirror each other because create and update share the same required fields. Validators are registered automatically by the module's DI extension via <code class="inline">AddValidatorsFromAssemblyContaining</code>; the host's validation pipeline calls them before the controller action body runs, so the service and domain never receive malformed input. Note that the domain also enforces these invariants itself (e.g. <code class="inline">Price &gt; 0</code>) — FluentValidation is the fast, user-friendly first gate; the domain guard is the authoritative last gate.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>ProductMessages — localized response messages</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Resources/ProductMessages.cs</div>
+      <p><code class="inline">Resources/</code> — static <code class="inline">&hellip;Messages</code> classes (nested <code class="inline">Errors</code>/<code class="inline">Success</code>, one method per message, <code class="inline">lang</code>-switch: <code class="inline">"ar"</code> → Arabic, default → English). Identity: <code class="inline">AuthMessages</code>, <code class="inline">UserMessages</code>, <code class="inline">RoleMessages</code>. Catalog: <code class="inline">ProductMessages</code>.</p>
+      <p><b>What's happening here:</b> the <code class="inline">lang</code>-switch pattern keeps strings close to the code that uses them. Controllers call methods like <code class="inline">ProductMessages.Errors.ProductNotFound(AppLanguage.Current)</code> instead of inline string literals. Identity modules have equivalent classes (<code class="inline">AuthMessages</code>, <code class="inline">UserMessages</code>, <code class="inline">RoleMessages</code>); shared field texts (email, password, full name) live in <code class="inline">CommonMessages</code> in SharedKernel. See <a href="SHAREDKERNEL.html">SharedKernel</a> for the <code class="inline">AppLanguage</code> and <code class="inline">CommonMessages</code> classes.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>CatalogMapper — Mapperly source-generated mapper</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Mappings/CatalogMapper.cs</div>
+      <p>A <code class="inline">partial</code> class annotated with <code class="inline">[Mapper]</code>; the Mapperly source generator fills in the method bodies at compile time — no reflection, no runtime overhead.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Application.DTOs;
+using Kheprx.BaseBackend.Catalog.Domain.Entities;
+using Riok.Mapperly.Abstractions;
+
+namespace Kheprx.BaseBackend.Catalog.Application.Mappings;
+
+[Mapper]
+public partial class CatalogMapper
+{
+    public partial ProductDto ToDto(Product product);
+    public partial IReadOnlyList&lt;ProductDto&gt; ToDtoList(IReadOnlyList&lt;Product&gt; products);
+}</pre>
+      <p><b>What's happening here:</b> declaring a method as <code class="inline">partial</code> with no body is the Mapperly convention — the source generator inspects the source and target types, matches properties by name and type, and emits a concrete implementation in a generated file. Because the mapping is generated at build time, there are no advisory suppressions and no hidden <code class="inline">object</code> casts: if a property is missing or incompatible, the build fails rather than silently producing wrong data. <code class="inline">ToDtoList</code> maps an entire collection in one call, keeping <code class="inline">ProductService</code> clean.</p>
+    </div>
+
+    <div class="simple"><b>In simple words:</b> The Application layer is the conductor. It owns <code class="inline">IProductService</code> (what can be done), <code class="inline">ProductService</code> (how to do it — coordinate the <a href="MODULE_DOMAIN.html">Domain</a> and repository), DTOs (the data shapes that cross layer boundaries), validators (fast input checks before anything reaches the domain), the mapper (zero-cost conversion from entity to DTO), and message resource classes (localized response text that controllers and validators read from <code class="inline">&hellip;Messages</code> static classes rather than inline string literals). When a request arrives it flows through the validator, into the service, which calls <a href="MODULE_DOMAIN.html">Domain</a> methods, persists via <code class="inline">IProductRepository</code>, and hands back a DTO — all of this wiring is visible in the <a href="REQUEST_FLOW.html">Request Flow</a> diagram.</div>
+
+    <div class="pager">
+      <a href="MODULE_DOMAIN.html"><span class="dir">← Previous</span><span class="ttl">Domain</span></a>
+      <a class="next" href="MODULE_INFRASTRUCTURE.html"><span class="dir">Next →</span><span class="ttl">Infrastructure</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="index.html">Home</a> · <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

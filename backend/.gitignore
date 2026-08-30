@@ -1,0 +1,19 @@
+## .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+publish-dev/
+publish-prod/
+*.user
+.vs/
+artifacts/
+TestResults/
+*.log
+
+## IDE
+.idea/
+
+# Superpowers brainstorm companion (local only)
+.superpowers/

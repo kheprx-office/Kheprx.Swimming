@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Libraries — Kheprx.BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    /* backend layer colors */
+    --dom: #166534;   --dom-bg: #dcfce7;   /* Domain */
+    --app: #5b21b6;   --app-bg: #ede9fe;   /* Application */
+    --inf: #9a3412;   --inf-bg: #ffedd5;   /* Infrastructure */
+    --con: #0f766e;   --con-bg: #ccfbf1;   /* Contracts */
+    --host: #2563eb;  --host-bg: #eaf1ff;  /* Host/Api */
+    --shared: #475569; --shared-bg: #e2e8f0; /* SharedKernel */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { padding: 40px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.95rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 22px 0 6px; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; font-size: 0.8rem; align-items: center; }
+  .legend .lab { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); }
+  .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); }
+  .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); }
+  .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  h2.section { font-size: 1.22rem; margin: 42px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p.lead { color: var(--muted); margin: 0 0 18px; }
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 8px 0 6px; }
+  .node { border: 1px solid var(--border); border-left-width: 5px; background: var(--card); border-radius: 10px; padding: 12px 16px; }
+  .node .nh { font-weight: 700; font-size: 0.98rem; }
+  .node .nf { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; color: var(--muted); }
+  .node.dom { border-left-color: var(--dom); } .node.app { border-left-color: var(--app); }
+  .node.inf { border-left-color: var(--inf); } .node.con { border-left-color: var(--con); }
+  .node.host { border-left-color: var(--host); } .node.shared { border-left-color: var(--shared); }
+  .arrow { align-self: center; color: var(--muted); font-size: 0.78rem; padding: 6px 0; text-align: center; }
+  .arrow .down { font-size: 1.1rem; line-height: 1; }
+  .arrow .what { display: inline-block; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; font-size: 0.72rem; margin-left: 6px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-c { color: #94a3b8; } .tok-k { color: #93c5fd; } .tok-s { color: #86efac; } .tok-t { color: #fca5a5; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 12px 14px 12px 52px; margin: 10px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  ol.steps > li b { display: block; margin-bottom: 2px; }
+  table.conv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 6px 0; }
+  table.conv th, table.conv td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.conv th { background: #f0f3f6; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  /* ===== docs cross-page navigation (added to every page) ===== */
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  .topnav .nl.active { background: rgba(255,255,255,.24); opacity: 1; font-weight: 600; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 44px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid #e1e4e8; background: #ffffff; border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: #2563eb; }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: #2563eb; margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl active" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Kheprx.BaseBackend</span> — Project Libraries</h1>
+      <p>All NuGet packages used in the solution, their versions, and what they do.</p>
+    </header>
+
+    <div class="banner"><strong>Central Package Management (CPM):</strong> all versions live in <code class="inline">Directory.Packages.props</code>; individual projects reference packages without specifying a version. To upgrade a dependency, change the version in one place.</div>
+
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag dom">Domain</span><span class="tag app">Application</span>
+      <span class="tag inf">Infrastructure</span><span class="tag con">Contracts</span>
+      <span class="tag host">Host / Api</span><span class="tag shared">SharedKernel</span>
+    </div>
+
+    <h2 class="section">How CPM works</h2>
+    <p class="lead">Two files work together. <code class="inline">Directory.Packages.props</code> declares every version once. Each <code class="inline">.csproj</code> references packages without a version attribute.</p>
+
+    <p><strong>Directory.Packages.props</strong> — the version registry:</p>
+<pre><span class="tok-c">&lt;!-- Directory.Packages.props --&gt;</span>
+<span class="tok-k">&lt;Project&gt;</span>
+  <span class="tok-k">&lt;PropertyGroup&gt;</span>
+    <span class="tok-k">&lt;ManagePackageVersionsCentrally&gt;</span><span class="tok-s">true</span><span class="tok-k">&lt;/ManagePackageVersionsCentrally&gt;</span>
+  <span class="tok-k">&lt;/PropertyGroup&gt;</span>
+  <span class="tok-k">&lt;ItemGroup&gt;</span>
+    <span class="tok-c">&lt;!-- Runtime --&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Microsoft.EntityFrameworkCore"</span>                      Version=<span class="tok-s">"10.0.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Microsoft.EntityFrameworkCore.Design"</span>               Version=<span class="tok-s">"10.0.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Npgsql.EntityFrameworkCore.PostgreSQL"</span>              Version=<span class="tok-s">"10.0.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"System.Security.Cryptography.Xml"</span>                   Version=<span class="tok-s">"10.0.8"</span>  <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Microsoft.Extensions.DependencyInjection.Abstractions"</span> Version=<span class="tok-s">"10.0.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Microsoft.Extensions.Configuration.Abstractions"</span>      Version=<span class="tok-s">"10.0.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"FluentValidation"</span>                                    Version=<span class="tok-s">"11.11.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"FluentValidation.DependencyInjectionExtensions"</span>        Version=<span class="tok-s">"11.11.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Riok.Mapperly"</span>                                       Version=<span class="tok-s">"4.3.1"</span>   <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Serilog.AspNetCore"</span>                                   Version=<span class="tok-s">"9.0.0"</span>   <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Swashbuckle.AspNetCore"</span>                               Version=<span class="tok-s">"7.2.0"</span>   <span class="tok-k">/&gt;</span>
+    <span class="tok-c">&lt;!-- Test --&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Microsoft.NET.Test.Sdk"</span>          Version=<span class="tok-s">"17.12.0"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"xunit"</span>                          Version=<span class="tok-s">"2.9.2"</span>   <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"xunit.runner.visualstudio"</span>      Version=<span class="tok-s">"2.8.2"</span>   <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"Moq"</span>                            Version=<span class="tok-s">"4.20.72"</span> <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageVersion</span> Include=<span class="tok-s">"NetArchTest.Rules"</span>              Version=<span class="tok-s">"1.3.2"</span>   <span class="tok-k">/&gt;</span>
+  <span class="tok-k">&lt;/ItemGroup&gt;</span>
+<span class="tok-k">&lt;/Project&gt;</span></pre>
+
+    <p><strong>A project .csproj</strong> — no versions, just names:</p>
+<pre><span class="tok-c">&lt;!-- e.g. Kheprx.BaseBackend.Catalog.Infrastructure.csproj --&gt;</span>
+<span class="tok-k">&lt;Project</span> Sdk=<span class="tok-s">"Microsoft.NET.Sdk"</span><span class="tok-k">&gt;</span>
+  <span class="tok-k">&lt;ItemGroup&gt;</span>
+    <span class="tok-c">&lt;!-- Version is resolved from Directory.Packages.props --&gt;</span>
+    <span class="tok-k">&lt;PackageReference</span> Include=<span class="tok-s">"Microsoft.EntityFrameworkCore"</span>         <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageReference</span> Include=<span class="tok-s">"Npgsql.EntityFrameworkCore.PostgreSQL"</span>  <span class="tok-k">/&gt;</span>
+    <span class="tok-k">&lt;PackageReference</span> Include=<span class="tok-s">"FluentValidation"</span>                      <span class="tok-k">/&gt;</span>
+  <span class="tok-k">&lt;/ItemGroup&gt;</span>
+<span class="tok-k">&lt;/Project&gt;</span></pre>
+
+    <p><strong>Directory.Build.props</strong> — shared MSBuild defaults (inherited by every project, no version pins here):</p>
+<pre><span class="tok-k">&lt;Project&gt;</span>
+  <span class="tok-k">&lt;PropertyGroup&gt;</span>
+    <span class="tok-k">&lt;TargetFramework&gt;</span><span class="tok-s">net10.0</span><span class="tok-k">&lt;/TargetFramework&gt;</span>
+    <span class="tok-k">&lt;Nullable&gt;</span><span class="tok-s">enable</span><span class="tok-k">&lt;/Nullable&gt;</span>
+    <span class="tok-k">&lt;ImplicitUsings&gt;</span><span class="tok-s">enable</span><span class="tok-k">&lt;/ImplicitUsings&gt;</span>
+    <span class="tok-k">&lt;LangVersion&gt;</span><span class="tok-s">latest</span><span class="tok-k">&lt;/LangVersion&gt;</span>
+    <span class="tok-k">&lt;TreatWarningsAsErrors&gt;</span><span class="tok-s">true</span><span class="tok-k">&lt;/TreatWarningsAsErrors&gt;</span>
+  <span class="tok-k">&lt;/PropertyGroup&gt;</span>
+<span class="tok-k">&lt;/Project&gt;</span></pre>
+
+    <h2 class="section">Runtime packages</h2>
+    <p class="lead">Packages that ship in the compiled output and are used at application run-time.</p>
+    <table class="conv">
+      <tr>
+        <th>Package</th>
+        <th>Version</th>
+        <th>Role</th>
+        <th>Used for</th>
+      </tr>
+      <tr>
+        <td><code class="inline">Microsoft.EntityFrameworkCore</code></td>
+        <td>10.0.0</td>
+        <td><span class="tag inf">Infrastructure</span></td>
+        <td>ORM core — DbContext, entity tracking, LINQ queries, migrations.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">Npgsql.EntityFrameworkCore.PostgreSQL</code></td>
+        <td>10.0.0</td>
+        <td><span class="tag inf">Infrastructure</span></td>
+        <td>PostgreSQL provider for EF Core — translates LINQ to SQL and manages the Npgsql connection.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">FluentValidation</code></td>
+        <td>11.11.0</td>
+        <td><span class="tag app">Application</span></td>
+        <td>Declarative, chainable validation rules for command/request DTOs.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">FluentValidation.DependencyInjectionExtensions</code></td>
+        <td>11.11.0</td>
+        <td><span class="tag host">Host / Api</span></td>
+        <td>Registers all validators from an assembly into the DI container with <code class="inline">AddValidatorsFromAssembly</code>.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">Riok.Mapperly</code></td>
+        <td>4.3.1</td>
+        <td><span class="tag app">Application</span></td>
+        <td>Source-generated object mapper — zero-reflection mapping between domain entities and DTOs at compile time.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">Serilog.AspNetCore</code></td>
+        <td>9.0.0</td>
+        <td><span class="tag host">Host / Api</span></td>
+        <td>Structured logging integration for ASP.NET Core — replaces the default logger with Serilog sinks.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">Swashbuckle.AspNetCore</code></td>
+        <td>7.2.0</td>
+        <td><span class="tag host">Host / Api</span></td>
+        <td>Generates an OpenAPI (Swagger) specification from controller metadata and serves the Swagger UI.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">System.Security.Cryptography.Xml</code></td>
+        <td>10.0.8</td>
+        <td><span class="tag inf">Infrastructure</span></td>
+        <td><em>Security pin</em> — pinned to patch a known CVE in the transitive dependency pulled in by Npgsql; not directly referenced in application code.</td>
+      </tr>
+    </table>
+
+    <h2 class="section">Test packages</h2>
+    <p class="lead">Packages referenced only by test projects — not included in the production output.</p>
+    <table class="conv">
+      <tr>
+        <th>Package</th>
+        <th>Version</th>
+        <th>Role</th>
+        <th>Used for</th>
+      </tr>
+      <tr>
+        <td><code class="inline">Microsoft.NET.Test.Sdk</code></td>
+        <td>17.12.0</td>
+        <td>Test runner</td>
+        <td>MSBuild targets and test host required by <code class="inline">dotnet test</code> to discover and run tests.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">xunit</code></td>
+        <td>2.9.2</td>
+        <td>Test framework</td>
+        <td>Test class and assertion framework — <code class="inline">[Fact]</code>, <code class="inline">[Theory]</code>, <code class="inline">Assert.*</code>.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">xunit.runner.visualstudio</code></td>
+        <td>2.8.2</td>
+        <td>Test adapter</td>
+        <td>VSTest adapter that lets Visual Studio and the dotnet CLI discover xUnit tests.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">Moq</code></td>
+        <td>4.20.72</td>
+        <td>Mocking</td>
+        <td>Creates mock implementations of interfaces (e.g. <code class="inline">IProductRepository</code>) for unit testing service behaviour in isolation.</td>
+      </tr>
+      <tr>
+        <td><code class="inline">NetArchTest.Rules</code></td>
+        <td>1.3.2</td>
+        <td>Architecture tests</td>
+        <td>Fluent API for asserting dependency rules in <code class="inline">Kheprx.BaseBackend.ArchitectureTests</code> — ensures no layer violates the dependency graph.</td>
+      </tr>
+    </table>
+
+    <div class="pager">
+      <a href="SOLUTION_STRUCTURE.html"><span class="dir">← Previous</span><span class="ttl">Solution Structure</span></a>
+      <a class="next" href="MODULE_ANATOMY.html"><span class="dir">Next →</span><span class="ttl">Module Anatomy</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

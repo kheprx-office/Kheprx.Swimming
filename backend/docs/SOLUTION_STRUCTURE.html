@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solution Structure — Kheprx.BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    /* backend layer colors */
+    --dom: #166534;   --dom-bg: #dcfce7;   /* Domain */
+    --app: #5b21b6;   --app-bg: #ede9fe;   /* Application */
+    --inf: #9a3412;   --inf-bg: #ffedd5;   /* Infrastructure */
+    --con: #0f766e;   --con-bg: #ccfbf1;   /* Contracts */
+    --host: #2563eb;  --host-bg: #eaf1ff;  /* Host/Api */
+    --shared: #475569; --shared-bg: #e2e8f0; /* SharedKernel */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { padding: 40px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.95rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 22px 0 6px; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; font-size: 0.8rem; align-items: center; }
+  .legend .lab { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); }
+  .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); }
+  .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); }
+  .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  h2.section { font-size: 1.22rem; margin: 42px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p.lead { color: var(--muted); margin: 0 0 18px; }
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 8px 0 6px; }
+  .node { border: 1px solid var(--border); border-left-width: 5px; background: var(--card); border-radius: 10px; padding: 12px 16px; }
+  .node .nh { font-weight: 700; font-size: 0.98rem; }
+  .node .nf { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; color: var(--muted); }
+  .node.dom { border-left-color: var(--dom); } .node.app { border-left-color: var(--app); }
+  .node.inf { border-left-color: var(--inf); } .node.con { border-left-color: var(--con); }
+  .node.host { border-left-color: var(--host); } .node.shared { border-left-color: var(--shared); }
+  .arrow { align-self: center; color: var(--muted); font-size: 0.78rem; padding: 6px 0; text-align: center; }
+  .arrow .down { font-size: 1.1rem; line-height: 1; }
+  .arrow .what { display: inline-block; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; font-size: 0.72rem; margin-left: 6px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-c { color: #94a3b8; } .tok-k { color: #93c5fd; } .tok-s { color: #86efac; } .tok-t { color: #fca5a5; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 12px 14px 12px 52px; margin: 10px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  ol.steps > li b { display: block; margin-bottom: 2px; }
+  table.conv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 6px 0; }
+  table.conv th, table.conv td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.conv th { background: #f0f3f6; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  /* ===== docs cross-page navigation (added to every page) ===== */
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  .topnav .nl.active { background: rgba(255,255,255,.24); opacity: 1; font-weight: 600; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 44px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid #e1e4e8; background: #ffffff; border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: #2563eb; }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: #2563eb; margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl active" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Kheprx.BaseBackend</span> — Solution Structure</h1>
+      <p>Every file, what it's for, and whether you touch it.</p>
+    </header>
+
+    <div class="banner"><strong>Every file has a role.</strong> This page walks through the full source tree — root tooling files, the host project, SharedKernel, the Catalog module, tests, and docs — with a note on each item's purpose and how often you're expected to edit it.</div>
+
+    <div class="legend">
+      <span class="lab">Status:</span>
+      <span class="tag dom">You edit</span>
+      <span class="tag inf">Auto-generated</span>
+      <span class="tag shared">Set-once config</span>
+    </div>
+
+    <h2 class="section">Full source tree</h2>
+    <p class="lead">Abbreviated to the files that matter; bin/ and obj/ are excluded.</p>
+<pre>Kheprx.BaseBackend/                          ← solution root
+├── Kheprx.BaseBackend.sln                   ← solution file (lists all projects)
+├── global.json                       ← pins SDK version (10.0.102)
+├── Directory.Build.props             ← shared MSBuild properties for all projects
+├── Directory.Packages.props          ← central package version management (CPM)
+├── .editorconfig                     ← code-style rules (tabs, charset, etc.)
+├── .gitignore
+├── README.md
+│
+├── Kheprx.BaseBackend.Api/                  ← host / entry point
+│   ├── Kheprx.BaseBackend.Api.csproj
+│   ├── Program.cs
+│   ├── appsettings.json
+│   ├── appsettings.Development.json
+│   ├── Controllers/
+│   │   ├── BaseApiController.cs
+│   │   └── ProductsController.cs
+│   ├── Extensions/
+│   │   ├── ApplicationBuilderExtensions.cs
+│   │   └── ServiceCollectionExtensions.cs
+│   ├── Filters/
+│   │   └── ValidationFilter.cs
+│   ├── Middlewares/
+│   │   └── ExceptionHandlingMiddleware.cs
+│   └── Properties/
+│       └── launchSettings.json
+│
+├── src/
+│   ├── SharedKernel/
+│   │   └── Kheprx.BaseBackend.SharedKernel/
+│   │       ├── Domain/
+│   │       │   ├── BaseEntity.cs
+│   │       │   └── DomainException.cs
+│   │       ├── Modules/
+│   │       │   ├── IModule.cs
+│   │       │   └── ModuleRegistration.cs
+│   │       └── Responses/
+│   │           ├── ApiResponse.cs
+│   │           └── BaseApiResponse.cs
+│   │
+│   └── Modules/
+│       └── Catalog/
+│           ├── Kheprx.BaseBackend.Catalog.Domain/
+│           │   ├── Entities/
+│           │   │   └── Product.cs
+│           │   ├── Exceptions/
+│           │   │   └── InvalidProductException.cs
+│           │   └── Repositories/
+│           │       └── IProductRepository.cs      ← repository port (interface)
+│           ├── Kheprx.BaseBackend.Catalog.Application/
+│           │   ├── DTOs/
+│           │   │   └── ProductDtos.cs
+│           │   ├── Mappings/
+│           │   │   └── CatalogMapper.cs          ← Mapperly source-gen mapper
+│           │   ├── Services/
+│           │   │   ├── Interfaces/
+│           │   │   │   └── IProductService.cs
+│           │   │   └── ProductService.cs          ← use-case implementation
+│           │   └── Validators/
+│           │       └── ProductRequestValidators.cs
+│           ├── Kheprx.BaseBackend.Catalog.Infrastructure/
+│           │   ├── CatalogModule.cs              ← IModule entry point
+│           │   ├── Configurations/
+│           │   │   └── ProductConfiguration.cs
+│           │   ├── Data/
+│           │   │   ├── CatalogDbContext.cs
+│           │   │   └── CatalogDbContextFactory.cs
+│           │   ├── Migrations/                   ← EF Core auto-generated
+│           │   │   ├── 20260626150922_InitialCatalog.cs
+│           │   │   ├── 20260626150922_InitialCatalog.Designer.cs
+│           │   │   └── CatalogDbContextModelSnapshot.cs
+│           │   ├── Repositories/
+│           │   │   └── ProductRepository.cs       ← EF Core implementation
+│           │   └── Services/
+│           │       └── CatalogModuleApi.cs        ← implements ICatalogModule
+│           └── Kheprx.BaseBackend.Catalog.Contracts/
+│               └── ICatalogModule.cs
+│
+├── tests/
+│   ├── Kheprx.BaseBackend.ArchitectureTests/
+│   │   ├── BoundaryTests.cs
+│   │   └── ModuleConventionTests.cs
+│   └── Kheprx.BaseBackend.Catalog.UnitTests/
+│       ├── ApiResponseTests.cs
+│       ├── CatalogMapperTests.cs
+│       ├── CreateProductRequestValidatorTests.cs
+│       ├── ProductServiceTests.cs
+│       └── ProductTests.cs
+│
+└── docs/
+    ├── ARCHITECTURE_OVERVIEW.html
+    ├── SOLUTION_STRUCTURE.html      ← this page
+    ├── PROJECT_LIBRARIES.html
+    ├── REQUEST_FLOW.html
+    └── MODULE_ANATOMY.html</pre>
+
+    <h2 class="section">Root tooling files</h2>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Set-once config</span><h3>Kheprx.BaseBackend.sln</h3></div>
+      <div class="file">Kheprx.BaseBackend.sln</div>
+      <p>The Visual Studio / dotnet solution file. Lists all eight projects so that <code class="inline">dotnet build</code> and <code class="inline">dotnet test</code> work from the repo root. Updated automatically by <code class="inline">dotnet sln add</code> when you add a new module project — rarely hand-edited.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Set-once config</span><h3>global.json</h3></div>
+      <div class="file">global.json</div>
+      <p>Pins the .NET SDK version to <code class="inline">10.0.102</code> with <code class="inline">rollForward: latestFeature</code>. Guarantees every developer and CI runner uses the same SDK, preventing subtle build differences. Update this only when intentionally upgrading the SDK.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Set-once config</span><h3>Directory.Build.props</h3></div>
+      <div class="file">Directory.Build.props</div>
+      <p>MSBuild properties inherited by every project in the repo: <code class="inline">TargetFramework=net10.0</code>, <code class="inline">Nullable=enable</code>, <code class="inline">ImplicitUsings=enable</code>, <code class="inline">LangVersion=latest</code>, and <code class="inline">TreatWarningsAsErrors=true</code>. Add shared properties here rather than repeating them in individual <code class="inline">.csproj</code> files.</p>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">You edit</span><h3>Directory.Packages.props</h3></div>
+      <div class="file">Directory.Packages.props</div>
+      <p>Central Package Management (CPM) — the single source of truth for all NuGet versions. Every <code class="inline">&lt;PackageReference&gt;</code> in <code class="inline">.csproj</code> files omits the <code class="inline">Version</code> attribute; the version is resolved here. Edit this file when bumping a dependency. See <a href="PROJECT_LIBRARIES.html">PROJECT_LIBRARIES.html</a> for the full version table.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Set-once config</span><h3>.editorconfig</h3></div>
+      <div class="file">.editorconfig</div>
+      <p>Defines code-style rules understood by Visual Studio, Rider, and the Roslyn analyser: indentation (spaces), charset (UTF-8), line endings, and C#-specific style rules. Keeps diffs clean when multiple developers work on the same files.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Set-once config</span><h3>.gitignore</h3></div>
+      <div class="file">.gitignore</div>
+      <p>Standard .NET gitignore: excludes <code class="inline">bin/</code>, <code class="inline">obj/</code>, user-specific IDE files, and secrets. Generated from the dotnet CLI template and extended as needed.</p>
+    </div>
+
+    <h2 class="section">Host project</h2>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>Kheprx.BaseBackend.Api/</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Kheprx.BaseBackend.Api.csproj</div>
+      <p>The single deployable ASP.NET Core host. <code class="inline">Program.cs</code> calls <code class="inline">AddModules()</code> (from <code class="inline">ServiceCollectionExtensions</code>) which discovers and registers every <code class="inline">IModule</code> implementation at startup. The pipeline is assembled by <code class="inline">ApplicationBuilderExtensions</code>. Controllers live here and depend on their own module's <strong>Application</strong> layer (e.g. <code class="inline">IProductService</code>, <code class="inline">ProductDto</code>) and SharedKernel (<code class="inline">ApiResponse&lt;T&gt;</code>). The <code class="inline">.Contracts</code> project is the narrow surface that <em>other modules</em> consume, not the host. <code class="inline">ValidationFilter</code> runs FluentValidation before action methods; <code class="inline">ExceptionHandlingMiddleware</code> converts domain exceptions to structured error responses.</p>
+    </div>
+
+    <h2 class="section">SharedKernel</h2>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>Kheprx.BaseBackend.SharedKernel/</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/</div>
+      <p>Provides building blocks that every module needs: <code class="inline">BaseEntity</code> (abstract aggregate root with <code class="inline">int Id</code>, <code class="inline">CreatedAt</code>, and <code class="inline">UpdatedAt</code>), <code class="inline">DomainException</code> (base for all domain errors), <code class="inline">IModule</code> (the registration contract), <code class="inline">ModuleRegistration</code> (assembly scanner used in <code class="inline">AddModules()</code>), and the <code class="inline">ApiResponse&lt;T&gt;</code> / <code class="inline">BaseApiResponse</code> envelope for consistent HTTP responses. You add to SharedKernel only when a concept is genuinely cross-cutting.</p>
+    </div>
+
+    <h2 class="section">Catalog module</h2>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">You edit</span><h3>Kheprx.BaseBackend.Catalog.Domain/</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/</div>
+      <p>The domain layer for the Catalog module: the <code class="inline">Product</code> entity (extending <code class="inline">BaseEntity</code>) and <code class="inline">InvalidProductException</code>. Pure C# — no NuGet dependencies beyond SharedKernel. Business invariants belong here.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">You edit</span><h3>Kheprx.BaseBackend.Catalog.Application/</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/</div>
+      <p>Use-case layer: the <code class="inline">IProductService</code> interface <em>and</em> its <code class="inline">ProductService</code> implementation, <code class="inline">ProductDtos.cs</code> (request/response records), <code class="inline">CatalogMapper</code> (a Mapperly source-generated mapper), and <code class="inline">ProductRequestValidators</code> (FluentValidation rules for create/update requests). Depends only on Domain — no EF Core references here.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">You edit</span><h3>Kheprx.BaseBackend.Catalog.Infrastructure/</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/</div>
+      <p>Implements the repository port (from Domain) against PostgreSQL via EF Core. Key files: <code class="inline">CatalogDbContext</code>, <code class="inline">ProductConfiguration</code> (Fluent API entity config), <code class="inline">ProductRepository</code>, <code class="inline">CatalogModuleApi</code>, and <code class="inline">CatalogModule</code> (implements <code class="inline">IModule</code> — its <code class="inline">Register</code> method inlines all DI registrations: DbContext, Mapperly mapper singleton, repository, the Application service, and the <code class="inline">ICatalogModule</code> contract). There is no <code class="inline">AddCatalog()</code> extension method. The <code class="inline">Migrations/</code> folder is auto-generated by EF Core tooling — do not hand-edit migration files.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Auto-generated</span><h3>Migrations/</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Migrations/</div>
+      <p>EF Core migration files produced by <code class="inline">dotnet ef migrations add &lt;Name&gt;</code>. The <code class="inline">20260626150922_InitialCatalog</code> migration creates the <code class="inline">Products</code> table. The snapshot file is regenerated on every migration — never edit it manually.</p>
+    </div>
+
+    <div class="card con">
+      <div class="ch"><span class="tag con">You edit</span><h3>Kheprx.BaseBackend.Catalog.Contracts/</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Contracts/</div>
+      <p>The public boundary of the Catalog module. Contains only <code class="inline">ICatalogModule</code> — the interface the host and other modules use to interact with Catalog. Keeping this thin ensures other modules cannot accidentally depend on internal implementation details.</p>
+    </div>
+
+    <h2 class="section">Tests</h2>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">You edit</span><h3>Kheprx.BaseBackend.Catalog.UnitTests/</h3></div>
+      <div class="file">tests/Kheprx.BaseBackend.Catalog.UnitTests/</div>
+      <p>xUnit unit tests for the Catalog module. Covers: <code class="inline">Product</code> entity invariants, FluentValidation validator rules, Mapperly mapper correctness, <code class="inline">ProductService</code> behaviour (with Moq mocks), and <code class="inline">ApiResponse</code> envelope helpers. Run with <code class="inline">dotnet test</code>.</p>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">You edit</span><h3>Kheprx.BaseBackend.ArchitectureTests/</h3></div>
+      <div class="file">tests/Kheprx.BaseBackend.ArchitectureTests/</div>
+      <p>NetArchTest.Rules-based tests that enforce the dependency rules in the table on <a href="ARCHITECTURE_OVERVIEW.html">ARCHITECTURE_OVERVIEW.html</a>. <code class="inline">BoundaryTests.cs</code> enforces seven rules: Domain&#8202;&#8203;&#x21DB;&#8203;Infrastructure, Domain&#8202;&#8203;&#x21DB;&#8203;EF Core, Domain&#8202;&#8203;&#x21DB;&#8203;Application, Application&#8202;&#8203;&#x21DB;&#8203;Infrastructure, Application&#8202;&#8203;&#x21DB;&#8203;EF Core, Infrastructure&#8202;&#8203;&#x21DB;&#8203;Api, and non-abstract controllers inherit <code class="inline">BaseApiController</code>. <code class="inline">ModuleConventionTests.cs</code> asserts that <code class="inline">AddModules</code> discovers the module and registers its services (<code class="inline">IProductService</code>, <code class="inline">ICatalogModule</code>) — verifying DI registration, not layer naming or project layout.</p>
+    </div>
+
+    <h2 class="section">Docs</h2>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Set-once config</span><h3>docs/</h3></div>
+      <div class="file">docs/</div>
+      <p>The architecture documentation you are reading — eight standalone, fully offline HTML pages that require no web server or internet connection. Each page reuses the same shared <code class="inline">&lt;style&gt;</code> block and layer-colour conventions, a shared top navigation bar, and previous/next links. Start from <code class="inline">index.html</code> (the landing page) or open any file directly in a browser. The pages cover the overall architecture, this solution structure, the NuGet library catalogue, the end-to-end request flow, the anatomy of a module, and validation — both the five-layer runtime pipeline and the conceptual validation guide.</p>
+    </div>
+
+    <h2 class="section">Mental model</h2>
+    <p>The host (<code class="inline">Kheprx.BaseBackend.Api</code>) is the only deployable artefact — it sits at the root and discovers modules at startup via the <code class="inline">IModule</code> interface defined in SharedKernel. Shared abstractions that any module might need (base classes, response envelopes, the module registration mechanism) live in SharedKernel under <code class="inline">src/SharedKernel/</code>, keeping them clearly separated from module-specific code. Each module lives in its own folder under <code class="inline">src/Modules/</code> and is split into four projects that enforce a strict inside-out dependency order: Domain has no external dependencies, Application depends only on Domain, Infrastructure implements both, and Contracts exposes only what the outside world needs to know. The test projects under <code class="inline">tests/</code> mirror this structure: unit tests target individual modules, while the architecture tests act as a safety net that prevents dependency rule violations from ever reaching the main branch.</p>
+
+    <div class="pager">
+      <a href="ARCHITECTURE_OVERVIEW.html"><span class="dir">← Previous</span><span class="ttl">Architecture Overview</span></a>
+      <a class="next" href="PROJECT_LIBRARIES.html"><span class="dir">Next →</span><span class="ttl">Project Libraries</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

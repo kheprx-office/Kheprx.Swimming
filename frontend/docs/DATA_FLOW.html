@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Flow — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl active" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1>Data flow</h1>
+      <p>One direction down, <code class="inline">Result&lt;T&gt;</code> back up. Worked trace: loading the users list.</p>
+    </header>
+
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag pres">presentation</span><span class="tag dom">domain</span>
+      <span class="tag data">data</span><span class="tag core">core</span>
+    </div>
+
+    <h2 class="section">The path of a request</h2>
+    <svg viewBox="0 0 760 360" width="100%" role="img" aria-label="Data flow" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .b{rx:10;ry:10;stroke:#e1e4e8;stroke-width:1.5;}
+        .t{font:600 13px -apple-system,Segoe UI,Roboto,sans-serif;fill:#1f2328;}
+        .s{font:11px ui-monospace,Consolas,monospace;fill:#57606a;}
+        .ln{stroke:#94a3b8;stroke-width:1.5;marker-end:url(#a);}
+      </style>
+      <defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      <rect class="b" x="260" y="14"  width="240" height="42" fill="#ede9fe"/><text class="t" x="278" y="34">UserManagementPage</text><text class="s" x="278" y="50">ngOnInit → vm.load()</text>
+      <rect class="b" x="260" y="80"  width="240" height="42" fill="#ede9fe"/><text class="t" x="278" y="100">UsersViewModel.load()</text><text class="s" x="278" y="116">loading/users signals</text>
+      <rect class="b" x="260" y="146" width="240" height="42" fill="#dcfce7"/><text class="t" x="278" y="166">ListUsersUseCase.run()</text><text class="s" x="278" y="182">validate + map</text>
+      <rect class="b" x="260" y="212" width="240" height="42" fill="#ffedd5"/><text class="t" x="278" y="232">UsersRepositoryImpl</text><text class="s" x="278" y="248">list() → /api/users</text>
+      <rect class="b" x="260" y="278" width="240" height="42" fill="#eaf1ff"/><text class="t" x="278" y="298">HttpClientService</text><text class="s" x="278" y="314">get() &#8594; fetch</text>
+      <line class="ln" x1="380" y1="56"  x2="380" y2="78"/>
+      <line class="ln" x1="380" y1="122" x2="380" y2="144"/>
+      <line class="ln" x1="380" y1="188" x2="380" y2="210"/>
+      <line class="ln" x1="380" y1="254" x2="380" y2="276"/>
+      <text class="s" x="510" y="190">Result&lt;User[]&gt; / AppError &#8593;</text>
+    </svg>
+
+    <h2 class="section">Step-by-step trace</h2>
+    <p class="lead">Six steps from page init down to the network and back. Each snippet is drawn from the real source files.</p>
+
+    <ol class="steps">
+      <li>
+        <b>Page init triggers <code class="inline">vm.load()</code> — <span class="tag pres">presentation</span></b>
+        <code class="inline">UserManagementPage</code> injects <code class="inline">UsersViewModel</code> (provided by the route) and calls <code class="inline">void this.vm.load()</code> in <code class="inline">ngOnInit()</code>. The page never touches the use case or HTTP layer directly.
+        <pre>export class UserManagementPage implements OnInit {
+  protected readonly vm = inject(UsersViewModel);
+  readonly ROLE_LABELS = ROLE_LABELS;
+
+  ngOnInit(): void { void this.vm.load(); }
+}</pre>
+      </li>
+      <li>
+        <b>ViewModel sets loading state and awaits the use case — <span class="tag pres">presentation</span></b>
+        <code class="inline">UsersViewModel.load()</code> flips <code class="inline">loading</code> to <code class="inline">true</code>, then suspends on <code class="inline">listUsers.run()</code>. No try/catch here — the base <code class="inline">UseCase</code> already normalizes all errors into a <code class="inline">Result</code>.
+        <pre>this.loading.set(true);
+const r = await this.listUsers.run();</pre>
+      </li>
+      <li>
+        <b><code class="inline">UseCase.run()</code> wraps <code class="inline">execute()</code> in a single try/catch — <span class="tag dom">domain</span></b>
+        The base class owns error handling once for every subclass. Any thrown value is caught: an <code class="inline">AppError</code> is forwarded as-is; anything else becomes <code class="inline">'unknown'</code>.
+        <pre>async run(input: I): Promise&lt;Result&lt;O&gt;&gt; {
+  try {
+    return ok(await this.execute(input));
+  } catch (e) {
+    const error =
+      e instanceof AppError ? e : new AppError('Unexpected error', 'unknown');
+    return fail(error);
+  }
+}</pre>
+      </li>
+      <li>
+        <b><code class="inline">ListUsersUseCase.execute()</code> calls the repo, validates DTOs, maps to domain — <span class="tag dom">domain</span></b>
+        The use case fetches via the injected port (<code class="inline">USERS_REPOSITORY</code>), validates every item with <code class="inline">isUserDtoRsValid</code>, and maps the raw DTOs to domain <code class="inline">User</code> objects via <code class="inline">toUser</code>. Validation failure throws an <code class="inline">AppError</code> of kind <code class="inline">'validation'</code>.
+        <pre>const res = await this.repo.list();
+if (!res.data.every(isUserDtoRsValid)) {
+  throw new AppError('Invalid user data received', 'validation');
+}
+return res.data.map(toUser);</pre>
+      </li>
+      <li>
+        <b><code class="inline">UsersRepositoryImpl.list()</code> delegates directly to <code class="inline">HttpClientService</code> — <span class="tag data">data</span></b>
+        The repository is fetch-only: it calls <code class="inline">this.http.get&lt;UsersDtoRs&gt;('/api/users')</code> and returns the typed envelope. No validation, no mapping. <code class="inline">HttpClientService</code> handles retries, timeouts, and error conversion to <code class="inline">AppError</code> internally.
+        <pre>list(): Promise&lt;UsersDtoRs&gt; { return this.http.get&lt;UsersDtoRs&gt;('/api/users'); }</pre>
+      </li>
+      <li>
+        <b><code class="inline">Result</code> bubbles back — ViewModel sets signals, page reacts — <span class="tag pres">presentation</span></b>
+        After <code class="inline">listUsers.run()</code> resolves, the ViewModel inspects <code class="inline">r.ok</code>. On success it populates <code class="inline">users</code>; on failure it calls <code class="inline">this.notify.error(r.error.message)</code> to show a toast via <code class="inline">NotificationService</code> — no error signal is set, and the users list is not cleared. The page reads these signals reactively — no manual subscription needed.
+        <pre>this.loading.set(false);
+if (r.ok) this.users.set(r.data);
+else this.notify.error(r.error.message);</pre>
+      </li>
+    </ol>
+
+    <h2 class="section">Where errors come from</h2>
+    <p class="lead">Each layer throws a typed <code class="inline">AppError</code>; <code class="inline">UseCase.run()</code> catches once and normalizes any non-AppError to <code class="inline">'unknown'</code>, returning a <code class="inline">Result</code>.</p>
+    <table class="conv">
+      <tr><th>Origin</th><th>AppError kind</th></tr>
+      <tr><td>http-client: transport failure / timeout</td><td><code>network</code></td></tr>
+      <tr><td>http-client: non-2xx response</td><td><code>http</code> (+ status)</td></tr>
+      <tr><td>use case: failed DTO validation</td><td><code>validation</code></td></tr>
+      <tr><td>KeyValueStore: storage failure / corrupt object</td><td><code>storage</code></td></tr>
+      <tr><td>CryptoService: encrypt/decrypt failure</td><td><code>crypto</code></td></tr>
+      <tr><td>any other throw</td><td><code>unknown</code> (normalized by UseCase.run)</td></tr>
+    </table>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the
+      <a href="superpowers/specs/2026-06-26-angular-base-design.md">design spec</a>
+      and the other pages above.
+    </footer>
+  </div>
+</body>
+</html>

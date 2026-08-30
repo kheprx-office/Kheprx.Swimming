@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SharedKernel\Kheprx.BaseBackend.SharedKernel\Kheprx.BaseBackend.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

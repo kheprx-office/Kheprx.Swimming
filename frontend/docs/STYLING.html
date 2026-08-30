@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Styling — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl active" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Styling</span> — one palette, three layers</h1>
+      <p>CSS custom-property tokens in <code class="inline">theme.scss</code> are the single source of truth. Tailwind utilities and the TypeScript <code class="inline">theme</code> object both reference those same variables, so the entire app shares exactly one palette.</p>
+    </header>
+
+    <div class="banner"><strong>Rule:</strong> define a colour or spacing value once in <code class="inline">theme.scss</code>; reference it everywhere else via <code class="inline">var(--...)</code> or a Tailwind utility class. Never hard-code a hex or pixel value in a component.</div>
+
+    <h2 class="section">Design tokens — <code class="inline">theme.scss</code></h2>
+    <div class="card core">
+      <div class="ch"><h3><code class="inline">theme.scss</code> — CSS custom properties</h3><span class="tag core">core</span><span class="file">src/app/core/ui/theme/theme.scss</span></div>
+      <p>The canonical source of truth for all design tokens. Declared on <code class="inline">:root</code> so they are available in every component stylesheet, including those with <code class="inline">ViewEncapsulation.Emulated</code> (the Angular default).</p>
+      <pre><span class="tok-c">// theme.scss</span>
+:root {
+  --color-primary:    #0a84ff;
+  --color-text:       #111;
+  --color-muted:      #555;
+  --color-error:      #c00;
+  --color-border:     #ccc;
+  --color-background: #fff;
+  --color-on-primary: #fff;
+
+  --space-xs: 4px;  --space-sm: 8px;
+  --space-md: 16px; --space-lg: 24px; --space-xl: 32px;
+
+  --radius-sm: 6px; --radius-md: 10px;
+}</pre>
+      <p>Use these in component SCSS/CSS as <code class="inline">var(--color-primary)</code>, <code class="inline">var(--space-md)</code>, etc. To retheme the app, change the values here only.</p>
+    </div>
+
+    <h2 class="section">Tailwind mapped to tokens — <code class="inline">tailwind.config.js</code></h2>
+    <div class="card core">
+      <div class="ch"><h3>Single-palette Tailwind config</h3><span class="tag core">core</span><span class="file">tailwind.config.js</span></div>
+      <p>Tailwind's <code class="inline">theme.extend</code> maps every utility scale to the SCSS CSS variables. A class like <code class="inline">text-primary</code> resolves to <code class="inline">var(--color-primary)</code> at runtime — the same value the SCSS uses directly. There is no separate Tailwind palette.</p>
+      <pre>module.exports = {
+  content: [<span class="tok-s">'./src/**/*.{html,ts}'</span>],
+  theme: {
+    extend: {
+      colors: {
+        primary:      <span class="tok-s">'var(--color-primary)'</span>,
+        text:         <span class="tok-s">'var(--color-text)'</span>,
+        muted:        <span class="tok-s">'var(--color-muted)'</span>,
+        error:        <span class="tok-s">'var(--color-error)'</span>,
+        border:       <span class="tok-s">'var(--color-border)'</span>,
+        background:   <span class="tok-s">'var(--color-background)'</span>,
+        <span class="tok-s">'on-primary'</span>: <span class="tok-s">'var(--color-on-primary)'</span>,
+      },
+      spacing: {
+        xs: <span class="tok-s">'var(--space-xs)'</span>,  sm: <span class="tok-s">'var(--space-sm)'</span>,
+        md: <span class="tok-s">'var(--space-md)'</span>,  lg: <span class="tok-s">'var(--space-lg)'</span>, xl: <span class="tok-s">'var(--space-xl)'</span>,
+      },
+      borderRadius: { sm: <span class="tok-s">'var(--radius-sm)'</span>, md: <span class="tok-s">'var(--radius-md)'</span> },
+    },
+  },
+};</pre>
+      <p>Tailwind is configured as a PostCSS plugin (<code class="inline">postcss.config.js</code>) alongside <code class="inline">autoprefixer</code>. Angular's build pipeline runs PostCSS automatically.</p>
+    </div>
+
+    <h2 class="section">Design tokens in TypeScript — <code class="inline">theme.ts</code></h2>
+    <div class="card core">
+      <div class="ch"><h3><code class="inline">theme</code> object</h3><span class="tag core">core</span><span class="file">src/app/core/ui/theme/theme.ts</span></div>
+      <p>A typed <code class="inline">as const</code> object that mirrors the CSS variables for use in component TypeScript (e.g. passing a colour to a canvas or a third-party library that does not accept CSS variables).</p>
+      <pre><span class="tok-k">export const</span> <span class="tok-t">theme</span> = {
+  colors: {
+    primary: <span class="tok-s">'#0a84ff'</span>, text: <span class="tok-s">'#111'</span>, muted: <span class="tok-s">'#555'</span>,
+    error: <span class="tok-s">'#c00'</span>, border: <span class="tok-s">'#ccc'</span>, background: <span class="tok-s">'#fff'</span>, onPrimary: <span class="tok-s">'#fff'</span>,
+  },
+  spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
+  radius:  { sm: 6, md: 10 },
+} <span class="tok-k">as const</span>;</pre>
+      <p>These numeric values match the <code class="inline">px</code> values in <code class="inline">theme.scss</code>. If you change a token in <code class="inline">theme.scss</code>, update this object to match.</p>
+    </div>
+
+    <h2 class="section">UI kit components</h2>
+    <div class="card pres">
+      <div class="ch"><h3>Shared components</h3><span class="tag pres">presentation</span><span class="file">src/app/core/ui/components/</span></div>
+      <p>The base ships three shared UI components that consume the tokens above via CSS variables in their inline styles. See <a href="CORE_FILES.html">Core Files</a> for their full API.</p>
+      <table class="conv">
+        <tr><th>Component</th><th>Selector</th><th>Purpose</th></tr>
+        <tr>
+          <td><code class="inline">NavButtonComponent</code></td>
+          <td><code class="inline">app-nav-button</code></td>
+          <td>Themed button with a <code class="inline">(press)</code> output and optional <code class="inline">[disabled]</code></td>
+        </tr>
+        <tr>
+          <td><code class="inline">TextFieldComponent</code></td>
+          <td><code class="inline">app-text-field</code></td>
+          <td>Labeled input with two-way <code class="inline">[(value)]</code> binding</td>
+        </tr>
+        <tr>
+          <td><code class="inline">NotificationHostComponent</code></td>
+          <td><code class="inline">app-notification-host</code></td>
+          <td>Fixed toast banner driven by <code class="inline">NotificationService</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 class="section">Icons — <code class="inline">@lucide/angular</code></h2>
+    <div class="card core">
+      <div class="ch"><h3><code class="inline">Lucide{Icon}</code> directives</h3><span class="tag core">core</span><span class="file">@lucide/angular ^1.22.0</span></div>
+      <p>Standalone, signal-based icon directives. Import the specific icon (e.g. <code class="inline">LucideHome</code>) and apply it as an attribute on an <code class="inline">&lt;svg&gt;</code> element.</p>
+      <pre><span class="tok-c">// In the component:</span>
+<span class="tok-k">import</span> { <span class="tok-t">LucideHome</span> } <span class="tok-k">from</span> <span class="tok-s">'@lucide/angular'</span>;
+
+<span class="tok-t">@Component</span>({
+  imports: [<span class="tok-t">LucideHome</span>],
+  template: <span class="tok-s">`&lt;svg lucideHome [size]="20"&gt;&lt;/svg&gt;`</span>,
+})
+<span class="tok-k">export class</span> <span class="tok-t">MyComponent</span> {}</pre>
+      <p>Browse available icon names at <a href="https://lucide.dev/icons/" target="_blank" rel="noopener">lucide.dev/icons</a>. Import only the icons your component uses — tree-shaking removes the rest.</p>
+    </div>
+
+    <p style="margin-top:28px;">See also: <a href="PROJECT_LIBRARIES.html">Project Libraries</a> for Tailwind/PostCSS version details, and <a href="CORE_FILES.html">Core Files</a> for the full UI-component API.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

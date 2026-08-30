@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Anatomy — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl active" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1>Anatomy of a feature</h1>
+      <p>Every feature is a vertical slice with the same shape. Worked example: <code class="inline">features/user-management</code>.</p>
+    </header>
+
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag pres">presentation</span><span class="tag dom">domain</span>
+      <span class="tag data">data</span><span class="tag core">core</span>
+    </div>
+
+    <h2 class="section">The slice</h2>
+    <pre class="tree"><span class="g">features/user-management/</span>
+  <span class="g data">data/</span>
+    dto/user-management/user.dto.ts          <span class="note"># response DTOs + envelopes + isUserDtoRsValid</span>
+    dto/user-management/create-user.dto.ts   <span class="note"># CreateUserDtoRq (one file per request DTO)</span>
+    dto/user-management/update-user.dto.ts   <span class="note"># UpdateUserDtoRq</span>
+    dto/user-management/set-user-status.dto.ts <span class="note"># SetUserStatusDtoRq</span>
+    repositories/users.repository.impl.ts    <span class="note"># UsersRepositoryImpl (fetch-only)</span>
+    users.providers.ts                       <span class="note"># USERS_PROVIDERS</span>
+    <span class="note"># non-screen data files (interceptors, token stores) stay at data/ root</span>
+  <span class="g dom">domain/</span>
+    model/user-management/user.ts            <span class="note"># User + UserStatus + inputs + toUser</span>
+    repositories/users.repository.ts         <span class="note"># IUsersRepository + USERS_REPOSITORY</span>
+    usecases/user-management/list-users.use-case.ts  <span class="note"># ListUsersUseCase</span>
+  <span class="g pres">presentation/</span>
+    pages/
+      user-management/                       <span class="note"># screen folder</span>
+        user-management.page.ts              <span class="note"># UserManagementPage</span>
+        user-management.page.html            <span class="note"># template</span>
+        users.viewmodel.ts                   <span class="note"># UsersViewModel (signals)</span>
+    <span class="note"># non-screen files (stores, guards) stay at presentation/ root</span>
+  testing/                                   <span class="note"># mirrors data/ · domain/ · presentation/ — all *.spec.ts live here</span>
+    data/
+    domain/
+    presentation/
+      pages/
+        user-management/                     <span class="note"># users.viewmodel.spec.ts</span>
+  index.ts                                   <span class="note"># public barrel</span></pre>
+
+    <h2 class="section">Layer by layer</h2>
+
+    <!-- DTO + validator (data layer) -->
+    <div class="card data">
+      <div class="ch"><h3>DTO + validator</h3><span class="file">data/dto/user-management/user.dto.ts</span><span class="tag data">data</span></div>
+      <p>Transport shape for a single user and the response envelopes. <code class="inline">isUserDtoRsValid</code> guards the raw API payload — including an <code class="inline">ROLE_LABELS</code> membership check — before the use case maps each item to the domain model.</p>
+      <pre>import { BaseResponseRs } from '@core/network/api/base-response-rs';
+import { ROLE_LABELS } from '@core/domain/roles';
+
+export interface UserDtoRs { id: string; fullName: string; email: string; role: string; status: string; mustChangePassword: boolean; }
+export interface UsersDtoRs extends BaseResponseRs&lt;UserDtoRs[]&gt; {}
+export interface UserItemDtoRs extends BaseResponseRs&lt;UserDtoRs&gt; {}
+
+export function isUserDtoRsValid(dto: UserDtoRs): boolean {
+  return (
+    typeof dto.id === 'string' &amp;&amp; dto.id.length &gt; 0 &amp;&amp;
+    typeof dto.fullName === 'string' &amp;&amp;
+    typeof dto.email === 'string' &amp;&amp;
+    typeof dto.role === 'string' &amp;&amp;
+    Object.prototype.hasOwnProperty.call(ROLE_LABELS, dto.role) &amp;&amp;
+    (dto.status === 'active' || dto.status === 'disabled') &amp;&amp;
+    typeof dto.mustChangePassword === 'boolean'
+  );
+}</pre>
+    </div>
+
+    <!-- Model + mapper (domain layer) -->
+    <div class="card dom">
+      <div class="ch"><h3>Model + mapper</h3><span class="file">domain/model/user-management/user.ts</span><span class="tag dom">domain</span></div>
+      <p><code class="inline">User</code> is the clean domain model — free of transport concerns. <code class="inline">toUser</code> maps a validated DTO to it, narrowing the loose <code class="inline">string</code> role and status fields to their typed union counterparts; the import of <code class="inline">UserDtoRs</code> is a one-way allowed cross-boundary reference.</p>
+      <pre>export type UserStatus = 'active' | 'disabled';
+export interface User { id: string; fullName: string; email: string; role: UserRole; status: UserStatus; mustChangePassword: boolean; }
+export function toUser(dto: UserDtoRs): User {
+  return { id: dto.id, fullName: dto.fullName, email: dto.email, role: dto.role as UserRole, status: dto.status as UserStatus, mustChangePassword: dto.mustChangePassword };
+}</pre>
+    </div>
+
+    <!-- Port + token (domain layer) -->
+    <div class="card dom">
+      <div class="ch"><h3>Port + DI token</h3><span class="file">domain/repositories/users.repository.ts</span><span class="tag dom">domain</span></div>
+      <p>The interface defines the contract the domain depends on. The <code class="inline">InjectionToken</code> makes it bindable at runtime — TypeScript interfaces are erased at compilation. The port returns DTO envelopes; the use case owns all validation and mapping.</p>
+      <pre>export interface IUsersRepository {
+  list(): Promise&lt;UsersDtoRs&gt;;
+  create(rq: CreateUserDtoRq): Promise&lt;UserItemDtoRs&gt;;
+  update(id: string, rq: UpdateUserDtoRq): Promise&lt;UserItemDtoRs&gt;;
+  setStatus(id: string, rq: SetUserStatusDtoRq): Promise&lt;UserItemDtoRs&gt;;
+}
+export const USERS_REPOSITORY = new InjectionToken&lt;IUsersRepository&gt;('USERS_REPOSITORY');</pre>
+    </div>
+
+    <!-- Repository impl (data layer) -->
+    <div class="card data">
+      <div class="ch"><h3>Repository impl</h3><span class="file">data/repositories/users.repository.impl.ts</span><span class="tag data">data</span></div>
+      <p>Fetch-only: calls <code class="inline">HttpClientService</code> and returns the typed envelope directly. No validation, no mapping — the repository simply delegates to HTTP. <code class="inline">@Injectable({ providedIn: 'root' })</code> so Angular creates a single shared instance.</p>
+      <pre>@Injectable({ providedIn: 'root' })
+export class UsersRepositoryImpl implements IUsersRepository {
+  private readonly http = inject(HttpClientService);
+  list(): Promise&lt;UsersDtoRs&gt; { return this.http.get&lt;UsersDtoRs&gt;('/api/users'); }
+  create(rq: CreateUserDtoRq): Promise&lt;UserItemDtoRs&gt; { return this.http.post&lt;UserItemDtoRs&gt;('/api/users', { body: rq }); }
+  update(id: string, rq: UpdateUserDtoRq): Promise&lt;UserItemDtoRs&gt; { return this.http.patch&lt;UserItemDtoRs&gt;(`/api/users/${id}`, { body: rq }); }
+  setStatus(id: string, rq: SetUserStatusDtoRq): Promise&lt;UserItemDtoRs&gt; { return this.http.patch&lt;UserItemDtoRs&gt;(`/api/users/${id}/status`, { body: rq }); }
+}</pre>
+    </div>
+
+    <!-- Use case (domain layer) -->
+    <div class="card dom">
+      <div class="ch"><h3>Use case</h3><span class="file">domain/usecases/user-management/list-users.use-case.ts</span><span class="tag dom">domain</span></div>
+      <p>Extends <code class="inline">UseCase&lt;void, User[]&gt;</code>. <code class="inline">execute()</code> calls the repo via the injected port, validates every DTO with <code class="inline">isUserDtoRsValid</code>, and maps to domain <code class="inline">User</code> objects via <code class="inline">toUser</code>. Try/catch and <code class="inline">Result</code> wrapping are inherited from <code class="inline">UseCase.run()</code>.</p>
+      <pre>@Injectable({ providedIn: 'root' })
+export class ListUsersUseCase extends UseCase&lt;void, User[]&gt; {
+  private readonly repo = inject(USERS_REPOSITORY);
+  constructor() { super('ListUsers'); }
+  protected async execute(): Promise&lt;User[]&gt; {
+    const res = await this.repo.list();
+    if (!res.data.every(isUserDtoRsValid)) throw new AppError('Invalid user data received', 'validation');
+    return res.data.map(toUser);
+  }
+}</pre>
+    </div>
+
+    <!-- ViewModel (presentation layer) -->
+    <div class="card pres">
+      <div class="ch"><h3>ViewModel</h3><span class="file">presentation/pages/user-management/users.viewmodel.ts</span><span class="tag pres">presentation</span></div>
+      <p>Route-scoped via <code class="inline">providers: [UsersViewModel]</code> in <code class="inline">app.routes.ts</code> — a fresh instance per navigation. Exposes signals the page binds to. On failure, shows an error toast via <code class="inline">NotificationService</code> (<code class="inline">this.notify.error(r.error.message)</code>) — no error signal, no stale-data clear. No try/catch — <code class="inline">UseCase.run()</code> always returns a <code class="inline">Result</code>.</p>
+      <pre>@Injectable()
+export class UsersViewModel {
+  private readonly listUsers = inject(ListUsersUseCase);
+  private readonly notify = inject(NotificationService);
+
+  readonly users = signal&lt;User[]&gt;([]);
+  readonly loading = signal(false);
+
+  async load(): Promise&lt;void&gt; {
+    this.loading.set(true);
+    const r = await this.listUsers.run();
+    this.loading.set(false);
+    if (r.ok) this.users.set(r.data);
+    else this.notify.error(r.error.message);
+  }
+}</pre>
+    </div>
+
+    <!-- Page (presentation layer) -->
+    <div class="card pres">
+      <div class="ch"><h3>Page</h3><span class="file">presentation/pages/user-management/user-management.page.ts</span><span class="tag pres">presentation</span></div>
+      <p>A standalone component that injects <code class="inline">UsersViewModel</code> (provided by the route) and calls <code class="inline">vm.load()</code> on init. It reads signals reactively — no manual subscriptions. Errors and success confirmations surface via <code class="inline">NotificationService</code>.</p>
+      <pre>export class UserManagementPage implements OnInit {
+  protected readonly vm = inject(UsersViewModel);
+  readonly ROLE_LABELS = ROLE_LABELS;
+
+  ngOnInit(): void { void this.vm.load(); }
+}</pre>
+    </div>
+
+    <h2 class="section">Wiring (composition root)</h2>
+    <div class="card core">
+      <div class="ch"><h3>Global providers + route</h3><span class="file">app.config.ts · app.routes.ts</span></div>
+      <p>Repository token→impl bindings are global in <code class="inline">app.config.ts</code>; use cases and <code class="inline">UsersRepositoryImpl</code> are <code class="inline">providedIn: 'root'</code>. Only the <code class="inline">UsersViewModel</code> is route-scoped, giving each navigation a fresh instance.</p>
+      <pre>// app.config.ts (excerpt)
+providers: [
+  provideRouter(routes),
+  provideHttpClient(withInterceptors([authInterceptor])),
+  provideAnimations(),
+  ...AUTH_PROVIDERS,
+  ...USERS_PROVIDERS,   // { provide: USERS_REPOSITORY, useClass: UsersRepositoryImpl }
+],
+
+// app.routes.ts (excerpt)
+{
+  path: 'user-management',
+  canActivate: [roleGuard('admin')],
+  loadComponent: () =&gt; import('@features/user-management').then(m =&gt; m.UserManagementPage),
+  providers: [UsersViewModel],
+}</pre>
+    </div>
+
+    <h2 class="section">Repository-port pattern</h2>
+    <div class="card dom">
+      <p>All HTTP-backed features follow the <b>fetch-only / validate-in-use-case</b> pattern: the port returns the transport <b>DTO envelope</b> (e.g. <code class="inline">Promise&lt;UsersDtoRs&gt;</code>); the <b>use case</b> is the single place that validates (<code class="inline">isUserDtoRsValid</code>) and maps to the domain model (<code class="inline">toUser</code>). The repository never validates or maps — it simply delegates to <code class="inline">HttpClientService</code> and returns whatever envelope the API returns. For local / trusted data (e.g. a <code class="inline">KeyValueStore</code>-backed feature), the port may return the domain model directly; no DTO or validation layer is needed in that case.</p>
+    </div>
+
+    <h2 class="section">Naming conventions</h2>
+    <table class="conv">
+      <tr><th>Kind</th><th>Convention</th><th>Example (user-management)</th></tr>
+      <tr><td>Response / request DTO</td><td><code>…DtoRs</code> / <code>…DtoRq</code></td><td><code>data/dto/user-management/user.dto.ts</code> (response + validator) · <code>data/dto/user-management/create-user.dto.ts</code> (one file per request)</td></tr>
+      <tr><td>Repository port + token</td><td><code>I…Repository</code> interface + <code>…_REPOSITORY</code> InjectionToken in one file</td><td><code>domain/repositories/users.repository.ts</code></td></tr>
+      <tr><td>Repository impl</td><td><code>…RepositoryImpl</code></td><td><code>data/repositories/users.repository.impl.ts</code></td></tr>
+      <tr><td>Use case</td><td><code>…UseCase</code> (extends <code>UseCase&lt;I,O&gt;</code>)</td><td><code>domain/usecases/user-management/list-users.use-case.ts</code></td></tr>
+      <tr><td>ViewModel</td><td><code>…ViewModel</code> (<code>@Injectable</code> facade, signals)</td><td><code>presentation/pages/user-management/users.viewmodel.ts</code></td></tr>
+      <tr><td>Providers</td><td><code>…_PROVIDERS</code> array in <code>data/&lt;feature&gt;.providers.ts</code></td><td><code>data/users.providers.ts</code></td></tr>
+      <tr><td>Filenames</td><td>kebab-case throughout</td><td></td></tr>
+    </table>
+
+    <h2 class="section">How to add a feature</h2>
+    <ol class="steps">
+      <li><b>Create the folders</b> <code class="inline">features/&lt;feature&gt;/{data,domain,presentation/pages/&lt;screen&gt;,testing}</code>.</li>
+      <li><b>DTO + validator</b> — response DTOs and their validator together in <code class="inline">data/dto/&lt;screen&gt;/&lt;resource&gt;.dto.ts</code>; each request DTO in its own file <code class="inline">data/dto/&lt;screen&gt;/&lt;operation&gt;.dto.ts</code>. Use <code class="inline">shared/</code> when the DTO is used by the store, interceptor, app-init, or across multiple screens (HTTP-backed features).</li>
+      <li><b>Model + mapper</b> — screen-specific input types in <code class="inline">domain/model/&lt;screen&gt;/&lt;entity&gt;.ts</code>; feature-wide aggregate + mappers in <code class="inline">domain/model/shared/&lt;aggregate&gt;.ts</code>.</li>
+      <li><b>Port + token</b>: <code class="inline">I…Repository</code> interface + <code class="inline">InjectionToken</code> in <code class="inline">domain/repositories/&lt;entity&gt;.repository.ts</code>.</li>
+      <li><b>Repository impl</b> (<code class="inline">providedIn: 'root'</code>) in <code class="inline">data/repositories/&lt;entity&gt;.repository.impl.ts</code>.</li>
+      <li><b>Providers array</b> <code class="inline">…_PROVIDERS</code> in <code class="inline">data/&lt;feature&gt;.providers.ts</code>; spread into <code class="inline">app.config.ts</code>. Other non-screen data files (interceptors, token stores) also stay at the <code class="inline">data/</code> root.</li>
+      <li><b>Use case</b> (<code class="inline">providedIn: 'root'</code>) extending <code class="inline">UseCase</code> in <code class="inline">domain/usecases/&lt;screen&gt;/&lt;verb&gt;-&lt;entity&gt;.use-case.ts</code>. The screen that triggers the operation owns it. Use cases owned by the store, interceptor, or app-init — or shared across multiple screens — go in <code class="inline">domain/usecases/shared/</code>.</li>
+      <li><b>Screen folder</b> at <code class="inline">presentation/pages/&lt;screen&gt;/</code> containing <code class="inline">&lt;screen&gt;.page.ts</code>, <code class="inline">&lt;screen&gt;.page.html</code>, and (when the screen has state) <code class="inline">&lt;screen&gt;.viewmodel.ts</code>. Non-screen presentation files (stores, guards) stay at the <code class="inline">presentation/</code> root.</li>
+      <li><b>Barrel</b> <code class="inline">index.ts</code>; <b>wire the route</b> with <code class="inline">providers: [FeatureViewModel]</code> (route-scoped).</li>
+      <li><b>Tests</b> in <code class="inline">testing/</code> — place specs at the mirrored path (e.g. <code class="inline">testing/presentation/pages/&lt;screen&gt;/&lt;screen&gt;.viewmodel.spec.ts</code>, <code class="inline">testing/domain/usecases/…</code>). Specs import the unit under test via <code class="inline">@features</code>/<code class="inline">@core</code> aliases; Jest discovers them via its <code class="inline">**/*.spec.ts</code> glob — no config change needed.</li>
+    </ol>
+
+    <footer class="page">
+      Feature Anatomy — Angular v20 base architecture. See the
+      <a href="superpowers/specs/2026-06-26-angular-base-design.md">design spec</a>
+      and the other pages above.
+    </footer>
+  </div>
+</body>
+</html>

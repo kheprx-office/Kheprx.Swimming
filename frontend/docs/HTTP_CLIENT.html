@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP Client — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl active" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">HttpClientService</span> — all-verb HTTP client</h1>
+      <p>A typed Promise wrapper over Angular <code class="inline">HttpClient</code>. Five verbs, configurable retry/backoff on transport failures, and unified error mapping via <code class="inline">toAppError</code>.</p>
+    </header>
+
+    <div class="banner"><strong>Where it sits:</strong> <code class="inline">src/app/core/network/api/http-client.ts</code>. Repositories inject <code class="inline">HttpClientService</code> directly and return the DTO envelope; the use case validates and maps.</div>
+
+    <h2 class="section">Interface</h2>
+    <div class="card core">
+      <div class="ch"><h3><code class="inline">HttpRequestOptions</code></h3><span class="tag core">core</span><span class="file">src/app/core/network/api/http-client.ts</span></div>
+      <p>All five verb methods accept an optional <code class="inline">HttpRequestOptions</code> bag. Only the fields relevant to the call need to be present.</p>
+      <pre><span class="tok-k">export type</span> <span class="tok-t">HttpMethod</span> = <span class="tok-s">'GET'</span> | <span class="tok-s">'POST'</span> | <span class="tok-s">'PUT'</span> | <span class="tok-s">'PATCH'</span> | <span class="tok-s">'DELETE'</span>;
+
+<span class="tok-k">export interface</span> <span class="tok-t">HttpRequestOptions</span> {
+  body?:    unknown;
+  headers?: Record&lt;<span class="tok-k">string</span>, <span class="tok-k">string</span>&gt;;
+  params?:  Record&lt;<span class="tok-k">string</span>, <span class="tok-k">string</span> | <span class="tok-k">number</span> | <span class="tok-k">boolean</span>&gt;;
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>Five verb methods</h3><span class="tag core">core</span><span class="file">src/app/core/network/api/http-client.ts</span></div>
+      <p>Each method returns <code class="inline">Promise&lt;T&gt;</code>. On success the promise resolves with the parsed JSON body. On failure it rejects with an <code class="inline">AppError</code> (see <a href="ERROR_HANDLING.html">Error Handling</a>).</p>
+      <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">HttpClientService</span> {
+  get&lt;<span class="tok-t">T</span>&gt;(path: <span class="tok-k">string</span>, opts?: <span class="tok-t">HttpRequestOptions</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">T</span>&gt;;
+  post&lt;<span class="tok-t">T</span>&gt;(path: <span class="tok-k">string</span>, opts?: <span class="tok-t">HttpRequestOptions</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">T</span>&gt;;
+  put&lt;<span class="tok-t">T</span>&gt;(path: <span class="tok-k">string</span>, opts?: <span class="tok-t">HttpRequestOptions</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">T</span>&gt;;
+  patch&lt;<span class="tok-t">T</span>&gt;(path: <span class="tok-k">string</span>, opts?: <span class="tok-t">HttpRequestOptions</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">T</span>&gt;;
+  delete&lt;<span class="tok-t">T</span>&gt;(path: <span class="tok-k">string</span>, opts?: <span class="tok-t">HttpRequestOptions</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">T</span>&gt;;
+}</pre>
+      <p>The <code class="inline">path</code> is appended to <code class="inline">env.api.baseUrl</code>. Query string parameters go in <code class="inline">opts.params</code> (serialised via <code class="inline">HttpParams</code>); never embed them in the path string.</p>
+    </div>
+
+    <h2 class="section">Retry &amp; timeout</h2>
+    <div class="card core">
+      <div class="ch"><h3>Transient-only retry with exponential backoff</h3><span class="tag core">core</span></div>
+      <p>Transport failures (status <code class="inline">0</code>) and <code class="inline">TimeoutError</code> are retried. HTTP errors (<code class="inline">4xx</code>/<code class="inline">5xx</code>) are <strong>never</strong> retried — they represent server responses, not connectivity gaps.</p>
+      <pre><span class="tok-c">// inside request() — adapted from http-client.ts</span>
+obs.pipe(
+  <span class="tok-t">timeout</span>(env.api.timeoutMs),           <span class="tok-c">// default 10 000 ms</span>
+  <span class="tok-t">retry</span>({
+    count: env.api.maxRetries,            <span class="tok-c">// 2 retries → 3 total attempts</span>
+    delay: (error, attempt) =&gt; {
+      <span class="tok-k">if</span> (!<span class="tok-k">this</span>.<span class="tok-t">isTransient</span>(error)) <span class="tok-k">throw</span> error;  <span class="tok-c">// non-transient → propagate immediately</span>
+      <span class="tok-k">const</span> ms = env.api.backoffMs[attempt - 1] ?? 0; <span class="tok-c">// [500, 1500]</span>
+      <span class="tok-k">return</span> <span class="tok-t">timer</span>(ms);
+    },
+  }),
+)</pre>
+      <table class="conv">
+        <tr><th>Config key</th><th>Default</th><th>Meaning</th></tr>
+        <tr><td><code class="inline">env.api.timeoutMs</code></td><td>10 000</td><td>ms before an rxjs <code class="inline">TimeoutError</code> is thrown</td></tr>
+        <tr><td><code class="inline">env.api.maxRetries</code></td><td>2</td><td>additional attempts after the first (3 total)</td></tr>
+        <tr><td><code class="inline">env.api.backoffMs</code></td><td>[500, 1500]</td><td>delay before retry 1, delay before retry 2</td></tr>
+      </table>
+    </div>
+
+    <h2 class="section">Error mapping — <code class="inline">toAppError</code></h2>
+    <div class="card core">
+      <div class="ch"><h3><code class="inline">toAppError</code></h3><span class="tag core">core</span><span class="file">src/app/core/network/api/http-error.ts</span></div>
+      <p>Every rejection passes through <code class="inline">toAppError</code> before reaching the caller. This converts Angular's <code class="inline">HttpErrorResponse</code> (or an rxjs <code class="inline">TimeoutError</code>) into a typed <code class="inline">AppError</code>. Callers always receive an <code class="inline">AppError</code> — never a raw Angular error.</p>
+      <pre><span class="tok-k">export function</span> <span class="tok-t">toAppError</span>(err: unknown): <span class="tok-t">AppError</span> {
+  <span class="tok-k">if</span> (err <span class="tok-k">instanceof</span> <span class="tok-t">HttpErrorResponse</span>) {
+    <span class="tok-k">if</span> (err.status === 0) <span class="tok-k">return new</span> <span class="tok-t">AppError</span>(err.message || <span class="tok-s">'Network request failed'</span>, <span class="tok-s">'network'</span>);
+    <span class="tok-k">const</span> body = err.error <span class="tok-k">as</span> { message?: <span class="tok-k">string</span>; code?: <span class="tok-k">string</span> } | <span class="tok-k">string</span> | <span class="tok-k">null</span>;
+    <span class="tok-k">const</span> message = body &amp;&amp; <span class="tok-k">typeof</span> body === <span class="tok-s">'object'</span> &amp;&amp; body.message ? body.message : <span class="tok-s">`HTTP ${err.status}`</span>;
+    <span class="tok-k">const</span> code    = body &amp;&amp; <span class="tok-k">typeof</span> body === <span class="tok-s">'object'</span> ? body.code : undefined;
+    <span class="tok-k">const</span> kind    = err.status === 401 ? <span class="tok-s">'auth'</span> : <span class="tok-s">'http'</span>;
+    <span class="tok-k">return new</span> <span class="tok-t">AppError</span>(message, kind, err.status, code);
+  }
+  <span class="tok-k">return new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Network request failed'</span>, <span class="tok-s">'network'</span>); <span class="tok-c">// TimeoutError or other transport failure</span>
+}</pre>
+      <table class="conv">
+        <tr><th>Condition</th><th><code class="inline">AppError.kind</code></th><th>Notes</th></tr>
+        <tr><td><code class="inline">status === 0</code></td><td><code class="inline">'network'</code></td><td>No response received (offline, DNS, CORS preflight)</td></tr>
+        <tr><td><code class="inline">status === 401</code></td><td><code class="inline">'auth'</code></td><td>Unauthenticated; interceptor attempts a token refresh first</td></tr>
+        <tr><td>Other non-2xx</td><td><code class="inline">'http'</code></td><td>Carries <code class="inline">status</code> and optional backend <code class="inline">code</code> string</td></tr>
+        <tr><td>rxjs <code class="inline">TimeoutError</code></td><td><code class="inline">'network'</code></td><td>Treated as a transport failure (already retried)</td></tr>
+      </table>
+    </div>
+
+    <p style="margin-top:28px;">Read next: <a href="DATA_SOURCE_SEAM.html">Repository Layer</a> — how repositories call <code class="inline">HttpClientService</code> directly and return the raw DTO envelope, and how the use case validates and maps.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

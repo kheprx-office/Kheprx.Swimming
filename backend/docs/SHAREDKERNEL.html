@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharedKernel — Kheprx.BaseBackend.SharedKernel</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    --dom: #166534; --dom-bg: #dcfce7; --app: #5b21b6; --app-bg: #ede9fe;
+    --inf: #9a3412; --inf-bg: #ffedd5; --con: #0f766e; --con-bg: #ccfbf1;
+    --host: #2563eb; --host-bg: #eaf1ff; --shared: #475569; --shared-bg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.page { padding: 30px 0 18px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.85rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .backlink { margin: 14px 0 0; font-size: 0.9rem; }
+  .backlink a { color: var(--accent); text-decoration: none; }
+  .deps { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 12px 16px; margin: 16px 0; font-size: 0.9rem; }
+  .deps b { color: var(--text); }
+  h2.section { font-size: 1.18rem; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p { font-size: 0.95rem; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); } .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); } .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); } .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .simple { background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #166534; border-radius: 10px; padding: 11px 15px; margin: 14px 0; font-size: 0.92rem; }
+  .simple b { color: #166534; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: var(--accent); }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: var(--accent); margin-top: 3px; }
+  footer.page { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer.page a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="tag shared">SharedKernel</span> <span class="mono">Kheprx.BaseBackend.SharedKernel</span></h1>
+      <p>Cross-cutting building blocks shared by every module — never module-specific.</p>
+    </header>
+    <p class="backlink"><a href="MODULE_ANATOMY.html">← Back to Module Anatomy</a></p>
+    <div class="deps"><b>Depends on:</b> nothing. &nbsp;·&nbsp; <b>Referenced by:</b> every module layer (and transitively the host).</div>
+
+    <h2 class="section">Files in this project</h2>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>ApiResponse&lt;T&gt; — the typed HTTP envelope</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Responses/ApiResponse.cs</div>
+      <p>The generic HTTP response wrapper returned by all API endpoints. Extends <code class="inline">BaseApiResponse</code> and adds a typed <code class="inline">Data</code> payload.</p>
+<pre>namespace Kheprx.BaseBackend.SharedKernel.Responses;
+
+public sealed class ApiResponse&lt;T&gt; : BaseApiResponse
+{
+    public T? Data { get; init; }
+
+    public static ApiResponse&lt;T&gt; Success(string message, T? data) =&gt;
+        new() { SuccessStatus = true, Message = message, Data = data };
+
+    public static ApiResponse&lt;T&gt; Failure(string message, string error) =&gt;
+        new() { SuccessStatus = false, Message = message, Error = error };
+}</pre>
+      <p><b>What's happening here:</b> two static factory methods — <code class="inline">Success</code> and <code class="inline">Failure</code> — are the canonical way to construct an <code class="inline">ApiResponse&lt;T&gt;</code>. <code class="inline">Success</code> sets <code class="inline">SuccessStatus = true</code> and carries a typed <code class="inline">Data</code> value; <code class="inline">Failure</code> sets <code class="inline">SuccessStatus = false</code> and carries an <code class="inline">Error</code> string. All properties use <code class="inline">init</code> setters, making instances immutable after construction. Controllers use these factories to produce a uniform JSON shape across every endpoint.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>BaseApiResponse — the common envelope fields</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Responses/BaseApiResponse.cs</div>
+      <p>The abstract base that defines the three fields present on every API response: success flag, human-readable message, and optional error detail.</p>
+<pre>namespace Kheprx.BaseBackend.SharedKernel.Responses;
+
+public abstract class BaseApiResponse
+{
+    public bool SuccessStatus { get; init; }
+    public string Message { get; init; } = string.Empty;
+    public string? Error { get; init; }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">BaseApiResponse</code> is abstract so it can never be instantiated directly — only through its concrete subclass <code class="inline">ApiResponse&lt;T&gt;</code>. It declares <code class="inline">SuccessStatus</code> (whether the operation succeeded), <code class="inline">Message</code> (a human-readable summary, defaulting to <code class="inline">string.Empty</code>), and <code class="inline">Error</code> (nullable detail string for failures). All three are <code class="inline">init</code>-only, enforcing immutability. Splitting the envelope into base + generic subclass lets controllers return <code class="inline">ApiResponse&lt;T&gt;</code> without losing the common fields when the type parameter is not known.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>AppLanguage — the app-language switch</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Resources/AppLanguage.cs</div>
+      <p>The single point that determines the response language for all resource classes. <code class="inline">Current</code> returns <code class="inline">"ar"</code> today; later this will be resolved per request from the <code class="inline">Accept-Language</code> header without touching any message class.</p>
+<pre>namespace Kheprx.BaseBackend.SharedKernel.Resources;
+
+public static class AppLanguage
+{
+    public static string Current =&gt; "ar";
+}</pre>
+      <p><b>What's happening here:</b> every <code class="inline">&hellip;Messages</code> method accepts a <code class="inline">string lang</code> parameter and switches on it. Controllers and validators call those methods as <code class="inline">ProductMessages.Errors.ProductNotFound(AppLanguage.Current)</code> — passing <code class="inline">AppLanguage.Current</code> each time. Changing <code class="inline">"ar"</code> to another value here would flip the entire app's response language in one edit. The <code class="inline">BaseApiController</code> already exposes an <code class="inline">AcceptLanguage</code> helper for the future per-request step.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>CommonMessages — shared localized texts</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Resources/CommonMessages.cs</div>
+      <p>Localized message strings shared across modules: <code class="inline">ValidationFailed</code>, <code class="inline">ValidationFallback</code>, <code class="inline">ServerError</code>, and generic field-validation texts (email, password, full name). Feature-specific messages live in the module's own Application <code class="inline">Resources/</code> class.</p>
+<pre>public static class CommonMessages
+{
+    public static class Errors
+    {
+        public static string ValidationFailed(string lang) =&gt; lang switch
+        {
+            "ar" =&gt; "فشل التحقق من البيانات",
+            _ =&gt; "Validation failed"
+        };
+
+        public static string ValidationFallback(string lang) =&gt; lang switch
+        {
+            "ar" =&gt; "حدث خطأ في التحقق من البيانات",
+            _ =&gt; "One or more validation errors occurred."
+        };
+
+        public static string EmailRequired(string lang) =&gt; lang switch
+        {
+            "ar" =&gt; "البريد الإلكتروني مطلوب",
+            _ =&gt; "Email is required"
+        };
+        // &hellip; ServerError, EmailInvalid, EmailTooLong, PasswordRequired, PasswordMinLength, PasswordTooLong, FullNameRequired, FullNameTooLong
+    }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">ValidationFailed</code> and <code class="inline">ValidationFallback</code> are called by <code class="inline">ValidationFilter</code> and <code class="inline">ModelStateResponse</code>; the field texts are used by validators (e.g. <code class="inline">LoginRequestValidator</code>). Modules keep feature-specific texts in their own Application <code class="inline">Resources/</code> classes (e.g. <code class="inline">ProductMessages</code>, <code class="inline">AuthMessages</code>).</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>BaseEntity — the aggregate base</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Domain/BaseEntity.cs</div>
+      <p>Abstract base class that every domain entity inherits from. Provides the surrogate key and audit timestamps, plus a <code class="inline">Touch()</code> helper to stamp <code class="inline">UpdatedAt</code>.</p>
+<pre>namespace Kheprx.BaseBackend.SharedKernel.Domain;
+
+public abstract class BaseEntity
+{
+    public int Id { get; protected set; }
+    public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; protected set; }
+
+    protected void Touch() => UpdatedAt = DateTime.UtcNow;
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">Id</code> is an <code class="inline">int</code> surrogate key with a <code class="inline">protected</code> setter so EF Core can populate it but application code cannot assign it directly. <code class="inline">CreatedAt</code> defaults to <code class="inline">DateTime.UtcNow</code> at construction time and is also <code class="inline">protected set</code>. <code class="inline">UpdatedAt</code> is nullable — it starts as <code class="inline">null</code> and is stamped the first time the entity changes. <code class="inline">Touch()</code> is <code class="inline">protected</code>, so only the entity's own mutation methods (like <code class="inline">Product.Rename</code>) can call it — external code cannot bypass the domain's invariants to update the timestamp. See <a href="MODULE_DOMAIN.html">Domain</a> for how <code class="inline">Product</code> extends this base.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>DomainException — the domain error base</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Domain/DomainException.cs</div>
+      <p>Abstract base exception for all domain rule violations. The host's <code class="inline">ExceptionHandlingMiddleware</code> catches any <code class="inline">DomainException</code> and converts it to a clean HTTP 400 response.</p>
+<pre>namespace Kheprx.BaseBackend.SharedKernel.Domain;
+
+public abstract class DomainException : Exception
+{
+    protected DomainException(string message) : base(message) { }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">DomainException</code> is abstract, so modules must subclass it (e.g. <code class="inline">InvalidProductException : DomainException</code>) rather than throwing it directly. The constructor is <code class="inline">protected</code>, as an additional signal that only subclasses can be instantiated. By inheriting from <code class="inline">Exception</code>, any <code class="inline">DomainException</code> is a standard .NET exception that propagates normally — but the host's middleware intercepts it before it becomes a 500. This keeps domain entities completely unaware of HTTP: they throw a domain exception, and the infrastructure layer translates it to an error response.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>IModule — the module registration contract</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Modules/IModule.cs</div>
+      <p>The interface every module's registration class must implement. Defines the single method the host calls to let each module wire up its own services.</p>
+<pre>using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Kheprx.BaseBackend.SharedKernel.Modules;
+
+public interface IModule
+{
+    IServiceCollection Register(IServiceCollection services, IConfiguration configuration);
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">IModule</code> is the registration contract between the host and each feature module. A module implements this interface in its own assembly (for example, <code class="inline">CatalogModule : IModule</code>) and uses <code class="inline">Register</code> to add its own services, validators, MediatR handlers, and EF Core context to the DI container. The host never needs to reference any module assembly directly — <code class="inline">ModuleRegistration</code> discovers implementations at runtime. See <a href="IMODULE_CONVENTION.html">The IModule convention</a> for a full walkthrough.</p>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">SharedKernel</span><h3>ModuleRegistration — the auto-discovery helper</h3></div>
+      <div class="file">src/SharedKernel/Kheprx.BaseBackend.SharedKernel/Modules/ModuleRegistration.cs</div>
+      <p>Static helper with the <code class="inline">AddModules</code> extension method. Scans the output directory for <code class="inline">Kheprx.BaseBackend.*.dll</code> assemblies, loads any not yet in the process, then instantiates and invokes every concrete <code class="inline">IModule</code> implementation it finds.</p>
+<pre>using System.Reflection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Kheprx.BaseBackend.SharedKernel.Modules;
+
+public static class ModuleRegistration
+{
+    public static IServiceCollection AddModules(this IServiceCollection services, IConfiguration configuration)
+    {
+        foreach (var module in DiscoverModules())
+            module.Register(services, configuration);
+        return services;
+    }
+
+    private static IEnumerable&lt;IModule&gt; DiscoverModules()
+    {
+        var loaded = new HashSet&lt;string&gt;(
+            AppDomain.CurrentDomain.GetAssemblies().Select(a =&gt; a.GetName().Name!));
+
+        foreach (var dll in Directory.GetFiles(AppContext.BaseDirectory, "Kheprx.BaseBackend.*.dll"))
+        {
+            var name = Path.GetFileNameWithoutExtension(dll);
+            if (loaded.Add(name))
+            {
+                try { Assembly.LoadFrom(dll); }
+                catch { /* skip assemblies that cannot be loaded */ }
+            }
+        }
+
+        var moduleType = typeof(IModule);
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(SafeGetTypes)
+            .Where(t =&gt; moduleType.IsAssignableFrom(t) &amp;&amp; t is { IsClass: true, IsAbstract: false })
+            .Select(t =&gt; (IModule)Activator.CreateInstance(t)!);
+    }
+
+    private static IEnumerable&lt;Type&gt; SafeGetTypes(Assembly assembly)
+    {
+        try { return assembly.GetTypes(); }
+        catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t =&gt; t is not null)!; }
+    }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">AddModules</code> is an <code class="inline">IServiceCollection</code> extension called once in the host's <code class="inline">Program.cs</code>. <code class="inline">DiscoverModules</code> first records which assemblies are already loaded (to avoid re-loading), then calls <code class="inline">Directory.GetFiles</code> to find every <code class="inline">Kheprx.BaseBackend.*.dll</code> in the application's output folder and loads any that are new. It then walks all loaded assemblies via <code class="inline">SafeGetTypes</code> (which swallows <code class="inline">ReflectionTypeLoadException</code> for partial-load scenarios), filters to concrete non-abstract types assignable to <code class="inline">IModule</code>, and activates each with <code class="inline">Activator.CreateInstance</code>. The result: the host registers all module services without a compile-time reference to any module assembly. See <a href="IMODULE_CONVENTION.html">The IModule convention</a> for the full picture.</p>
+    </div>
+
+    <div class="simple"><b>In simple words:</b> SharedKernel is the foundation everything else stands on. <code class="inline">BaseApiResponse</code>/<code class="inline">ApiResponse&lt;T&gt;</code> give every endpoint the same JSON envelope. <code class="inline">BaseEntity</code> gives every aggregate root its Id, timestamps, and <code class="inline">Touch()</code> — see <a href="MODULE_DOMAIN.html">Domain</a> for usage. <code class="inline">DomainException</code> lets domain entities signal rule violations without knowing anything about HTTP. <code class="inline">AppLanguage</code> + <code class="inline">CommonMessages</code> provide the language switch and shared localized texts (validation, field errors) used by every module. <code class="inline">IModule</code> and <code class="inline">ModuleRegistration</code> wire every module into the host automatically — see <a href="IMODULE_CONVENTION.html">The IModule convention</a> for a full walkthrough. No module adds code here; they only consume it.</div>
+
+    <div class="pager">
+      <a href="MODULE_CONTRACTS.html"><span class="dir">← Previous</span><span class="ttl">Contracts</span></a>
+      <a class="next" href="IMODULE_CONVENTION.html"><span class="dir">Next →</span><span class="ttl">The IModule convention</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="index.html">Home</a> · <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

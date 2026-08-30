@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Host / Api — Kheprx.BaseBackend.Api</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    --dom: #166534; --dom-bg: #dcfce7; --app: #5b21b6; --app-bg: #ede9fe;
+    --inf: #9a3412; --inf-bg: #ffedd5; --con: #0f766e; --con-bg: #ccfbf1;
+    --host: #2563eb; --host-bg: #eaf1ff; --shared: #475569; --shared-bg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.page { padding: 30px 0 18px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.85rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .backlink { margin: 14px 0 0; font-size: 0.9rem; }
+  .backlink a { color: var(--accent); text-decoration: none; }
+  .deps { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 12px 16px; margin: 16px 0; font-size: 0.9rem; }
+  .deps b { color: var(--text); }
+  h2.section { font-size: 1.18rem; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p { font-size: 0.95rem; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); } .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); } .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); } .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .simple { background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #166534; border-radius: 10px; padding: 11px 15px; margin: 14px 0; font-size: 0.92rem; }
+  .simple b { color: #166534; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: var(--accent); }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: var(--accent); margin-top: 3px; }
+  footer.page { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer.page a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="tag host">Host / Api</span> <span class="mono">Kheprx.BaseBackend.Api</span></h1>
+      <p>The composition root — controllers, the request pipeline, validation, error handling, and module wiring.</p>
+    </header>
+    <p class="backlink"><a href="MODULE_ANATOMY.html">← Back to Module Anatomy</a></p>
+    <div class="deps"><b>References:</b> each module's Infrastructure, SharedKernel. &nbsp;·&nbsp; ★ the composition root (see <a href="RUNTIME_VS_REFERENCES.html">Two Flows</a>).</div>
+
+    <h2 class="section">Files in this project</h2>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>Program.cs — the entry point</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Program.cs</div>
+      <p>Builds and runs the ASP.NET Core application: configures Serilog, registers all modules and shared infrastructure, then activates the shared middleware pipeline.</p>
+<pre>using Kheprx.BaseBackend.Api.Extensions;
+using Kheprx.BaseBackend.SharedKernel.Modules;
+using Serilog;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, loggerConfiguration) =&gt;
+    loggerConfiguration.ReadFrom.Configuration(context.Configuration));
+
+builder.Services.AddModules(builder.Configuration);
+builder.Services.AddSharedInfrastructure(builder.Configuration);
+
+var app = builder.Build();
+app.UseSharedPipeline(app.Environment);
+app.Run();</pre>
+      <p><b>What's happening here:</b> <code class="inline">AddModules</code> (from <code class="inline">Kheprx.BaseBackend.SharedKernel.Modules</code>) discovers every <code class="inline">IModule</code> implementation and calls its <code class="inline">Register</code> method, wiring each module's own DI registrations. <code class="inline">AddSharedInfrastructure</code> registers controllers, FluentValidation, Swagger, and CORS. <code class="inline">UseSharedPipeline</code> builds the middleware stack — exception handling, Swagger UI, Serilog request logging, CORS, and controller routing — all in one call. This file is intentionally minimal; all heavy wiring lives in the Extensions.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>BaseApiController — the controller base</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Controllers/BaseApiController.cs</div>
+      <p>The abstract base class for all controllers: applies <code class="inline">[ApiController]</code> and a conventional <code class="inline">api/[controller]</code> route, and exposes the <code class="inline">Accept-Language</code> header as a protected helper.</p>
+<pre>using Microsoft.AspNetCore.Mvc;
+
+namespace Kheprx.BaseBackend.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public abstract class BaseApiController : ControllerBase
+{
+    protected string AcceptLanguage =&gt; Request.Headers.AcceptLanguage.ToString();
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">[ApiController]</code> enables automatic model-state validation (overridden here by <code class="inline">ModelStateResponse</code>), binding-source inference, and problem-details responses. Putting the route template and the attribute on the base keeps every derived controller consistent without repeating boilerplate. <code class="inline">AcceptLanguage</code> is a convenience accessor that concrete controllers can read when they need to tailor responses to the caller's locale.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ProductsController — the CRUD surface</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Controllers/ProductsController.cs</div>
+      <p>Exposes the five standard product endpoints; delegates all logic to <code class="inline">IProductService</code> (an <b>Application</b> layer interface) and wraps every response in <code class="inline">ApiResponse&lt;T&gt;</code> (a <b>SharedKernel</b> type). Response messages come from static resource classes (e.g. <code class="inline">ProductMessages</code>, <code class="inline">CommonMessages</code>) that localize per <code class="inline">AppLanguage.Current</code> — Arabic today, English kept as the default arm.</p>
+<pre>using Kheprx.BaseBackend.Api.Controllers;
+using Kheprx.BaseBackend.Catalog.Application.DTOs;
+using Kheprx.BaseBackend.Catalog.Application.Resources;
+using Kheprx.BaseBackend.Catalog.Application.Services.Interfaces;
+using Kheprx.BaseBackend.SharedKernel.Resources;
+using Kheprx.BaseBackend.SharedKernel.Responses;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Kheprx.BaseBackend.Api.Controllers;
+
+public sealed class ProductsController : BaseApiController
+{
+    private readonly IProductService _service;
+
+    public ProductsController(IProductService service) =&gt; _service = service;
+
+    [HttpGet]
+    public async Task&lt;ActionResult&lt;ApiResponse&lt;IReadOnlyList&lt;ProductDto&gt;&gt;&gt;&gt; GetAll(CancellationToken ct)
+        =&gt; Ok(ApiResponse&lt;IReadOnlyList&lt;ProductDto&gt;&gt;.Success(
+            ProductMessages.Success.ProductsListed(AppLanguage.Current), await _service.GetAllAsync(ct)));
+
+    [HttpGet("{id:int}")]
+    public async Task&lt;ActionResult&lt;ApiResponse&lt;ProductDto&gt;&gt;&gt; GetById(int id, CancellationToken ct)
+    {
+        var product = await _service.GetByIdAsync(id, ct);
+        return product is null
+            ? NotFound(ApiResponse&lt;ProductDto&gt;.Failure(ProductMessages.Errors.ProductNotFound(AppLanguage.Current), "PRODUCT_NOT_FOUND"))
+            : Ok(ApiResponse&lt;ProductDto&gt;.Success(ProductMessages.Success.ProductRetrieved(AppLanguage.Current), product));
+    }
+
+    [HttpPost]
+    public async Task&lt;ActionResult&lt;ApiResponse&lt;ProductDto&gt;&gt;&gt; Create(
+        CreateProductRequest request, CancellationToken ct)
+    {
+        var product = await _service.CreateAsync(request, ct);
+        return CreatedAtAction(nameof(GetById), new { id = product.Id },
+            ApiResponse&lt;ProductDto&gt;.Success(ProductMessages.Success.ProductCreated(AppLanguage.Current), product));
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task&lt;ActionResult&lt;ApiResponse&lt;ProductDto&gt;&gt;&gt; Update(
+        int id, UpdateProductRequest request, CancellationToken ct)
+    {
+        var product = await _service.UpdateAsync(id, request, ct);
+        return product is null
+            ? NotFound(ApiResponse&lt;ProductDto&gt;.Failure(ProductMessages.Errors.ProductNotFound(AppLanguage.Current), "PRODUCT_NOT_FOUND"))
+            : Ok(ApiResponse&lt;ProductDto&gt;.Success(ProductMessages.Success.ProductUpdated(AppLanguage.Current), product));
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task&lt;ActionResult&lt;ApiResponse&lt;object&gt;&gt;&gt; Delete(int id, CancellationToken ct)
+    {
+        var deleted = await _service.DeleteAsync(id, ct);
+        return deleted
+            ? Ok(ApiResponse&lt;object&gt;.Success(ProductMessages.Success.ProductDeleted(AppLanguage.Current), null))
+            : NotFound(ApiResponse&lt;object&gt;.Failure(ProductMessages.Errors.ProductNotFound(AppLanguage.Current), "PRODUCT_NOT_FOUND"));
+    }
+}</pre>
+      <p><b>What's happening here:</b> the controller only knows about the <b>Application</b> interface <code class="inline">IProductService</code> — it never touches a repository or database directly. Every action returns <code class="inline">ApiResponse&lt;T&gt;</code> from <b>SharedKernel</b>, giving clients a uniform envelope (success flag, message, data, error code) regardless of which endpoint they hit. <code class="inline">CreatedAtAction</code> on the POST generates the <code class="inline">Location</code> header pointing to <code class="inline">GetById</code>, following REST conventions.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ValidationFilter — pre-action FluentValidation</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Filters/ValidationFilter.cs</div>
+      <p>An <code class="inline">IAsyncActionFilter</code> that resolves a FluentValidation <code class="inline">IValidator&lt;T&gt;</code> for each action argument and short-circuits the pipeline with a <code class="inline">400</code> if validation fails — before the action method is ever called.</p>
+<pre>using Kheprx.BaseBackend.SharedKernel.Responses;
+using Kheprx.BaseBackend.SharedKernel.Resources;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+
+namespace Kheprx.BaseBackend.Api.Filters;
+
+public sealed class ValidationFilter : IAsyncActionFilter
+{
+    private readonly IServiceProvider _services;
+
+    public ValidationFilter(IServiceProvider services) =&gt; _services = services;
+
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        foreach (var argument in context.ActionArguments.Values)
+        {
+            if (argument is null) continue;
+
+            var validatorType = typeof(IValidator&lt;&gt;).MakeGenericType(argument.GetType());
+            if (_services.GetService(validatorType) is IValidator validator)
+            {
+                var result = await validator.ValidateAsync(new ValidationContext&lt;object&gt;(argument));
+                if (!result.IsValid)
+                {
+                    var errors = string.Join("; ", result.Errors.Select(e =&gt; e.ErrorMessage));
+                    context.Result = new BadRequestObjectResult(
+                        ApiResponse&lt;object&gt;.Failure(CommonMessages.Errors.ValidationFailed(AppLanguage.Current), errors));
+                    return;
+                }
+            }
+        }
+
+        await next();
+    }
+}</pre>
+      <p><b>What's happening here:</b> the filter iterates every bound action argument, constructs the open generic <code class="inline">IValidator&lt;T&gt;</code> type at runtime, and asks the DI container for it. If a validator is registered (e.g. <code class="inline">CreateProductRequestValidator</code> in the Catalog Application layer), it runs asynchronously against the argument. On failure it writes a <code class="inline">BadRequestObjectResult</code> wrapping <code class="inline">ApiResponse&lt;object&gt;.Failure</code> and returns — <code class="inline">next()</code> is never called so the controller action is skipped entirely. See <a href="VALIDATION.html">Validation</a> for the full flow.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ExceptionHandlingMiddleware — global error catcher</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Middlewares/ExceptionHandlingMiddleware.cs</div>
+      <p>Wraps the entire request pipeline; catches <code class="inline">DomainException</code> and turns it into a <code class="inline">400</code>, catches all other exceptions and turns them into a <code class="inline">500</code> — both as structured <code class="inline">ApiResponse</code> JSON.</p>
+<pre>using Kheprx.BaseBackend.SharedKernel.Domain;
+using Kheprx.BaseBackend.SharedKernel.Responses;
+
+namespace Kheprx.BaseBackend.Api.Middlewares;
+
+public sealed class ExceptionHandlingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger&lt;ExceptionHandlingMiddleware&gt; _logger;
+
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger&lt;ExceptionHandlingMiddleware&gt; logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (DomainException ex)
+        {
+            _logger.LogWarning(ex, "Domain rule violated");
+            await WriteAsync(context, StatusCodes.Status400BadRequest, ex.Message, "DOMAIN_RULE_VIOLATION");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception");
+            await WriteAsync(context, StatusCodes.Status500InternalServerError,
+                "An unexpected error occurred.", "SERVER_ERROR");
+        }
+    }
+
+    private static Task WriteAsync(HttpContext context, int statusCode, string message, string error)
+    {
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+        return context.Response.WriteAsJsonAsync(ApiResponse&lt;object&gt;.Failure(message, error));
+    }
+}</pre>
+      <p><b>What's happening here:</b> the middleware sits at the very top of the pipeline (registered first in <code class="inline">UseSharedPipeline</code>), so it catches exceptions that bubble up from every layer below — including domain invariant violations thrown deep inside the Application or Domain. <code class="inline">DomainException</code> is a <b>SharedKernel</b> base class; throwing a subclass like <code class="inline">InvalidProductException</code> in Domain automatically results in a clean <code class="inline">400</code> here, with the domain's own message surfaced to the caller. All other exceptions are logged at Error level and returned as a generic <code class="inline">500</code> so internal details are never leaked.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ServiceCollectionExtensions — DI wiring</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Extensions/ServiceCollectionExtensions.cs</div>
+      <p>Registers controllers (with <code class="inline">ValidationFilter</code> globally), configures camelCase JSON, overrides the model-state response factory, adds Swagger, scans all <code class="inline">Kheprx.BaseBackend.*</code> assemblies for FluentValidation validators, and adds a permissive CORS policy.</p>
+<pre>using System.Reflection;
+using System.Text.Json;
+using Kheprx.BaseBackend.Api.Filters;
+using Kheprx.BaseBackend.Api.Validation;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Kheprx.BaseBackend.Api.Extensions;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddSharedInfrastructure(
+        this IServiceCollection services, IConfiguration configuration)
+    {
+        var moduleAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a =&gt; a.GetName().Name?.StartsWith("Kheprx.BaseBackend.", StringComparison.Ordinal) == true)
+            .ToArray();
+
+        services.AddControllers(options =&gt; options.Filters.Add&lt;ValidationFilter&gt;())
+            .AddJsonOptions(options =&gt;
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
+            .ConfigureApiBehaviorOptions(options =&gt;
+                options.InvalidModelStateResponseFactory = context =&gt;
+                    new BadRequestObjectResult(ModelStateResponse.From(context.ModelState)));
+
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+
+        services.AddValidatorsFromAssemblies(moduleAssemblies, includeInternalTypes: true);
+
+        services.AddCors(options =&gt; options.AddPolicy("AllowAll",
+            policy =&gt; policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+        return services;
+    }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">options.Filters.Add&lt;ValidationFilter&gt;()</code> registers the filter globally so every controller action gets FluentValidation automatically. The <code class="inline">InvalidModelStateResponseFactory</code> override replaces ASP.NET's default <code class="inline">ValidationProblemDetails</code> response with the project's own <code class="inline">ApiResponse</code> envelope via <code class="inline">ModelStateResponse.From</code>, keeping the response shape consistent whether the error came from model binding or from FluentValidation. The assembly scan collects validators from every <code class="inline">Kheprx.BaseBackend.*</code> project so validators defined in module Application layers are automatically discovered.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ApplicationBuilderExtensions — pipeline wiring</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Extensions/ApplicationBuilderExtensions.cs</div>
+      <p>Builds the ASP.NET Core middleware pipeline in a single extension method: exception handling first, then conditional Swagger, Serilog request logging, CORS, and controller routing.</p>
+<pre>using Kheprx.BaseBackend.Api.Middlewares;
+using Serilog;
+
+namespace Kheprx.BaseBackend.Api.Extensions;
+
+public static class ApplicationBuilderExtensions
+{
+    public static WebApplication UseSharedPipeline(this WebApplication app, IWebHostEnvironment environment)
+    {
+        app.UseMiddleware&lt;ExceptionHandlingMiddleware&gt;();
+
+        if (environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseSerilogRequestLogging();
+        app.UseCors("AllowAll");
+        app.MapControllers();
+        return app;
+    }
+}</pre>
+      <p><b>What's happening here:</b> middleware order matters — <code class="inline">ExceptionHandlingMiddleware</code> is registered first so it wraps everything that follows. Swagger UI is gated behind <code class="inline">IsDevelopment()</code> so it is never exposed in production. <code class="inline">UseSerilogRequestLogging()</code> replaces the default Microsoft request logs with structured Serilog entries. <code class="inline">MapControllers()</code> wires all controller action routes. <code class="inline">Program.cs</code> calls this method as <code class="inline">app.UseSharedPipeline(app.Environment)</code>, keeping the entry point minimal.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ModelStateResponse — model-binding error shaper</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Validation/ModelStateResponse.cs</div>
+      <p>A static helper that converts ASP.NET Core's <code class="inline">ModelStateDictionary</code> (populated during model binding) into the project's standard <code class="inline">ApiResponse&lt;object&gt;</code> envelope.</p>
+<pre>using Kheprx.BaseBackend.SharedKernel.Responses;
+using Kheprx.BaseBackend.SharedKernel.Resources;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace Kheprx.BaseBackend.Api.Validation;
+
+public static class ModelStateResponse
+{
+    public static ApiResponse&lt;object&gt; From(ModelStateDictionary modelState)
+    {
+        var errors = string.Join("; ", modelState.Values
+            .SelectMany(entry =&gt; entry.Errors)
+            .Select(error =&gt; error.ErrorMessage)
+            .Where(message =&gt; !string.IsNullOrWhiteSpace(message)));
+
+        if (string.IsNullOrWhiteSpace(errors))
+            errors = CommonMessages.Errors.ValidationFallback(AppLanguage.Current);
+
+        return ApiResponse&lt;object&gt;.Failure(CommonMessages.Errors.ValidationFailed(AppLanguage.Current), errors);
+    }
+}</pre>
+      <p><b>What's happening here:</b> when ASP.NET Core's model binder rejects a request (e.g. a required field is missing or a value cannot be parsed), it populates <code class="inline">ModelStateDictionary</code> and the <code class="inline">InvalidModelStateResponseFactory</code> in <code class="inline">ServiceCollectionExtensions</code> calls this method. All error messages are flattened into a semicolon-separated string and wrapped in <code class="inline">ApiResponse&lt;object&gt;.Failure</code> — the same shape that <code class="inline">ValidationFilter</code> and <code class="inline">ExceptionHandlingMiddleware</code> produce, so clients receive a consistent error envelope regardless of where in the pipeline the rejection occurred. See <a href="VALIDATION.html">Validation</a> for how all three error paths relate.</p>
+    </div>
+
+    <div class="simple"><b>In simple words:</b> <code class="inline">Kheprx.BaseBackend.Api</code> is the only project that knows about the web. <code class="inline">Program.cs</code> wires every module and service together at startup. The controllers translate HTTP calls into Application service calls and never touch the database directly. Three independent guards protect every request: <code class="inline">ModelStateResponse</code> catches bad binding, <code class="inline">ValidationFilter</code> catches business-rule input errors, and <code class="inline">ExceptionHandlingMiddleware</code> catches anything that still escapes into an exception — all producing the same <code class="inline">ApiResponse</code> shape. Learn more: <a href="IMODULE_CONVENTION.html">The IModule convention</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a>.</div>
+
+    <div class="pager">
+      <a href="IMODULE_CONVENTION.html"><span class="dir">← Previous</span><span class="ttl">The IModule convention</span></a>
+      <a class="next" href="MODULE_ANATOMY.html"><span class="dir">Next →</span><span class="ttl">Module Anatomy</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="index.html">Home</a> · <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

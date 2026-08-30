@@ -1,0 +1,72 @@
+# Normalize line endings across the monorepo.
+# Text files are stored with LF in the repository; the eol= rules below
+# make the working-tree endings deterministic regardless of each
+# developer's core.autocrlf setting.
+
+# Default: let Git detect text vs binary and normalize text to LF in the repo.
+* text=auto
+
+# ---------------------------------------------------------------------------
+# Cross-platform source & config -> LF in the working tree
+# ---------------------------------------------------------------------------
+# .NET
+*.cs        text eol=lf diff=csharp
+*.csproj    text eol=lf
+*.props     text eol=lf
+*.targets   text eol=lf
+*.config    text eol=lf
+*.json      text eol=lf
+
+# Angular / web
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.mjs       text eol=lf
+*.cjs       text eol=lf
+*.html      text eol=lf diff=html
+*.css       text eol=lf diff=css
+*.scss      text eol=lf
+*.sass      text eol=lf
+*.less      text eol=lf
+*.svg       text eol=lf
+
+# Docs & misc text
+*.md        text eol=lf
+*.txt       text eol=lf
+*.xml       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.sh        text eol=lf
+.editorconfig   text eol=lf
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
+
+# ---------------------------------------------------------------------------
+# Windows-only files -> CRLF
+# ---------------------------------------------------------------------------
+*.sln       text eol=crlf
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# ---------------------------------------------------------------------------
+# Binary files -> never modified by Git
+# ---------------------------------------------------------------------------
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.webp      binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.eot       binary
+*.otf       binary
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.7z        binary
+*.dll       binary
+*.exe       binary
+*.snk       binary

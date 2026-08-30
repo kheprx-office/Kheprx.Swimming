@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validation Guide — Kheprx.BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    /* backend layer colors */
+    --dom: #166534;   --dom-bg: #dcfce7;   /* Domain */
+    --app: #5b21b6;   --app-bg: #ede9fe;   /* Application */
+    --inf: #9a3412;   --inf-bg: #ffedd5;   /* Infrastructure */
+    --con: #0f766e;   --con-bg: #ccfbf1;   /* Contracts */
+    --host: #2563eb;  --host-bg: #eaf1ff;  /* Host/Api */
+    --shared: #475569; --shared-bg: #e2e8f0; /* SharedKernel */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { padding: 40px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.95rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 22px 0 6px; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; font-size: 0.8rem; align-items: center; }
+  .legend .lab { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); }
+  .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); }
+  .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); }
+  .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  h2.section { display: flex; align-items: center; gap: 10px; font-size: 1.22rem; margin: 42px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h2.section .snum { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 0.82rem; font-weight: 700; }
+  .part { display: flex; align-items: center; gap: 12px; margin: 56px 0 8px; padding: 12px 18px; border-radius: 12px; background: var(--code-bg); color: #fff; }
+  .part .pno { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; background: rgba(255,255,255,.14); padding: 4px 11px; border-radius: 999px; }
+  .part .ptitle { font-size: 1.05rem; font-weight: 700; letter-spacing: .3px; }
+  .part + h2.section { margin-top: 16px; }
+  p.lead { color: var(--muted); margin: 0 0 18px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  .card p.owns { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+  .card p.wex { font-weight: 700; font-size: 0.9rem; margin: 12px 0 2px; }
+  .pitfall { border-left: 3px solid #d97706; background: #fffbeb; border-radius: 6px; padding: 8px 12px; margin: 12px 0 2px; font-size: 0.9rem; color: #713f12; }
+  .pitfall b { color: #b45309; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-c { color: #94a3b8; } .tok-k { color: #93c5fd; } .tok-s { color: #86efac; } .tok-t { color: #fca5a5; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 12px 14px 12px 52px; margin: 10px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  ol.steps > li b { display: block; margin-bottom: 2px; }
+  table.conv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 6px 0; }
+  table.conv th, table.conv td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.conv th { background: #f0f3f6; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  /* ===== docs cross-page navigation (added to every page) ===== */
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  .topnav .nl.active { background: rgba(255,255,255,.24); opacity: 1; font-weight: 600; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 44px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid #e1e4e8; background: #ffffff; border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: #2563eb; }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: #2563eb; margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl active" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Kheprx.BaseBackend</span> — Validation Guide</h1>
+      <p>The <em>types</em> of validation, taught from first principles — and a complete catalog of every rule in this codebase.</p>
+    </header>
+
+    <div class="banner"><strong>For the team.</strong> This page teaches the <em>kinds</em> of validation and where each belongs, then catalogs every rule we actually enforce. For the layer-by-layer pipeline and the failure-envelope reference, see <a href="VALIDATION.html">Validation</a>.</div>
+
+    <div class="legend"><span class="lab">Lives in:</span>
+      <span class="tag host">Host / Api</span><span class="tag app">Application</span>
+      <span class="tag dom">Domain</span><span class="tag inf">Infrastructure</span>
+    </div>
+
+    <div class="part"><span class="pno">Part 1</span><span class="ptitle">Learn the concepts</span></div>
+
+    <h2 class="section"><span class="snum">1</span>Four types of validation</h2>
+    <p class="lead">Every check answers a different question. Learn the question and you know which type it is — and where it belongs.</p>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>1 &middot; Syntactic / structural validation</h3></div>
+      <p><strong>Asks:</strong> "Is the input even well-formed?" — the right type, the right shape, present at all. This runs first and is the cheapest to reject; nothing downstream should assume the input parses.</p>
+      <p class="owns"><strong>Owns:</strong> presence, type, and shape — is the body parseable, is the required field there, is the route value the right type. <strong>Doesn't own:</strong> whether the value is <em>acceptable</em> — <code class="inline">price: -5</code> or a 5,000-character name parse perfectly fine and pass straight through to the next layer.</p>
+      <p><strong>In our code:</strong> the <code class="inline">{id:int}</code> route constraint (a non-integer id never matches the route &#8594; 404) and ASP.NET Core model binding under <code class="inline">[ApiController]</code> (a missing or wrong-typed body field &#8594; 400 before the action runs).</p>
+      <div class="file">Kheprx.BaseBackend.Api/Controllers/ProductsController.cs &middot; Kheprx.BaseBackend.Api/Validation/ModelStateResponse.cs</div>
+<pre>[<span class="tok-t">HttpGet</span>(<span class="tok-s">"{id:int}"</span>)]   <span class="tok-c">// non-integer id never matches &#8594; 404</span>
+<span class="tok-k">public sealed record</span> CreateProductRequest(<span class="tok-k">string</span> Name, <span class="tok-k">decimal</span> Price, <span class="tok-k">string</span>? Description);
+<span class="tok-c">// Name &amp; Price are non-nullable &#8594; treated as required by model binding</span></pre>
+      <p class="wex">Worked example</p>
+<pre><span class="tok-c"># non-integer route value</span>
+GET /api/products/abc          <span class="tok-c">// id is not an int</span>
+&#8594; 404 Not Found              <span class="tok-c">// route never matched &mdash; no body</span>
+
+<span class="tok-c"># missing required body field</span>
+POST /api/products
+{ <span class="tok-s">"price"</span>: 9.99 }              <span class="tok-c">// Name omitted</span>
+&#8594; 400 Bad Request
+{
+  <span class="tok-s">"successStatus"</span>: <span class="tok-k">false</span>,
+  <span class="tok-s">"message"</span>: <span class="tok-s">"فشل التحقق من البيانات"</span>,
+  <span class="tok-s">"error"</span>: <span class="tok-s">"The Name field is required."</span>,
+  <span class="tok-s">"data"</span>: <span class="tok-k">null</span>
+}</pre>
+      <p><strong>Elsewhere you would see:</strong> "is this a valid email / date / GUID", "is the JSON parseable", "is the required field present".</p>
+      <div class="pitfall"><b>Pitfall:</b> don't put business rules here — binding only knows "present and the right type", so it will happily accept a negative price or an over-long name. And "required" comes from the type being <em>non-nullable</em> (<code class="inline">string Name</code>), not from an attribute; make a field optional by typing it <code class="inline">string?</code>.</div>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>2 &middot; Semantic / business-rule validation</h3></div>
+      <p><strong>Asks:</strong> "It parses — but does the value make <em>sense</em>?" Ranges, lengths, allowed values, cross-field consistency. These are <em>policy</em> rules: they can change without changing the domain model.</p>
+      <p class="owns"><strong>Owns:</strong> business rules on the request — required-ness beyond mere presence, length, range, allowed values, cross-field consistency. <strong>Doesn't own:</strong> well-formedness (binding already guaranteed it) or entity invariants (those must hold even when no HTTP request is involved).</p>
+      <p><strong>In our code:</strong> FluentValidation <code class="inline">AbstractValidator&lt;TRequest&gt;</code>, resolved from DI and run by the global <code class="inline">ValidationFilter</code> before the action executes.</p>
+      <div class="file">src/Modules/Identity/Kheprx.BaseBackend.Identity.Application/Validators/AuthRequestValidators.cs</div>
+<pre>RuleFor(x =&gt; x.Email)
+    .NotEmpty().WithMessage(_ =&gt; CommonMessages.Errors.EmailRequired(AppLanguage.Current))</pre>
+      <p>Every rule attaches a localized message via the lazy <code class="inline">.WithMessage(_ =&gt; …)</code> form, resolved from a Messages resource class at validation time. Generic field texts (email, password, full name) live in <code class="inline">CommonMessages</code>; feature-specific texts (unknown role, invalid status, product name, price) live in the feature's Messages class (<code class="inline">UserMessages</code>, <code class="inline">AuthMessages</code>, <code class="inline">ProductMessages</code>).</p>
+      <p class="wex">Worked example</p>
+<pre><span class="tok-c"># well-formed body, but the value is out of range</span>
+POST /api/products
+{ <span class="tok-s">"name"</span>: <span class="tok-s">"Widget"</span>, <span class="tok-s">"price"</span>: -5 }
+&#8594; 400 Bad Request
+{
+  <span class="tok-s">"successStatus"</span>: <span class="tok-k">false</span>,
+  <span class="tok-s">"message"</span>: <span class="tok-s">"فشل التحقق من البيانات"</span>,
+  <span class="tok-s">"error"</span>: <span class="tok-s">"السعر يجب أن يكون أكبر من صفر"</span>,
+  <span class="tok-s">"data"</span>: <span class="tok-k">null</span>
+}</pre>
+      <p><strong>Elsewhere you would see:</strong> "price between 0 and 1,000,000", "end date after start date", "status is one of the allowed values".</p>
+      <div class="pitfall"><b>Pitfall:</b> a validator only runs on the API request path — an internal caller (a background job, another service, a test) bypasses it entirely, which is exactly why the same rule is repeated as a domain invariant below. And rules that need a database lookup ("is this name already taken?") can't be answered from the request alone, so they don't belong here.</div>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>3 &middot; Domain invariant validation</h3></div>
+      <p><strong>Asks:</strong> "Is a rule that must <em>always</em> hold being enforced — no matter how the entity was created or changed?" These rules are intrinsic to the entity, not to one request. Putting the guard <em>inside</em> the entity makes the rule impossible to bypass — whether the object is built from an API call, a background job, a test, or a future use case.</p>
+      <p class="owns"><strong>Owns:</strong> rules intrinsic to the entity that must hold however it is created or mutated. <strong>Doesn't own:</strong> friendly per-field request messages (that is the validator's job) or storage concerns.</p>
+      <p><strong>In our code:</strong> guards in <code class="inline">Product</code> methods throwing <code class="inline">InvalidProductException : DomainException</code>; <code class="inline">ExceptionHandlingMiddleware</code> turns any <code class="inline">DomainException</code> into a 400 <code class="inline">DOMAIN_RULE_VIOLATION</code>.</p>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/Entities/Product.cs &middot; &hellip;/Exceptions/InvalidProductException.cs</div>
+<pre><span class="tok-k">public void</span> ChangePrice(<span class="tok-k">decimal</span> price)
+{
+    <span class="tok-k">if</span> (price &lt;= 0)
+        <span class="tok-k">throw new</span> <span class="tok-t">InvalidProductException</span>(<span class="tok-s">"Product price must be greater than zero."</span>);
+    Price = price;
+}</pre>
+      <p class="wex">Worked example</p>
+<pre><span class="tok-c">// An internal caller (job, service, test) &mdash; no HTTP validator runs:</span>
+<span class="tok-k">var</span> product = <span class="tok-k">new</span> Product(<span class="tok-s">""</span>, 9.99m);   <span class="tok-c">// blank name</span>
+<span class="tok-c">// &#8594; Rename("") throws InvalidProductException("Product name is required.")</span>
+<span class="tok-c">// Reaching the entity through a request, the middleware returns:</span>
+&#8594; 400 Bad Request
+{
+  <span class="tok-s">"successStatus"</span>: <span class="tok-k">false</span>,
+  <span class="tok-s">"message"</span>: <span class="tok-s">"Product name is required."</span>,
+  <span class="tok-s">"error"</span>: <span class="tok-s">"DOMAIN_RULE_VIOLATION"</span>,
+  <span class="tok-s">"data"</span>: <span class="tok-k">null</span>
+}</pre>
+      <p><strong>Note:</strong> this deliberately overlaps with the semantic rule on <code class="inline">Price</code> — see <em>defense in depth</em> below. The validator guards the API edge; the domain guards the entity itself.</p>
+      <div class="pitfall"><b>Pitfall:</b> don't rely on the validator alone for an invariant — anything that builds or changes the entity outside the API would violate it. And always throw a <code class="inline">DomainException</code> subtype, not a raw <code class="inline">Exception</code>: the middleware maps <code class="inline">DomainException</code> to a clean 400, but every other exception becomes a 500.</div>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>4 &middot; Integrity / persistence validation</h3></div>
+      <p><strong>Asks:</strong> "Can the data store itself refuse bad data?" Constraints declared on the database — <code class="inline">NOT NULL</code>, length, unique, foreign keys, check constraints. They protect the data even if every check above is bypassed (a direct DB write, a code bug). A safety net, not a UX mechanism — you should rarely hit it.</p>
+      <p class="owns"><strong>Owns:</strong> last-line storage integrity — <code class="inline">NOT NULL</code>, length, unique, foreign keys. It protects the data itself. <strong>Doesn't own:</strong> user-facing validation — by design it surfaces as a generic 500, not a friendly 400.</p>
+      <p><strong>In our code:</strong> the EF Core fluent configuration, mirrored into the Postgres schema by a migration. A breach throws <code class="inline">DbUpdateException</code> &#8594; generic 500.</p>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Configurations/ProductConfiguration.cs</div>
+<pre>builder.Property(p =&gt; p.Name).HasMaxLength(200).IsRequired();
+builder.Property(p =&gt; p.Description).HasMaxLength(2000);
+builder.Property(p =&gt; p.Price).HasColumnType(<span class="tok-s">"numeric(18,2)"</span>);
+builder.Property(p =&gt; p.CreatedAt).IsRequired();</pre>
+      <p class="wex">Worked example</p>
+<pre><span class="tok-c">// The domain has NO length guard, so a 201-char name slips past it:</span>
+product.Rename(<span class="tok-k">new string</span>(<span class="tok-s">'x'</span>, 201));   <span class="tok-c">// allowed by the entity</span>
+<span class="tok-k">await</span> repository.SaveChangesAsync();     <span class="tok-c">// Postgres rejects &#8594; DbUpdateException</span>
+&#8594; 500 Internal Server Error
+{
+  <span class="tok-s">"successStatus"</span>: <span class="tok-k">false</span>,
+  <span class="tok-s">"message"</span>: <span class="tok-s">"An unexpected error occurred."</span>,
+  <span class="tok-s">"error"</span>: <span class="tok-s">"SERVER_ERROR"</span>,
+  <span class="tok-s">"data"</span>: <span class="tok-k">null</span>
+}</pre>
+      <p><strong>Elsewhere you would see:</strong> a <code class="inline">UNIQUE</code> email index, a foreign key to a parent row, <code class="inline">CHECK (price &gt; 0)</code>.</p>
+      <div class="pitfall"><b>Pitfall:</b> don't treat it as user-facing validation — it surfaces as a generic 500, not a helpful message. And an EF fluent rule only exists in the database <em>after a migration</em>: adding <code class="inline">HasMaxLength(200)</code> without generating and applying a migration changes nothing.</div>
+    </div>
+
+    <div class="card shared">
+      <div class="ch"><span class="tag shared">Beyond this template</span><h3>5 &middot; Two types worth knowing (not yet here)</h3></div>
+      <p><strong>Uniqueness / referential validation</strong> — "does this value already exist, or does the thing it references exist?" It needs a <em>lookup</em> (a repository or database query), so it cannot live in a pure request validator; it belongs in the service/repository, usually backed by a DB unique index or foreign key. The decision table in <a href="VALIDATION.html">Validation</a> points such rules at Infrastructure. The Catalog sample has none yet.</p>
+      <p><strong>Authorization / contextual validation</strong> — "is this allowed for <em>this</em> user, in <em>this</em> state?" Frequently confused with validation, but it is a separate concern: a value can be perfectly valid and still forbidden. Keep it out of your validators — it is an authentication / authorization rule, not a shape-or-sense rule.</p>
+    </div>
+
+    <p class="lead">How the four types map to the five-layer pipeline</p>
+    <p>The <a href="VALIDATION.html">Validation</a> page walks these same checks as a five-layer <em>runtime</em> pipeline — ordered by <em>where</em> each one runs. This guide groups them into four <em>conceptual</em> types — ordered by <em>what kind</em> of check it is. That is why the two numbers do not line up: route constraints and model binding both ask "is it well-formed?", so they fold into one type.</p>
+    <table class="conv">
+      <tr><th>Runtime layer &mdash; <a href="VALIDATION.html">Validation</a></th><th>Conceptual type &mdash; this guide</th><th>Asks</th></tr>
+      <tr><td>1 &middot; Route constraints</td><td>&#9312; <span class="tag host">Syntactic / structural</span></td><td>Is it well-formed?</td></tr>
+      <tr><td>2 &middot; Model binding <code class="inline">[ApiController]</code></td><td>&#9312; <span class="tag host">Syntactic / structural</span></td><td>Is it well-formed?</td></tr>
+      <tr><td>3 &middot; FluentValidation</td><td>&#9313; <span class="tag app">Semantic / business-rule</span></td><td>Does the value make <em>sense</em>?</td></tr>
+      <tr><td>4 &middot; Domain invariants</td><td>&#9314; <span class="tag dom">Domain invariant</span></td><td>Must it <em>always</em> be true?</td></tr>
+      <tr><td>5 &middot; Persistence constraints</td><td>&#9315; <span class="tag inf">Integrity / persistence</span></td><td>Is storage safe?</td></tr>
+    </table>
+
+    <h2 class="section"><span class="snum">2</span>Four principles</h2>
+    <p class="lead">The reasoning that decides where a rule goes — and why the same rule can legitimately appear more than once.</p>
+    <table class="conv">
+      <tr><th>Principle</th><th>What it means here</th></tr>
+      <tr><td><strong>Fail fast, cheapest first</strong></td><td>Checks run cheap&#8594;expensive: route constraint &#8594; model binding &#8594; validators &#8594; domain &#8594; database. The first failure short-circuits, so the costly layers rarely run on bad input.</td></tr>
+      <tr><td><strong>Defense in depth</strong></td><td>The same rule (e.g. <code class="inline">price &gt; 0</code>) is enforced at several layers <em>on purpose</em>. Each guards a different entry point: the validator stops a bad HTTP client, the domain stops an internal caller or bug, the database stops a direct write.</td></tr>
+      <tr><td><strong>Never trust the client</strong></td><td>Every rule on this page is server-side and authoritative. Client-side validation is a UX convenience only — it can always be bypassed, so it is never the source of truth.</td></tr>
+      <tr><td><strong>Reject vs normalize</strong></td><td>Reject what is <em>wrong</em> (price &#8804; 0 throws); normalize what is merely <em>untidy</em> (a name is trimmed; a blank description becomes <code class="inline">null</code>) instead of erroring.</td></tr>
+    </table>
+
+    <h2 class="section"><span class="snum">3</span>Application vs Domain invariant — telling them apart</h2>
+    <p class="lead">These two enforce overlapping rules yet exist for different reasons, which makes them the easiest pair to confuse. Picture two gates.</p>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>The input gate</h3></div>
+      <p>Checks the <em>request</em> before you build or change the entity — "Is this request acceptable?" It returns a friendly, per-field 400 and then steps aside. It guards the API edge, and only the API edge.</p>
+    </div>
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>Business truth</h3></div>
+      <p>Protects the entity itself, forever — "Can this object exist like this?" The guard lives <em>inside</em> the entity, so the rule holds no matter who builds or mutates it: the API, a background job, a unit test, a data import, or a use case that does not exist yet.</p>
+    </div>
+
+    <p class="lead">Side by side:</p>
+    <table class="conv">
+      <tr><th>Aspect</th><th><span class="tag app">Application</span> business-rule</th><th><span class="tag dom">Domain</span> invariant</th></tr>
+      <tr><td><strong>Asks</strong></td><td>"Is this <em>request</em> valid?"</td><td>"Is this <em>object</em> valid?"</td></tr>
+      <tr><td><strong>Lives in</strong></td><td>Application — <code class="inline">AbstractValidator&lt;T&gt;</code></td><td>Domain — guards inside the entity</td></tr>
+      <tr><td><strong>Protects</strong></td><td>the API / use-case input</td><td>the entity's state, forever</td></tr>
+      <tr><td><strong>Runs when</strong></td><td>an HTTP request reaches the action</td><td><em>any</em> code builds or mutates the entity (API, job, test, import, future use case)</td></tr>
+      <tr><td><strong>Bypassable?</strong></td><td>yes — an internal caller skips it</td><td>no — the guard is part of the entity</td></tr>
+      <tr><td><strong>On failure</strong></td><td>400 <code class="inline">Validation failed</code> + friendly per-field message</td><td><code class="inline">DomainException</code> &#8594; 400 <code class="inline">DOMAIN_RULE_VIOLATION</code></td></tr>
+      <tr><td><strong>Changes when</strong></td><td>request / API policy changes</td><td>the business model changes</td></tr>
+    </table>
+
+    <p>The same rule — <code class="inline">price &gt; 0</code> — can legitimately appear in <em>both</em>: the validator returns a friendly 400 before any work runs, and the domain makes an invalid <code class="inline">Product</code> impossible to construct. That is not duplication; it is <strong>defense in depth</strong>.</p>
+
+    <p class="lead">The decision rule — ask yourself:</p>
+    <table class="conv">
+      <tr><th>Ask yourself&hellip;</th><th>&hellip;and if the answer is yes</th></tr>
+      <tr><td>"Should this rule <em>always</em> be true for the entity, no matter where it is used?"</td><td><span class="tag dom">Domain invariant</span> &mdash; e.g. price &gt; 0 &middot; an order cannot complete with no items &middot; an invoice cannot be paid twice</td></tr>
+      <tr><td>"Is it mainly about accepting or rejecting <em>this</em> request?"</td><td><span class="tag app">Application</span> &mdash; e.g. description &#8804; 2000 &middot; page size 1&ndash;100 &middot; DateFrom before DateTo &middot; SortBy in an allowed set</td></tr>
+    </table>
+
+    <div class="pitfall"><b>Pitfall:</b> keep Domain guards framework-free. Throw a <code class="inline">DomainException</code> — never <code class="inline">BadRequestException</code>, <code class="inline">ApiResponse.Failure(&hellip;)</code>, or <code class="inline">ModelState.AddModelError(&hellip;)</code>. The Domain must not know about HTTP, controllers, <code class="inline">ApiResponse</code>, FluentValidation, or EF Core — that is what keeps it the innermost, dependency-free layer.</div>
+
+    <div class="banner"><strong>Mental model.</strong> Application validation gives friendly request-level errors; the Domain invariant guarantees the business object can <em>never</em> enter an invalid state — even when no validator runs.</div>
+
+    <div class="part"><span class="pno">Part 2</span><span class="ptitle">Quick reference</span></div>
+
+    <h2 class="section"><span class="snum">4</span>Validation catalog — every rule in this codebase</h2>
+    <p class="lead">Each field, and exactly how it is validated at each layer. An empty cell means no rule of that kind applies.</p>
+    <table class="conv">
+      <tr>
+        <th>Field</th>
+        <th><span class="tag host">Host / Api</span> &mdash; syntactic</th>
+        <th><span class="tag app">Application</span> &mdash; business rule</th>
+        <th><span class="tag dom">Domain</span> &mdash; invariant</th>
+        <th><span class="tag inf">Infrastructure</span> &mdash; persistence</th>
+      </tr>
+      <tr>
+        <td><code class="inline">Name</code></td>
+        <td>required (non-null body field)</td>
+        <td><code class="inline">NotEmpty</code>, <code class="inline">MaximumLength(200)</code> — Create &amp; Update</td>
+        <td><code class="inline">Rename</code>: blank &#8594; <code class="inline">InvalidProductException</code>; trims</td>
+        <td><code class="inline">HasMaxLength(200)</code>, <code class="inline">IsRequired</code></td>
+      </tr>
+      <tr>
+        <td><code class="inline">Price</code></td>
+        <td>required (non-null body field)</td>
+        <td><code class="inline">GreaterThan(0)</code> — Create &amp; Update</td>
+        <td><code class="inline">ChangePrice</code>: &#8804; 0 &#8594; <code class="inline">InvalidProductException</code></td>
+        <td><code class="inline">numeric(18,2)</code> column type</td>
+      </tr>
+      <tr>
+        <td><code class="inline">Description</code></td>
+        <td>optional (<code class="inline">string?</code>)</td>
+        <td><code class="inline">MaximumLength(2000)</code> — Create &amp; Update</td>
+        <td><code class="inline">UpdateDescription</code>: blank &#8594; <code class="inline">null</code>; trims</td>
+        <td><code class="inline">HasMaxLength(2000)</code></td>
+      </tr>
+      <tr>
+        <td><code class="inline">id</code> (route)</td>
+        <td><code class="inline">{id:int}</code> &#8594; 404 if not an int</td>
+        <td>—</td>
+        <td>—</td>
+        <td><code class="inline">HasKey(Id)</code> (primary key)</td>
+      </tr>
+      <tr>
+        <td><code class="inline">CreatedAt</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td>set by <code class="inline">BaseEntity</code></td>
+        <td><code class="inline">IsRequired</code></td>
+      </tr>
+    </table>
+
+    <h2 class="section"><span class="snum">5</span>Where each rule is defined</h2>
+    <p class="lead">The same catalog, indexed by file — your jump list into the code.</p>
+    <table class="conv">
+      <tr><th>Layer</th><th>File(s)</th></tr>
+      <tr><td><span class="tag host">Host / Api</span> route + binding</td><td><code class="inline">Kheprx.BaseBackend.Api/Controllers/ProductsController.cs</code> &middot; <code class="inline">Kheprx.BaseBackend.Api/Validation/ModelStateResponse.cs</code> &middot; <code class="inline">Kheprx.BaseBackend.Api/Extensions/ServiceCollectionExtensions.cs</code></td></tr>
+      <tr><td><span class="tag app">Application</span> business rules</td><td><code class="inline">.Application/Validators/ProductRequestValidators.cs</code> (run by <code class="inline">Kheprx.BaseBackend.Api/Filters/ValidationFilter.cs</code>)</td></tr>
+      <tr><td><span class="tag dom">Domain</span> invariants</td><td><code class="inline">.Domain/Entities/Product.cs</code> &middot; <code class="inline">.Domain/Exceptions/InvalidProductException.cs</code> (caught by <code class="inline">Kheprx.BaseBackend.Api/Middlewares/ExceptionHandlingMiddleware.cs</code>)</td></tr>
+      <tr><td><span class="tag inf">Infrastructure</span> persistence</td><td><code class="inline">.Infrastructure/Configurations/ProductConfiguration.cs</code> (+ the generated EF migration)</td></tr>
+    </table>
+
+    <h2 class="section"><span class="snum">6</span>Add a validation rule</h2>
+    <ol class="steps">
+      <li><b>Name the type first</b> Decide which question the rule answers — well-formed (syntactic), makes-sense (business), always-true (invariant), or storage-safe (integrity). That picks the layer.</li>
+      <li><b>Business rule &#8594; FluentValidation</b> Add or extend the <code class="inline">AbstractValidator&lt;TRequest&gt;</code> in <code class="inline">.Application/Validators/</code>. The global <code class="inline">ValidationFilter</code> picks it up automatically.</li>
+      <li><b>Always-true invariant &#8594; Domain guard</b> Add a guard in the entity constructor or method that throws a <code class="inline">DomainException</code> subtype, so no caller can bypass it.</li>
+      <li><b>Storage integrity &#8594; EF constraint</b> Add the constraint in the entity's <code class="inline">IEntityTypeConfiguration&lt;T&gt;</code> and generate a migration.</li>
+      <li><b>Run <code class="inline">dotnet test</code></b> Confirm the solution stays green and warning-clean.</li>
+    </ol>
+
+    <div class="pager">
+      <a href="VALIDATION.html"><span class="dir">← Previous</span><span class="ttl">Validation</span></a>
+      <a class="next" href="index.html"><span class="dir">Next →</span><span class="ttl">Home</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

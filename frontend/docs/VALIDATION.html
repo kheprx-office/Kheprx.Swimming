@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validation &amp; Forms — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl active" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Base Frontend</span> — Validation &amp; Forms</h1>
+      <p>Two validation sites: type-guard DTO validation at the use-case boundary for untrusted remote data, and signal-backed inline guards in the ViewModel for trusted user input.</p>
+      <div class="legend">
+        <span class="lab">Layers:</span>
+        <span class="tag data">data</span>
+        <span class="tag pres">presentation</span>
+      </div>
+    </header>
+
+    <h2 class="section">Boundary (DTO) validation — untrusted remote data</h2>
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">isUserDtoRsValid</code></h3><span class="tag data">data</span><span class="file">src/app/features/user-management/data/dto/user-management/user.dto.ts</span></div>
+      <p>HTTP responses are untrusted: the server could return an unexpected shape, a field could be <code class="inline">null</code>, or an enumerated value could drift. The DTO type guard <code class="inline">isUserDtoRsValid</code> asserts the exact runtime shape before the data is allowed past the boundary into a domain model.</p>
+      <pre><span class="tok-k">import</span> { <span class="tok-t">ROLE_LABELS</span> } <span class="tok-k">from</span> <span class="tok-s">'@core/domain/roles'</span>;
+
+<span class="tok-k">export function</span> <span class="tok-t">isUserDtoRsValid</span>(dto: <span class="tok-t">UserDtoRs</span>): <span class="tok-k">boolean</span> {
+  <span class="tok-k">return</span> (
+    <span class="tok-k">typeof</span> dto.id === <span class="tok-s">'string'</span> &amp;&amp; dto.id.length &gt; 0 &amp;&amp;
+    <span class="tok-k">typeof</span> dto.fullName === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-k">typeof</span> dto.email === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-k">typeof</span> dto.role === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-t">Object</span>.prototype.<span class="tok-t">hasOwnProperty</span>.<span class="tok-t">call</span>(<span class="tok-t">ROLE_LABELS</span>, dto.role) &amp;&amp; <span class="tok-c">// role-hardening: only known roles pass</span>
+    (dto.status === <span class="tok-s">'active'</span> || dto.status === <span class="tok-s">'disabled'</span>) &amp;&amp;          <span class="tok-c">// status ∈ {active, disabled}</span>
+    <span class="tok-k">typeof</span> dto.mustChangePassword === <span class="tok-s">'boolean'</span>
+  );
+}</pre>
+      <p>Two checks deserve attention. The role is validated against <code class="inline">ROLE_LABELS</code> — the shared-kernel map of all known roles (<code class="inline">admin | manager | moqawel | worker</code>) — using <code class="inline">Object.prototype.hasOwnProperty.call</code> rather than enumerating string literals; this means adding a new role to <code class="inline">ROLE_LABELS</code> automatically admits it at the boundary with no guard change. The <code class="inline">status</code> field is constrained to the closed union <code class="inline">'active' | 'disabled'</code> by an explicit equality check — any other string (e.g. <code class="inline">'pending'</code>) would be rejected.</p>
+      <p>The guard runs at the use-case boundary — one architectural layer above the repository port that fetches the raw response. If any item in the response array fails the check, a <code class="inline">validation</code> <code class="inline">AppError</code> is thrown, which <code class="inline">UseCase.run()</code> catches and wraps into a <code class="inline">Result</code>.</p>
+      <pre><span class="tok-c">// ListUsersUseCase.execute() — features/user-management/domain/usecases/user-management/list-users.use-case.ts</span>
+<span class="tok-k">protected async</span> <span class="tok-t">execute</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">User</span>[]&gt; {
+  <span class="tok-k">const</span> res = <span class="tok-k">await this</span>.<span class="tok-t">repo</span>.<span class="tok-t">list</span>();
+  <span class="tok-k">if</span> (!res.data.<span class="tok-t">every</span>(<span class="tok-t">isUserDtoRsValid</span>)) {
+    <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid user data received'</span>, <span class="tok-s">'validation'</span>);
+  }
+  <span class="tok-k">return</span> res.data.<span class="tok-t">map</span>(<span class="tok-t">toUser</span>);
+}</pre>
+      <p>Only data that passes the guard is mapped to a <code class="inline">User</code> domain model via <code class="inline">toUser</code>. This keeps the domain layer free of transport-layer assumptions — the guard is the explicit contract between the remote/untrusted repository port and the rest of the application.</p>
+    </div>
+
+    <h2 class="section">Signal-backed form validation — trusted user input</h2>
+    <div class="card pres">
+      <div class="ch"><h3><code class="inline">UsersViewModel</code> — save</h3><span class="tag pres">presentation</span><span class="file">src/app/features/user-management/presentation/pages/user-management/users.viewmodel.ts</span></div>
+      <p>User input in the app's forms (login, user-management modal) is handled through signal-backed fields declared on the ViewModel — not Angular reactive forms. Each field is a plain <code class="inline">signal()</code>; validation is enforced via inline guards in the action method, executed before any use case is called.</p>
+      <pre><span class="tok-c">// signal-backed form fields — declared on UsersViewModel</span>
+<span class="tok-k">readonly</span> formFullName = <span class="tok-t">signal</span>(<span class="tok-s">''</span>);
+<span class="tok-k">readonly</span> formEmail    = <span class="tok-t">signal</span>(<span class="tok-s">''</span>);
+<span class="tok-k">readonly</span> formRole     = <span class="tok-t">signal</span>&lt;<span class="tok-t">UserRole</span>&gt;(<span class="tok-s">'manager'</span>);
+<span class="tok-k">readonly</span> formPassword = <span class="tok-t">signal</span>(<span class="tok-s">''</span>);
+<span class="tok-k">readonly</span> formStatus   = <span class="tok-t">signal</span>&lt;<span class="tok-t">UserStatus</span>&gt;(<span class="tok-s">'active'</span>);
+
+<span class="tok-c">// inline guard in the action method — before calling any use case</span>
+<span class="tok-k">async</span> <span class="tok-t">save</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; {
+  <span class="tok-k">if</span> (!<span class="tok-k">this</span>.<span class="tok-t">formFullName</span>().<span class="tok-t">trim</span>()) { <span class="tok-k">this</span>.<span class="tok-t">notify</span>.<span class="tok-t">error</span>(<span class="tok-s">'الاسم مطلوب'</span>); <span class="tok-k">return</span>; }
+  <span class="tok-c">// ... proceed to createUser or updateUser use case</span>
+}</pre>
+      <p>This approach avoids the <code class="inline">FormGroup</code>/<code class="inline">FormBuilder</code> ceremony and keeps validation logic co-located with the action. The template binds to signals directly (e.g. <code class="inline">(input)="formFullName.set($event.target.value)"</code>), and the ViewModel surfaces error feedback via <code class="inline">NotificationService</code> — not a reactive validator or error state signal.</p>
+      <p><strong>Exception:</strong> <code class="inline">change-password.page.ts</code> uses <code class="inline">FormsModule</code>/<code class="inline">ngModel</code> for two-way binding on its password fields. It is the one place in the codebase that opts into Angular's built-in form binding; no other page uses <code class="inline">FormGroup</code>, <code class="inline">Validators</code>, or <code class="inline">ReactiveFormsModule</code>.</p>
+    </div>
+
+    <h2 class="section">Where to validate what</h2>
+    <table class="conv">
+      <tr>
+        <th>Source of data</th>
+        <th>Where it is validated</th>
+        <th>Mechanism</th>
+      </tr>
+      <tr>
+        <td>Remote API (untrusted)</td>
+        <td>use-case boundary</td>
+        <td><code class="inline">is…DtoRsValid</code> guard → <code class="inline">AppError('…', 'validation')</code></td>
+      </tr>
+      <tr>
+        <td>User input (forms)</td>
+        <td>the ViewModel action method</td>
+        <td>signal fields + inline guard before the use-case call; error surfaced via <code class="inline">NotificationService</code> (exception: <code class="inline">change-password.page.ts</code> uses <code class="inline">FormsModule</code>/<code class="inline">ngModel</code>)</td>
+      </tr>
+      <tr>
+        <td>Local store (trusted, app-written)</td>
+        <td>not re-validated</td>
+        <td>round-tripped via <code class="inline">KeyValueStore</code></td>
+      </tr>
+    </table>
+
+    <p style="margin-top:28px;">Read next: <a href="ERROR_HANDLING.html">Error Handling</a> — how every failure becomes a typed <code class="inline">Result</code> that callers switch on, and <a href="FEATURE_ANATOMY.html">Feature Anatomy</a> — the full layer breakdown of a single feature folder.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

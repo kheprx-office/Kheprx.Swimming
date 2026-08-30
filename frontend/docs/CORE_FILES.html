@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core Files — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl active" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">core/</span> — shared building blocks</h1>
+      <p>Cross-cutting infrastructure every feature reuses. All paths under <code class="inline">src/app/core/</code>.</p>
+    </header>
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag pres">presentation</span><span class="tag dom">domain</span>
+      <span class="tag data">data</span><span class="tag core">core</span>
+    </div>
+
+    <!-- ─── Layout ─────────────────────────────────────────────────────────── -->
+    <h2 class="section">Layout</h2>
+    <pre class="tree"><span class="g core">core/</span>
+  config/     <span class="note"># env.ts</span>
+  crypto/     <span class="note"># crypto.service.ts · types.ts · web-crypto-key-store.ts · index.ts</span>
+  datasource/ <span class="note"># keyvalue/key-value.store.ts · keyvalue/storage-keys.ts</span>
+  domain/     <span class="note"># errors/app-error.ts · result/result.ts · roles/ (UserRole · ROLE_LABELS)</span>
+              <span class="note"># usecase/use-case.ts</span>
+  logging/    <span class="note"># logger.ts</span>
+  network/    <span class="note"># api/base-response-rs.ts · api/http-client.ts · api/http-error.ts</span>
+  ui/         <span class="note"># theme/ · components/ · notification.service.ts</span></pre>
+
+    <!-- ─── Domain primitives ───────────────────────────────────────────────── -->
+    <h2 class="section">Domain primitives</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>Result&lt;T&gt;</h3><span class="file">core/domain/result/result.ts</span><span class="tag core">core</span></div>
+      <p>The uniform success/failure value every use case returns. Callers switch on <code class="inline">ok</code> instead of writing try/catch.</p>
+      <pre>export type Result&lt;T&gt; =
+  | { ok: true; data: T }
+  | { ok: false; error: AppError };
+
+export const ok   = &lt;T&gt;(data: T): Result&lt;T&gt;      =&gt; ({ ok: true,  data });
+export const fail = (error: AppError): Result&lt;never&gt; =&gt; ({ ok: false, error });</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>AppError</h3><span class="file">core/domain/errors/app-error.ts</span><span class="tag core">core</span></div>
+      <p>A typed error carrying the failure kind, optional HTTP status, and optional backend error code. The seven-value union drives the error-handling table in every view. See <a href="ERROR_HANDLING.html">Error Handling</a> for details on each kind.</p>
+      <pre>export type AppErrorKind =
+  | 'network' | 'http' | 'validation'
+  | 'storage' | 'crypto' | 'auth' | 'unknown';
+
+export class AppError extends Error {
+  readonly kind:    AppErrorKind;
+  readonly status?: number;
+  readonly code?:   string;
+
+  constructor(message: string, kind: AppErrorKind, status?: number, code?: string) {
+    super(message);
+    this.name = 'AppError';
+    this.kind = kind; this.status = status; this.code = code;
+  }
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>UseCase&lt;I, O&gt;</h3><span class="file">core/domain/usecase/use-case.ts</span><span class="tag core">core</span></div>
+      <p>Abstract base every use case extends. Subclasses implement only the happy path in <code class="inline">execute()</code>; <code class="inline">run()</code> owns error handling once, so no use case repeats the same try/catch.</p>
+      <pre>export abstract class UseCase&lt;I, O&gt; {
+  // happy path only — throw an AppError to signal failure
+  protected abstract execute(input: I): Promise&lt;O&gt;;
+
+  async run(input: I): Promise&lt;Result&lt;O&gt;&gt; {
+    try {
+      return ok(await this.execute(input));
+    } catch (e) {
+      const error =
+        e instanceof AppError ? e : new AppError('Unexpected error', 'unknown');
+      return fail(error);
+    }
+  }
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>UserRole / ROLE_LABELS</h3><span class="file">core/domain/roles/</span><span class="tag core">core</span></div>
+      <p>Shared kernel for role identity used by auth, user-management, and layout. The Kheprx.Electric role set is <code class="inline">admin</code>, <code class="inline">manager</code>, <code class="inline">moqawel</code>, and <code class="inline">worker</code>. <code class="inline">UserRole</code> is the discriminated union of valid role strings; <code class="inline">ROLE_LABELS</code> is a display-label map keyed by role. Both are imported wherever role checks or labels are needed — DTOs use them for validation, models use them for typing.</p>
+      <pre>export type UserRole = 'admin' | 'manager' | 'moqawel' | 'worker';
+
+export const ROLE_LABELS: Record&lt;UserRole, string&gt; = {
+  admin: 'مدير النظام',
+  manager: 'مدير المشروع',
+  moqawel: 'مقاول',
+  worker: 'عامل',
+};</pre>
+    </div>
+
+    <!-- ─── Logging &amp; config ────────────────────────────────────────────────── -->
+    <h2 class="section">Logging &amp; config</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>Logger</h3><span class="file">core/logging/logger.ts</span><span class="tag core">core</span></div>
+      <p>A layer-aware, level-aware logging utility. <code class="inline">createLogger(layer, name)</code> returns a <code class="inline">Logger</code> whose minimum level is <code class="inline">'debug'</code> in dev and <code class="inline">'warn'</code> in production.</p>
+      <pre>export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export type LogLayer =
+  | 'page' | 'viewmodel' | 'usecase'
+  | 'repository' | 'datasource' | 'core';
+
+export type Logger = {
+  debug: (...args: unknown[]) =&gt; void;
+  info:  (...args: unknown[]) =&gt; void;
+  warn:  (...args: unknown[]) =&gt; void;
+  error: (...args: unknown[]) =&gt; void;
+};
+
+export function createLogger(layer: LogLayer, name: string): Logger { ... }</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>env</h3><span class="file">core/config/env.ts</span><span class="tag core">core</span></div>
+      <p>The single source of environment and tuning config. A plain typed <code class="inline">as const</code> object — no service, no injection. Uses Angular's <code class="inline">isDevMode()</code> to distinguish builds.</p>
+      <pre>export const env = {
+  name: (isDev ? 'development' : 'production') as AppEnv,
+  isDev,
+  api: {
+    baseUrl:    isDev ? 'https://dummyjson.com' : 'https://api.example.com',
+    timeoutMs:  10_000,
+    maxRetries: 2,          // total attempts = 1 + maxRetries
+    backoffMs:  [500, 1500], // delay before retry 1, retry 2
+  },
+} as const;</pre>
+    </div>
+
+    <!-- ─── Network ─────────────────────────────────────────────────────────── -->
+    <h2 class="section">Network</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>BaseResponseRs&lt;T&gt;</h3><span class="file">core/network/api/base-response-rs.ts</span><span class="tag core">core</span></div>
+      <p>The minimal response envelope every response DTO extends. <code class="inline">success</code> and <code class="inline">message</code> are optional and synthesized at the repository boundary until the backend sends them.</p>
+      <pre>export interface BaseResponseRs&lt;T&gt; {
+  data: T;
+  success?: boolean;
+  message?: string;
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>HttpClientService</h3><span class="file">core/network/api/http-client.ts</span><span class="tag core">core</span></div>
+      <p>A typed wrapper over Angular <code class="inline">HttpClient</code> with five verbs (<code class="inline">get</code>/<code class="inline">post</code>/<code class="inline">put</code>/<code class="inline">patch</code>/<code class="inline">delete</code>). Returns a <code class="inline">Promise&lt;T&gt;</code> and maps failures to <code class="inline">AppError</code> via <code class="inline">toAppError</code>. Transport failures (status 0, timeout) are retried with exponential backoff; 4xx/5xx errors are never retried. Repositories inject this directly and return the raw DTO envelope; the use case owns validation and mapping. See <a href="HTTP_CLIENT.html">HTTP Client</a> for full documentation.</p>
+      <pre>export interface HttpRequestOptions {
+  body?: unknown; headers?: Record&lt;string, string&gt;;
+  params?: Record&lt;string, string | number | boolean&gt;;
+}
+
+@Injectable({ providedIn: 'root' })
+export class HttpClientService {
+  get&lt;T&gt;(path: string, opts?: HttpRequestOptions): Promise&lt;T&gt;;
+  post&lt;T&gt;(path: string, opts?: HttpRequestOptions): Promise&lt;T&gt;;
+  put&lt;T&gt;(path: string, opts?: HttpRequestOptions): Promise&lt;T&gt;;
+  patch&lt;T&gt;(path: string, opts?: HttpRequestOptions): Promise&lt;T&gt;;
+  delete&lt;T&gt;(path: string, opts?: HttpRequestOptions): Promise&lt;T&gt;;
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>toAppError / http-error</h3><span class="file">core/network/api/http-error.ts</span><span class="tag core">core</span></div>
+      <p>Maps an <code class="inline">HttpErrorResponse</code> (or transport error) to a typed <code class="inline">AppError</code>. Status <code class="inline">0</code> → <code class="inline">'network'</code>; <code class="inline">401</code> → <code class="inline">'auth'</code>; other non-2xx → <code class="inline">'http'</code> (carries <code class="inline">status</code> + backend <code class="inline">code</code> if the body is a JSON object with a <code class="inline">code</code> field).</p>
+    </div>
+
+    <p style="margin:6px 0 0; font-size:0.88rem; color:var(--muted);">The auth interceptor (Bearer token + 401→refresh→retry) lives at <code class="inline">features/auth/data/auth.interceptor.ts</code>, not in <code class="inline">core/network</code>. It is registered via <code class="inline">provideHttpClient(withInterceptors([authInterceptor]))</code> in <code class="inline">app.config.ts</code>.</p>
+
+    <!-- ─── Guards ──────────────────────────────────────────────────────────── -->
+    <h2 class="section">Guards</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>authGuard / roleGuard</h3><span class="file">features/auth/presentation/auth.guard.ts</span><span class="tag pres">pres</span></div>
+      <p><code class="inline">authGuard</code>: blocks anonymous users, redirects to <code class="inline">/login</code>. <code class="inline">roleGuard(role)</code>: additionally checks <code class="inline">AuthSessionStore.role()</code>; authenticated users lacking the role are sent to <code class="inline">'/'</code>. Both are <code class="inline">CanActivateFn</code> and read synchronous signals — no async work needed. See <a href="AUTH.html">Auth</a> for details.</p>
+      <pre>// In route config:
+{ path: 'account', canActivate: [authGuard],         loadComponent: () =&gt; /* ... */ },
+{ path: 'admin',   canActivate: [roleGuard('admin')], loadComponent: () =&gt; /* ... */ },</pre>
+    </div>
+
+    <!-- ─── Storage ──────────────────────────────────────────────────────────── -->
+    <h2 class="section">Storage</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>KeyValueStore</h3><span class="file">core/datasource/keyvalue/key-value.store.ts</span><span class="tag core">core</span></div>
+      <p>Typed wrapper over <code class="inline">localStorage</code> that owns serialization and error mapping once. Corruption is intentionally asymmetric: a malformed <em>object</em> throws <code class="inline">AppError('storage')</code>, while a malformed <em>primitive</em> falls back to the caller's default.</p>
+      <pre>@Injectable({ providedIn: 'root' })
+export class KeyValueStore {
+  setString(key: string, value: string): Promise&lt;void&gt; { ... }
+  getString(key: string): Promise&lt;string | null&gt; { ... }
+
+  setObject&lt;T&gt;(key: string, value: T): Promise&lt;void&gt; { ... }
+  async getObject&lt;T&gt;(key: string): Promise&lt;T | null&gt; {
+    const raw = await this.getString(key);
+    if (raw === null) return null;
+    try {
+      return JSON.parse(raw) as T;
+    } catch (e) {
+      // corrupt object → throw, not silently default
+      throw new AppError('Failed to load data', 'storage');
+    }
+  }
+}
+
+// Shared non-DI singleton (parity with mobile). Prefer DI in app code.
+export const keyValueStore = new KeyValueStore();</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>StorageKeys</h3><span class="file">core/datasource/keyvalue/storage-keys.ts</span><span class="tag core">core</span></div>
+      <p>The single registry of <code class="inline">localStorage</code> key strings used across the app. New features add their keys here to avoid collisions. (A legacy <code class="inline">profile</code> key from a removed feature also remains in the registry.)</p>
+      <pre>export const StorageKeys = {
+  accessToken: '@auth/access-token',
+  refreshToken: '@auth/refresh-token',
+} as const;</pre>
+    </div>
+
+    <!-- ─── Crypto ───────────────────────────────────────────────────────────── -->
+    <h2 class="section">Crypto</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>CryptoService</h3><span class="file">core/crypto/crypto.service.ts</span><span class="tag core">core</span></div>
+      <p>AES-256-GCM encrypt/decrypt of arbitrary strings. The <code class="inline">CryptoKey</code> comes from an injected <code class="inline">KeyProvider</code> (IndexedDB in production); the AES work goes through an injected <code class="inline">WebCryptoLike</code>. Both seams keep this class testable on Node's webcrypto. Output format: Base64( iv(12 bytes) ‖ ciphertext+tag ).</p>
+      <pre>export class CryptoService {
+  constructor(
+    private readonly keys: KeyProvider,
+    private readonly crypto: WebCryptoLike,
+  ) {}
+
+  async encrypt(plain: string): Promise&lt;string&gt; {
+    const key = await this.keys.getOrCreateKey();
+    const iv  = this.crypto.getRandomValues(new Uint8Array(12));
+    const cipherBuf = await this.crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv }, key, new TextEncoder().encode(plain),
+    );
+    const ciphertext = new Uint8Array(cipherBuf);
+    const out = new Uint8Array(iv.length + ciphertext.length);
+    out.set(iv, 0);
+    out.set(ciphertext, iv.length);
+    return toBase64(out);
+  }
+
+  async decrypt(blob: string): Promise&lt;string&gt; { ... }
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>WebCryptoLike / KeyProvider</h3><span class="file">core/crypto/types.ts</span><span class="tag core">core</span></div>
+      <p>Seam interfaces that let <code class="inline">CryptoService</code> run without the real browser globals in tests. Production wires <code class="inline">window.crypto</code> and an IndexedDB-backed key provider; tests inject Node's webcrypto and an in-memory provider.</p>
+      <pre>export interface WebCryptoLike {
+  getRandomValues&lt;T extends ArrayBufferView&gt;(array: T): T;
+  subtle: {
+    encrypt(
+      algorithm: { name: 'AES-GCM'; iv: BufferSource },
+      key: CryptoKey,
+      data: BufferSource,
+    ): Promise&lt;ArrayBuffer&gt;;
+    decrypt(
+      algorithm: { name: 'AES-GCM'; iv: BufferSource },
+      key: CryptoKey,
+      data: BufferSource,
+    ): Promise&lt;ArrayBuffer&gt;;
+  };
+}
+
+export interface KeyProvider {
+  getOrCreateKey(): Promise&lt;CryptoKey&gt;;
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>webCryptoKeyStore</h3><span class="file">core/crypto/web-crypto-key-store.ts</span><span class="tag core">core</span></div>
+      <p>The production <code class="inline">KeyProvider</code>. Generates a <strong>non-extractable</strong> AES-256-GCM <code class="inline">CryptoKey</code> and persists it in IndexedDB (structured clone supports <code class="inline">CryptoKey</code>). Raw key bytes never leave the browser.</p>
+      <pre>export const webCryptoKeyStore: KeyProvider = {
+  async getOrCreateKey(): Promise&lt;CryptoKey&gt; {
+    if (cached) return cached;
+    const db       = await openDb();        // IndexedDB 'base-frontend-crypto'
+    const existing = await idbGet(db, KEY_ID);
+    if (existing) { cached = existing; return cached; }
+
+    const key = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false,                                // non-extractable
+      ['encrypt', 'decrypt'],
+    );
+    await idbPut(db, KEY_ID, key);
+    cached = key;
+    return cached;
+  },
+};</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>cryptoService (production composition)</h3><span class="file">core/crypto/index.ts</span><span class="tag core">core</span></div>
+      <p>Wires the production <code class="inline">CryptoService</code> singleton: global <code class="inline">window.crypto</code> (satisfies <code class="inline">WebCryptoLike</code> structurally) + the IndexedDB-backed key store. Unit tests import <code class="inline">CryptoService</code> directly and inject fakes.</p>
+      <pre>export { CryptoService } from './crypto.service';
+export type { KeyProvider, WebCryptoLike } from './types';
+
+// window.crypto satisfies WebCryptoLike structurally
+export const cryptoService = new CryptoService(webCryptoKeyStore, crypto);</pre>
+    </div>
+
+    <!-- ─── UI ───────────────────────────────────────────────────────────────── -->
+    <h2 class="section">UI</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>NotificationService</h3><span class="file">core/ui/notification.service.ts</span><span class="tag core">core</span></div>
+      <p>App-wide toast/snackbar state — the web equivalent of the mobile <code class="inline">Alert.alert</code>. Pages call <code class="inline">success()</code> or <code class="inline">error()</code>; <code class="inline">NotificationHostComponent</code> renders the current signal.</p>
+      <pre>export type Notification = { kind: 'success' | 'error'; message: string };
+
+@Injectable({ providedIn: 'root' })
+export class NotificationService {
+  private readonly _current = signal&lt;Notification | null&gt;(null);
+  readonly current = this._current.asReadonly();
+
+  success(message: string): void { this._current.set({ kind: 'success', message }); }
+  error(message: string):   void { this._current.set({ kind: 'error',   message }); }
+  clear():                  void { this._current.set(null); }
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>NavButtonComponent</h3><span class="file">core/ui/components/nav-button.component.ts</span><span class="tag core">core</span></div>
+      <p>A reusable themed button (label + press output). No navigation logic — callers wire the <code class="inline">press</code> output to whatever action they need.</p>
+      <pre>export class NavButtonComponent {
+  readonly label    = input.required&lt;string&gt;();
+  readonly disabled = input(false);
+  readonly press    = output&lt;void&gt;();
+}
+
+// selector: app-nav-button
+// &lt;app-nav-button label="Go" (press)="doSomething()" /&gt;</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>TextFieldComponent</h3><span class="file">core/ui/components/text-field.component.ts</span><span class="tag core">core</span></div>
+      <p>A labeled input with a two-way <code class="inline">model</code> signal for <code class="inline">value</code>. Angular's <code class="inline">model()</code> means the parent can bind with <code class="inline">[(value)]</code>.</p>
+      <pre>export class TextFieldComponent {
+  readonly label       = input('');
+  readonly placeholder = input('');
+  readonly value       = model('');   // two-way signal binding
+
+  onInput(event: Event): void {
+    this.value.set((event.target as HTMLInputElement).value);
+  }
+}
+
+// selector: app-text-field</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>NotificationHostComponent</h3><span class="file">core/ui/components/notification-host.component.ts</span><span class="tag core">core</span></div>
+      <p>Renders the current <code class="inline">NotificationService</code> message as a dismissible fixed-position banner. Placed once in the app shell (<code class="inline">app.ts</code>).</p>
+      <pre>// selector: app-notification-host
+// template (abbreviated):
+@if (notifications.current(); as n) {
+  &lt;div class="toast" [class.error]="n.kind === 'error'"
+       (click)="notifications.clear()"&gt;
+    {{ n.message }}
+  &lt;/div&gt;
+}
+
+export class NotificationHostComponent {
+  readonly notifications = inject(NotificationService);
+}</pre>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>theme</h3><span class="file">core/ui/theme/theme.ts</span><span class="tag core">core</span></div>
+      <p>Design tokens for use from TypeScript. Mirrors the CSS variables in <code class="inline">theme.scss</code> so component logic and stylesheets share one source of truth.</p>
+      <pre>export const theme = {
+  colors: {
+    primary:    '#0a84ff',
+    text:       '#111',
+    muted:      '#555',
+    error:      '#c00',
+    border:     '#ccc',
+    background: '#fff',
+    onPrimary:  '#fff',
+  },
+  spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
+  radius:  { sm: 6, md: 10 },
+} as const;</pre>
+    </div>
+
+    <footer class="page">
+      Base Frontend — <code class="inline">core/</code> building blocks. See the
+      <a href="superpowers/specs/2026-06-26-angular-base-design.md">design spec</a>
+      and the other pages above.
+    </footer>
+  </div>
+</body>
+</html>

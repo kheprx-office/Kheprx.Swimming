@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add a Feature — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl active" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Base Frontend</span> — Add a Feature</h1>
+      <p>Add a vertical slice by following the <code class="inline">user-management</code> / <code class="inline">User</code> example. Substitute your entity name wherever <code class="inline">User</code>/<code class="inline">user</code> appears.</p>
+    </header>
+
+    <h2 class="section">Folder scaffold</h2>
+    <p class="lead">Create this directory tree under <code class="inline">src/app/features/</code>, substituting your feature name and entity name for the placeholders.</p>
+    <pre class="tree">src/app/features/<span class="g">&lt;feature&gt;</span>/
+  <span class="g data">data/</span>
+    dto/
+      &lt;screen&gt;/            <span class="note">← &lt;resource&gt;.dto.ts  (response DTOs + envelopes + isValid guard) · one file per request DTO</span>
+      shared/              <span class="note">← when DTO is used by the store/interceptor/app-init or across screens</span>
+    repositories/          <span class="note">← &lt;entity&gt;.repository.impl.ts  (&lt;Entity&gt;RepositoryImpl)</span>
+    &lt;feature&gt;.providers.ts <span class="note">← XXX_PROVIDERS: bind token → impl</span>
+  <span class="g dom">domain/</span>
+    model/
+      &lt;screen&gt;/            <span class="note">← &lt;entity&gt;.ts  (screen-specific input types)</span>
+      shared/              <span class="note">← &lt;aggregate&gt;.ts  (feature-wide model + mappers)</span>
+    repositories/          <span class="note">← &lt;entity&gt;.repository.ts  (I&lt;Entity&gt;Repository port + DI token)</span>
+    usecases/
+      &lt;screen&gt;/            <span class="note">← &lt;verb&gt;-&lt;entity&gt;.use-case.ts  (owned by the triggering screen)</span>
+      shared/              <span class="note">← when use case is owned by store/interceptor/app-init or is multi-screen</span>
+  <span class="g pres">presentation/</span>
+    pages/
+      &lt;screen&gt;/            <span class="note">← &lt;screen&gt;.page.ts · &lt;screen&gt;.page.html · &lt;screen&gt;.viewmodel.ts (if any)</span>
+    <span class="note">← non-screen files (stores, guards) at presentation/ root</span>
+  testing/                 <span class="note">← mirrors data/ · domain/ · presentation/ — all *.spec.ts live here</span>
+  index.ts                 <span class="note">← public barrel</span></pre>
+
+    <h2 class="section">The 11-step recipe</h2>
+    <ol class="steps">
+
+      <li>
+        <b>DTO + validator — <code class="inline">data/dto/user-management/user.dto.ts</code></b>
+        <p>Response DTOs and their validator live together in one file under the screen subfolder (e.g. <code class="inline">data/dto/user-management/user.dto.ts</code>). Each request DTO gets its own file (e.g. <code class="inline">data/dto/user-management/create-user.dto.ts</code>). Use <code class="inline">shared/</code> when the DTO is consumed by the store, interceptor, app-init, or multiple screens. Response DTOs are suffixed <code class="inline">…DtoRs</code>; request DTOs <code class="inline">…DtoRq</code>. Envelope types extend <code class="inline">BaseResponseRs&lt;T&gt;</code> from core.</p>
+        <pre><span class="tok-k">import</span> { <span class="tok-t">BaseResponseRs</span> } <span class="tok-k">from</span> <span class="tok-s">'@core/network/api/base-response-rs'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">ROLE_LABELS</span> } <span class="tok-k">from</span> <span class="tok-s">'@core/domain/roles'</span>;
+
+<span class="tok-k">export interface</span> <span class="tok-t">UserDtoRs</span> {
+  id: <span class="tok-k">string</span>; fullName: <span class="tok-k">string</span>; email: <span class="tok-k">string</span>;
+  role: <span class="tok-k">string</span>; status: <span class="tok-k">string</span>; mustChangePassword: <span class="tok-k">boolean</span>;
+}
+<span class="tok-k">export interface</span> <span class="tok-t">UsersDtoRs</span> <span class="tok-k">extends</span> <span class="tok-t">BaseResponseRs</span>&lt;<span class="tok-t">UserDtoRs</span>[]&gt; {}
+<span class="tok-k">export interface</span> <span class="tok-t">UserItemDtoRs</span> <span class="tok-k">extends</span> <span class="tok-t">BaseResponseRs</span>&lt;<span class="tok-t">UserDtoRs</span>&gt; {}
+
+<span class="tok-k">export function</span> <span class="tok-t">isUserDtoRsValid</span>(dto: <span class="tok-t">UserDtoRs</span>): <span class="tok-k">boolean</span> {
+  <span class="tok-k">return</span> (
+    <span class="tok-k">typeof</span> dto.id === <span class="tok-s">'string'</span> &amp;&amp; dto.id.length &gt; 0 &amp;&amp;
+    <span class="tok-k">typeof</span> dto.fullName === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-k">typeof</span> dto.email === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-k">typeof</span> dto.role === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-t">Object</span>.prototype.hasOwnProperty.<span class="tok-t">call</span>(<span class="tok-t">ROLE_LABELS</span>, dto.role) &amp;&amp;
+    (dto.status === <span class="tok-s">'active'</span> || dto.status === <span class="tok-s">'disabled'</span>) &amp;&amp;
+    <span class="tok-k">typeof</span> dto.mustChangePassword === <span class="tok-s">'boolean'</span>
+  );
+}</pre>
+      </li>
+
+      <li>
+        <b>Domain model + mapper — <code class="inline">domain/model/user-management/user.ts</code></b>
+        <p>The clean domain type, free of transport-layer concerns, plus a pure mapper from DTO. The mapper lives alongside the type so the domain/data boundary is clear.</p>
+        <pre><span class="tok-k">export type</span> <span class="tok-t">UserStatus</span> = <span class="tok-s">'active'</span> | <span class="tok-s">'disabled'</span>;
+<span class="tok-k">export interface</span> <span class="tok-t">User</span> {
+  id: <span class="tok-k">string</span>; fullName: <span class="tok-k">string</span>; email: <span class="tok-k">string</span>;
+  role: <span class="tok-t">UserRole</span>; status: <span class="tok-t">UserStatus</span>; mustChangePassword: <span class="tok-k">boolean</span>;
+}
+
+<span class="tok-k">export function</span> <span class="tok-t">toUser</span>(dto: <span class="tok-t">UserDtoRs</span>): <span class="tok-t">User</span> {
+  <span class="tok-k">return</span> {
+    id: dto.id, fullName: dto.fullName, email: dto.email,
+    role: dto.role <span class="tok-k">as</span> <span class="tok-t">UserRole</span>, status: dto.status <span class="tok-k">as</span> <span class="tok-t">UserStatus</span>,
+    mustChangePassword: dto.mustChangePassword,
+  };
+}</pre>
+      </li>
+
+      <li>
+        <b>Port + DI token — <code class="inline">domain/repositories/users.repository.ts</code></b>
+        <p>Define the interface (port) and an <code class="inline">InjectionToken</code> so the use case depends on an abstraction, not an implementation. Interfaces vanish at runtime; the token gives Angular something concrete to bind. The port methods return the raw DTO envelope — mapping is the use case's responsibility.</p>
+        <pre><span class="tok-k">export interface</span> <span class="tok-t">IUsersRepository</span> {
+  list(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UsersDtoRs</span>&gt;;
+  create(rq: <span class="tok-t">CreateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;;
+  update(id: <span class="tok-k">string</span>, rq: <span class="tok-t">UpdateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;;
+  setStatus(id: <span class="tok-k">string</span>, rq: <span class="tok-t">SetUserStatusDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;;
+}
+
+<span class="tok-k">export const</span> <span class="tok-t">USERS_REPOSITORY</span> = <span class="tok-k">new</span> <span class="tok-t">InjectionToken</span>&lt;<span class="tok-t">IUsersRepository</span>&gt;(<span class="tok-s">'USERS_REPOSITORY'</span>);</pre>
+      </li>
+
+      <li>
+        <b>Repository impl — <code class="inline">data/repositories/users.repository.impl.ts</code></b>
+        <p>Injects <code class="inline">HttpClientService</code> directly and returns the raw DTO envelope. This is a fetch-only repository — no DTO validation, no domain mapping, no branching logic. Those responsibilities belong to the use case. Mark it <code class="inline">providedIn: 'root'</code> so it participates in tree-shaking and is bound globally via the providers file.</p>
+        <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">UsersRepositoryImpl</span> <span class="tok-k">implements</span> <span class="tok-t">IUsersRepository</span> {
+  <span class="tok-k">private readonly</span> http = <span class="tok-t">inject</span>(<span class="tok-t">HttpClientService</span>);
+
+  list(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UsersDtoRs</span>&gt; {
+    <span class="tok-k">return this</span>.http.<span class="tok-t">get</span>&lt;<span class="tok-t">UsersDtoRs</span>&gt;(<span class="tok-s">'/api/users'</span>);
+  }
+  create(rq: <span class="tok-t">CreateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt; {
+    <span class="tok-k">return this</span>.http.<span class="tok-t">post</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;(<span class="tok-s">'/api/users'</span>, { body: rq });
+  }
+  update(id: <span class="tok-k">string</span>, rq: <span class="tok-t">UpdateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt; {
+    <span class="tok-k">return this</span>.http.<span class="tok-t">patch</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;(<span class="tok-s">`/api/users/${id}`</span>, { body: rq });
+  }
+  setStatus(id: <span class="tok-k">string</span>, rq: <span class="tok-t">SetUserStatusDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt; {
+    <span class="tok-k">return this</span>.http.<span class="tok-t">patch</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;(<span class="tok-s">`/api/users/${id}/status`</span>, { body: rq });
+  }
+}</pre>
+        <p>See <a href="DATA_SOURCE_SEAM.html">Repository Layer</a> for <code class="inline">HttpClientService</code> method signatures and error-handling behaviour.</p>
+      </li>
+
+      <li>
+        <b>Use case — <code class="inline">domain/usecases/user-management/list-users.use-case.ts</code></b>
+        <p>Orchestrates the fetch: calls the port, validates every DTO item with the guard, maps to domain models. Errors thrown here are caught by <code class="inline">UseCase.run()</code> and returned as a typed <code class="inline">Result</code> — no try/catch needed in callers. Place each use case under the screen subfolder that triggers it; use <code class="inline">domain/usecases/shared/</code> for store-, interceptor-, or app-init-owned use cases, or those shared across multiple screens.</p>
+        <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">ListUsersUseCase</span> <span class="tok-k">extends</span> <span class="tok-t">UseCase</span>&lt;<span class="tok-k">void</span>, <span class="tok-t">User</span>[]&gt; {
+  <span class="tok-k">private readonly</span> repo = <span class="tok-t">inject</span>(<span class="tok-t">USERS_REPOSITORY</span>);
+
+  <span class="tok-k">constructor</span>() { <span class="tok-k">super</span>(<span class="tok-s">'ListUsers'</span>); }
+
+  <span class="tok-k">protected async</span> <span class="tok-t">execute</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">User</span>[]&gt; {
+    <span class="tok-k">const</span> res = <span class="tok-k">await this</span>.repo.<span class="tok-t">list</span>();
+    <span class="tok-k">if</span> (!res.data.<span class="tok-t">every</span>(<span class="tok-t">isUserDtoRsValid</span>)) {
+      <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid user data received'</span>, <span class="tok-s">'validation'</span>);
+    }
+    <span class="tok-k">return</span> res.data.<span class="tok-t">map</span>(<span class="tok-t">toUser</span>);
+  }
+}</pre>
+      </li>
+
+      <li>
+        <b>Screen folder — <code class="inline">presentation/pages/user-management/</code></b>
+        <p>Create the screen folder and place the viewmodel inside it alongside the page component and template. Here the viewmodel (<code class="inline">users.viewmodel.ts</code>) and page (<code class="inline">user-management.page.ts</code>) both live under <code class="inline">presentation/pages/user-management/</code>. Non-screen presentation files (stores, guards) stay at the <code class="inline">presentation/</code> root.</p>
+        <p><b>ViewModel — <code class="inline">presentation/pages/user-management/users.viewmodel.ts</code></b></p>
+        <p>Exposes <code class="inline">loading</code> and <code class="inline">users</code> signals only — no <code class="inline">error</code> signal. Calls the use case, then switches on <code class="inline">result.ok</code>. On failure, surfaces the error via <code class="inline">NotificationService.error(...)</code> — the <code class="inline">users</code> list is not cleared. The ViewModel is provided at route level (not globally) so it is instantiated and torn down with the route.</p>
+        <pre><span class="tok-t">@Injectable</span>()
+<span class="tok-k">export class</span> <span class="tok-t">UsersViewModel</span> {
+  <span class="tok-k">private readonly</span> listUsers = <span class="tok-t">inject</span>(<span class="tok-t">ListUsersUseCase</span>);
+  <span class="tok-k">private readonly</span> notify = <span class="tok-t">inject</span>(<span class="tok-t">NotificationService</span>);
+
+  <span class="tok-k">readonly</span> loading = <span class="tok-t">signal</span>(<span class="tok-k">false</span>);
+  <span class="tok-k">readonly</span> users   = <span class="tok-t">signal</span>&lt;<span class="tok-t">User</span>[]&gt;([]);
+
+  <span class="tok-k">async</span> <span class="tok-t">load</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; {
+    <span class="tok-k">this</span>.loading.<span class="tok-t">set</span>(<span class="tok-k">true</span>);
+    <span class="tok-k">const</span> r = <span class="tok-k">await this</span>.listUsers.<span class="tok-t">run</span>();
+    <span class="tok-k">this</span>.loading.<span class="tok-t">set</span>(<span class="tok-k">false</span>);
+    <span class="tok-k">if</span> (r.ok) <span class="tok-k">this</span>.users.<span class="tok-t">set</span>(r.data);
+    <span class="tok-k">else this</span>.notify.<span class="tok-t">error</span>(r.error.message);   <span class="tok-c">// toast via NotificationService</span>
+  }
+}</pre>
+      </li>
+
+      <li>
+        <b>Page — <code class="inline">presentation/pages/user-management/user-management.page.ts</code></b>
+        <p>Injects the ViewModel and renders from its signals. Errors are surfaced by the ViewModel itself (via <code class="inline">NotificationService</code>) — the Page has no error-handling logic of its own.</p>
+        <pre><span class="tok-t">@Component</span>({
+  selector: <span class="tok-s">'app-user-management-page'</span>,
+  standalone: <span class="tok-k">true</span>,
+  imports: [<span class="tok-t">NavButtonComponent</span>],
+  template: <span class="tok-s">`
+    &lt;section class="page"&gt;
+      &lt;h1&gt;User Management&lt;/h1&gt;
+      &lt;app-nav-button label="Refresh" (press)="onLoad()" [disabled]="vm.loading()" /&gt;
+      @if (vm.loading()) { &lt;p&gt;Loading…&lt;/p&gt; }
+      @if (vm.users().length) { &lt;p&gt;{{ vm.users().length }} users&lt;/p&gt; }
+    &lt;/section&gt;
+  `</span>,
+})
+<span class="tok-k">export class</span> <span class="tok-t">UserManagementPage</span> {
+  <span class="tok-k">readonly</span> vm = <span class="tok-t">inject</span>(<span class="tok-t">UsersViewModel</span>);
+
+  <span class="tok-t">onLoad</span>(): <span class="tok-k">void</span> {
+    <span class="tok-k">void this</span>.vm.<span class="tok-t">load</span>();
+  }
+}</pre>
+      </li>
+
+      <li>
+        <b>Barrel — <code class="inline">index.ts</code></b>
+        <p>The feature's public surface. Only the page and viewmodel are re-exported here. The repository impl, use cases, token, and providers are wired globally via <code class="inline">app.config.ts</code> (<code class="inline">USERS_PROVIDERS</code>) or provided at route scope — they do not need to appear in the barrel.</p>
+        <pre><span class="tok-k">export</span> { <span class="tok-t">UserManagementPage</span> } <span class="tok-k">from</span> <span class="tok-s">'./presentation/pages/user-management/user-management.page'</span>;
+<span class="tok-k">export</span> { <span class="tok-t">UsersViewModel</span> }      <span class="tok-k">from</span> <span class="tok-s">'./presentation/pages/user-management/users.viewmodel'</span>;</pre>
+      </li>
+
+      <li>
+        <b>Providers + composition root — <code class="inline">data/&lt;feature&gt;.providers.ts</code> + <code class="inline">src/app/app.config.ts</code></b>
+        <p>The token→impl binding is declared once in a providers file and spread <strong>globally</strong> into <code class="inline">app.config.ts</code> — not into a route's <code class="inline">providers</code>. Use cases and the repository impl are <code class="inline">providedIn: 'root'</code>. Only the ViewModel is provided at route level, scoped to that route's lifetime.</p>
+        <pre><span class="tok-c">// data/users.providers.ts</span>
+<span class="tok-k">export const</span> <span class="tok-t">USERS_PROVIDERS</span>: <span class="tok-t">Provider</span>[] = [
+  { provide: <span class="tok-t">USERS_REPOSITORY</span>, useClass: <span class="tok-t">UsersRepositoryImpl</span> },
+];
+
+<span class="tok-c">// src/app/app.config.ts (excerpt)</span>
+providers: [
+  <span class="tok-t">provideRouter</span>(routes),
+  <span class="tok-t">provideHttpClient</span>(<span class="tok-t">withInterceptors</span>([authInterceptor])),
+  <span class="tok-t">provideAnimations</span>(),
+  ...<span class="tok-t">AUTH_PROVIDERS</span>,
+  ...<span class="tok-t">USERS_PROVIDERS</span>,
+],</pre>
+        <p>In <code class="inline">app.routes.ts</code>, provide only the ViewModel at route level. Add <code class="inline">canActivate: [roleGuard('admin')]</code> for admin-only routes:</p>
+        <pre>{
+  path: <span class="tok-s">'user-management'</span>,
+  canActivate: [<span class="tok-t">roleGuard</span>(<span class="tok-s">'admin'</span>)],
+  loadComponent: () =&gt; <span class="tok-t">import</span>(<span class="tok-s">'@features/user-management'</span>).<span class="tok-t">then</span>((m) =&gt; m.<span class="tok-t">UserManagementPage</span>),
+  providers: [<span class="tok-t">UsersViewModel</span>],
+},</pre>
+      </li>
+
+      <li>
+        <b>Tests — use-case and viewmodel</b>
+        <p>Place specs under the feature's <code class="inline">testing/</code> folder, mirroring the source path. Domain specs go in <code class="inline">testing/domain/usecases/…</code>; a viewmodel spec goes in <code class="inline">testing/presentation/pages/&lt;screen&gt;/&lt;screen&gt;.viewmodel.spec.ts</code>. Import the unit under test via <code class="inline">@features</code>/<code class="inline">@core</code> aliases — no relative imports from within <code class="inline">testing/</code>. Jest discovers all <code class="inline">*.spec.ts</code> files automatically via its <code class="inline">**/*.spec.ts</code> glob; no config change is needed. See <a href="TESTING.html">Testing</a> for the full TestBed recipes.</p>
+      </li>
+
+      <li>
+        <b>Add to nav/home</b>
+        <p>Register the route path in any navigation component and add a link to the home page. The Angular router resolves the <code class="inline">path</code> entry declared in Step 9; <code class="inline">USERS_PROVIDERS</code> in <code class="inline">app.config.ts</code> ensures the correct repository implementation is available globally, while <code class="inline">UsersViewModel</code> in the route's <code class="inline">providers</code> scopes the viewmodel lifetime to the route.</p>
+      </li>
+
+    </ol>
+
+    <h2 class="section">Two repository-port patterns</h2>
+    <p class="lead">The return type of the port interface reveals the trust level of the data source and determines whether a DTO layer is needed.</p>
+
+    <div class="card data">
+      <div class="ch"><h3>Remote / untrusted</h3><span class="tag data">data</span></div>
+      <p>The port returns the raw DTO envelope (<code class="inline">UsersDtoRs</code>). The use case owns validation and mapping — keeping the repository free of domain logic and keeping the domain free of transport-layer types.</p>
+      <p>Port signature: <code class="inline">list(): Promise&lt;UsersDtoRs&gt;</code><br>
+      Pattern: repository fetches → use case validates with guard → use case maps to domain model.</p>
+    </div>
+
+    <p style="margin-top:12px;font-size:0.93rem;"><strong>Local / trusted (note):</strong> When data originates from your own app (e.g. a <code class="inline">KeyValueStore</code>-backed preference store), the port may return a domain model directly — no DTO envelope or guard is needed. The repository serialises and deserialises internally via <code class="inline">KeyValueStore</code>. This pattern is not used for API-backed features.</p>
+
+    <div class="banner">
+      <strong>Rule: surface failures via NotificationService.</strong> When the use case returns <code class="inline">result.ok === false</code>, call <code class="inline">this.notify.error(r.error.message)</code>. Do not clear the <code class="inline">users</code> list — stale data remains visible until the next successful load. No <code class="inline">error</code> signal is needed on the ViewModel.
+      <pre><span class="tok-k">if</span> (r.ok) <span class="tok-k">this</span>.users.<span class="tok-t">set</span>(r.data);
+<span class="tok-k">else this</span>.notify.<span class="tok-t">error</span>(r.error.message);   <span class="tok-c">// toast via NotificationService</span></pre>
+    </div>
+
+    <p style="margin-top:28px;">Read next: <a href="TESTING.html">Testing</a> — use-case and viewmodel test recipes for the feature you just built.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infrastructure — Kheprx.BaseBackend.Catalog.Infrastructure</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    --dom: #166534; --dom-bg: #dcfce7; --app: #5b21b6; --app-bg: #ede9fe;
+    --inf: #9a3412; --inf-bg: #ffedd5; --con: #0f766e; --con-bg: #ccfbf1;
+    --host: #2563eb; --host-bg: #eaf1ff; --shared: #475569; --shared-bg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.page { padding: 30px 0 18px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.85rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .backlink { margin: 14px 0 0; font-size: 0.9rem; }
+  .backlink a { color: var(--accent); text-decoration: none; }
+  .deps { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 12px 16px; margin: 16px 0; font-size: 0.9rem; }
+  .deps b { color: var(--text); }
+  h2.section { font-size: 1.18rem; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p { font-size: 0.95rem; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); } .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); } .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); } .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .simple { background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #166534; border-radius: 10px; padding: 11px 15px; margin: 14px 0; font-size: 0.92rem; }
+  .simple b { color: #166534; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: var(--accent); }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: var(--accent); margin-top: 3px; }
+  footer.page { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer.page a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="tag inf">Infrastructure</span> <span class="mono">Kheprx.BaseBackend.Catalog.Infrastructure</span></h1>
+      <p>The outer shell — EF Core, repositories, entity config, DI registration. Implements the ports the inner layers declare.</p>
+    </header>
+    <p class="backlink"><a href="MODULE_ANATOMY.html">← Back to Module Anatomy</a></p>
+    <div class="deps"><b>Depends on:</b> Domain, Application, Contracts, SharedKernel. &nbsp;·&nbsp; <b>Referenced by:</b> Host / Api.</div>
+
+    <h2 class="section">Files in this project</h2>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>CatalogModule — DI registration entry point</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/CatalogModule.cs</div>
+      <p>Implements <code class="inline">IModule</code> and wires every Catalog service, repository, and DbContext into the DI container in one place.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Application.Mappings;
+using Kheprx.BaseBackend.Catalog.Application.Services;
+using Kheprx.BaseBackend.Catalog.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Catalog.Contracts;
+using Kheprx.BaseBackend.Catalog.Domain.Repositories;
+using Kheprx.BaseBackend.Catalog.Infrastructure.Data;
+using Kheprx.BaseBackend.Catalog.Infrastructure.Repositories;
+using Kheprx.BaseBackend.Catalog.Infrastructure.Services;
+using Kheprx.BaseBackend.SharedKernel.Modules;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Kheprx.BaseBackend.Catalog.Infrastructure;
+
+public sealed class CatalogModule : IModule
+{
+    public IServiceCollection Register(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext&lt;CatalogDbContext&gt;(options =&gt;
+            options.UseNpgsql(configuration.GetConnectionString("Postgres")));
+
+        services.AddSingleton&lt;CatalogMapper&gt;();
+        services.AddScoped&lt;IProductRepository, ProductRepository&gt;();
+        services.AddScoped&lt;IProductService, ProductService&gt;();
+        services.AddScoped&lt;ICatalogModule, CatalogModuleApi&gt;();
+        return services;
+    }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">CatalogModule</code> implements the <code class="inline">IModule</code> interface (from SharedKernel). The Host calls <code class="inline">Register</code> at startup, handing each module a chance to configure its own slice of the DI container. Here it registers <code class="inline">CatalogDbContext</code> with a Npgsql connection string, the singleton <code class="inline">CatalogMapper</code>, and three scoped bindings: the <code class="inline">IProductRepository</code> port mapped to <code class="inline">ProductRepository</code>, the <code class="inline">IProductService</code> Application interface mapped to <code class="inline">ProductService</code>, and the <code class="inline">ICatalogModule</code> Contracts interface mapped to <code class="inline">CatalogModuleApi</code>. See <a href="IMODULE_CONVENTION.html">The IModule convention</a> for how the Host discovers and calls all modules.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>CatalogDbContext — the EF Core unit of work</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Data/CatalogDbContext.cs</div>
+      <p>The module's <code class="inline">DbContext</code>, exposing the <code class="inline">Products</code> set and wiring all <code class="inline">IEntityTypeConfiguration</code> implementations automatically.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace Kheprx.BaseBackend.Catalog.Infrastructure.Data;
+
+public sealed class CatalogDbContext : DbContext
+{
+    public CatalogDbContext(DbContextOptions&lt;CatalogDbContext&gt; options) : base(options) { }
+
+    public DbSet&lt;Product&gt; Products =&gt; Set&lt;Product&gt;();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">CatalogDbContext</code> inherits from EF Core's <code class="inline">DbContext</code>. The <code class="inline">Products</code> property is a computed expression that calls <code class="inline">Set&lt;Product&gt;()</code>, making EF Core the single source of truth for the underlying set. <code class="inline">OnModelCreating</code> calls <code class="inline">ApplyConfigurationsFromAssembly</code>, which scans this assembly and applies every class that implements <code class="inline">IEntityTypeConfiguration&lt;T&gt;</code> — so <code class="inline">ProductConfiguration</code> is picked up automatically without being listed explicitly.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>CatalogDbContextFactory — design-time factory</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Data/CatalogDbContextFactory.cs</div>
+      <p>Implements <code class="inline">IDesignTimeDbContextFactory</code> so the <code class="inline">dotnet ef</code> CLI can create a <code class="inline">CatalogDbContext</code> without the Host application running.</p>
+<pre>using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+
+namespace Kheprx.BaseBackend.Catalog.Infrastructure.Data;
+
+// Design-time factory used by `dotnet ef` (migrations/scaffolding). Uses a local-dev connection string;
+// at runtime the application uses ConnectionStrings:Postgres from configuration instead.
+public sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory&lt;CatalogDbContext&gt;
+{
+    public CatalogDbContext CreateDbContext(string[] args)
+    {
+        var options = new DbContextOptionsBuilder&lt;CatalogDbContext&gt;()
+            .UseNpgsql("Host=localhost;Port=5432;Database=basebackend;Username=postgres;Password=postgres")
+            .Options;
+        return new CatalogDbContext(options);
+    }
+}</pre>
+      <p><b>What's happening here:</b> when you run <code class="inline">dotnet ef migrations add</code> or <code class="inline">dotnet ef database update</code>, the EF Core tooling looks for an <code class="inline">IDesignTimeDbContextFactory&lt;T&gt;</code> in the assembly. <code class="inline">CatalogDbContextFactory</code> satisfies that requirement by building a <code class="inline">DbContextOptions</code> with a hardcoded local-dev Npgsql connection string. At runtime, <code class="inline">CatalogModule.Register</code> replaces this with the connection string from app configuration — the factory is never called by the running application.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>ProductConfiguration — entity-to-table mapping</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Configurations/ProductConfiguration.cs</div>
+      <p>Tells EF Core exactly how to map the <code class="inline">Product</code> entity to the <code class="inline">products</code> table — column types, lengths, and nullability constraints.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Kheprx.BaseBackend.Catalog.Infrastructure.Configurations;
+
+internal sealed class ProductConfiguration : IEntityTypeConfiguration&lt;Product&gt;
+{
+    public void Configure(EntityTypeBuilder&lt;Product&gt; builder)
+    {
+        builder.ToTable("products");
+        builder.HasKey(p =&gt; p.Id);
+        builder.Property(p =&gt; p.Name).HasMaxLength(200).IsRequired();
+        builder.Property(p =&gt; p.Description).HasMaxLength(2000);
+        builder.Property(p =&gt; p.Price).HasColumnType("numeric(18,2)");
+        builder.Property(p =&gt; p.CreatedAt).IsRequired();
+    }
+}</pre>
+      <p><b>What's happening here:</b> this class implements <code class="inline">IEntityTypeConfiguration&lt;Product&gt;</code>, which <code class="inline">CatalogDbContext.OnModelCreating</code> discovers automatically via assembly scanning. It maps the entity to a snake-case table name <code class="inline">products</code>, sets the primary key on <code class="inline">Id</code>, constrains <code class="inline">Name</code> to 200 characters (required), <code class="inline">Description</code> to 2000 characters (nullable), and fixes the <code class="inline">Price</code> column to <code class="inline">numeric(18,2)</code> for exact decimal storage. <code class="inline">CreatedAt</code> is marked required so the database column is non-nullable. Domain properties with private setters are mapped transparently by EF Core — no Domain code needs to change.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>ProductRepository — port implementation</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Repositories/ProductRepository.cs</div>
+      <p>The concrete EF Core implementation of the <code class="inline">IProductRepository</code> port declared in Domain.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Domain.Entities;
+using Kheprx.BaseBackend.Catalog.Domain.Repositories;
+using Kheprx.BaseBackend.Catalog.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Kheprx.BaseBackend.Catalog.Infrastructure.Repositories;
+
+internal sealed class ProductRepository : IProductRepository
+{
+    private readonly CatalogDbContext _db;
+
+    public ProductRepository(CatalogDbContext db) =&gt; _db = db;
+
+    public async Task&lt;IReadOnlyList&lt;Product&gt;&gt; GetAllAsync(CancellationToken ct = default)
+        =&gt; await _db.Products.AsNoTracking().OrderBy(p =&gt; p.Id).ToListAsync(ct);
+
+    public Task&lt;Product?&gt; GetByIdAsync(int id, CancellationToken ct = default)
+        =&gt; _db.Products.FirstOrDefaultAsync(p =&gt; p.Id == id, ct);
+
+    public async Task AddAsync(Product product, CancellationToken ct = default)
+        =&gt; await _db.Products.AddAsync(product, ct);
+
+    public void Remove(Product product) =&gt; _db.Products.Remove(product);
+
+    public Task&lt;bool&gt; ExistsAsync(int id, CancellationToken ct = default)
+        =&gt; _db.Products.AnyAsync(p =&gt; p.Id == id, ct);
+
+    public Task SaveChangesAsync(CancellationToken ct = default) =&gt; _db.SaveChangesAsync(ct);
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">ProductRepository</code> is <code class="inline">internal sealed</code> — only the DI container (wired in <code class="inline">CatalogModule</code>) ever touches it; all other layers depend on the <a href="MODULE_DOMAIN.html">Domain</a> interface <code class="inline">IProductRepository</code>. <code class="inline">GetAllAsync</code> uses <code class="inline">AsNoTracking()</code> for read-only list queries to avoid change-tracking overhead. <code class="inline">GetByIdAsync</code> returns a tracked entity, while <code class="inline">ExistsAsync</code> uses <code class="inline">AnyAsync</code> to probe existence without materializing a row. <code class="inline">SaveChangesAsync</code> delegates to EF Core's <code class="inline">DbContext.SaveChangesAsync</code>, making the Application layer responsible for deciding when to commit a unit of work.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>CatalogModuleApi — cross-module facade</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Services/CatalogModuleApi.cs</div>
+      <p>Implements the <code class="inline">ICatalogModule</code> Contracts interface, exposing a narrow public API that other modules can call without depending on Catalog internals.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Contracts;
+using Kheprx.BaseBackend.Catalog.Domain.Repositories;
+
+namespace Kheprx.BaseBackend.Catalog.Infrastructure.Services;
+
+internal sealed class CatalogModuleApi : ICatalogModule
+{
+    private readonly IProductRepository _repository;
+
+    public CatalogModuleApi(IProductRepository repository) =&gt; _repository = repository;
+
+    public Task&lt;bool&gt; ProductExistsAsync(int productId, CancellationToken ct = default)
+        =&gt; _repository.ExistsAsync(productId, ct);
+}</pre>
+      <p><b>What's happening here:</b> <code class="inline">ICatalogModule</code> is declared in the Contracts project and lists only what other modules need from Catalog — here, a single <code class="inline">ProductExistsAsync</code> check. <code class="inline">CatalogModuleApi</code> fulfils that contract by delegating straight to <code class="inline">IProductRepository.ExistsAsync</code>. This keeps the cross-module boundary thin: external callers never see <code class="inline">ProductRepository</code>, <code class="inline">CatalogDbContext</code>, or any Application service — only the Contracts interface. The class is <code class="inline">internal</code> even though it satisfies a public interface; the DI container resolves it by the interface type.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>Migrations/ — EF Core generated migrations</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Migrations/</div>
+      <p>This folder holds the EF Core migration files produced by <code class="inline">dotnet ef migrations add</code>.</p>
+      <p><b>What's happening here:</b> the folder contains at least one migration (e.g. <code class="inline">…_InitialCatalog</code>) and the <code class="inline">CatalogDbContextModelSnapshot</code> class that EF Core uses to track the current model state. Migration files are generated — not hand-written — and should not be edited directly. At startup (or deploy), migrations are applied to the database so the schema stays in sync with the entity and configuration classes above. Because the content is machine-generated and can be regenerated from the model at any time, the raw code is not reproduced here.</p>
+    </div>
+
+    <div class="simple"><b>In simple words:</b> Infrastructure is the only layer that touches the database. It registers everything the module needs into DI (<code class="inline">CatalogModule</code>), tells EF Core how to map the <code class="inline">Product</code> entity (<code class="inline">ProductConfiguration</code>), stores and retrieves data (<code class="inline">ProductRepository</code>), and exposes a thin facade to other modules (<code class="inline">CatalogModuleApi</code>). Domain declares the ports; Infrastructure implements them — see <a href="MODULE_DOMAIN.html">Domain</a> for the interfaces. See <a href="IMODULE_CONVENTION.html">The IModule convention</a> for how <code class="inline">CatalogModule.Register</code> is discovered and called.</div>
+
+    <div class="pager">
+      <a href="MODULE_APPLICATION.html"><span class="dir">← Previous</span><span class="ttl">Application</span></a>
+      <a class="next" href="MODULE_CONTRACTS.html"><span class="dir">Next →</span><span class="ttl">Contracts</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="index.html">Home</a> · <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

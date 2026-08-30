@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture Overview — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl active" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Base Frontend</span> — Architecture Overview</h1>
+      <p>An Angular v20 base: Clean Architecture + MVVM, feature-first. Read this first, then Core Files, Feature Anatomy, Data Flow, and Project Libraries.</p>
+    </header>
+
+    <div class="banner"><strong>The web counterpart of the React Native mobile base.</strong>
+      Same Clean Architecture + MVVM taxonomy, translated to standalone Angular (Signals at the edge,
+      Promise + <code class="inline">Result&lt;T&gt;</code> through the domain).</div>
+
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag pres">presentation</span><span class="tag dom">domain</span>
+      <span class="tag data">data</span><span class="tag core">core</span>
+    </div>
+
+    <h2 class="section">The big picture</h2>
+    <p class="lead">One-way dependency: presentation → domain → data → core. The domain layer is framework-light (Angular DI only); transport/storage/UI concerns live at the edges.</p>
+
+    <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Base Frontend architecture" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .b{rx:10;ry:10;stroke:#e1e4e8;stroke-width:1.5;}
+        .t{font:600 13px -apple-system,Segoe UI,Roboto,sans-serif;fill:#1f2328;}
+        .s{font:11px ui-monospace,Consolas,monospace;fill:#57606a;}
+        .ln{stroke:#94a3b8;stroke-width:1.5;marker-end:url(#a);}
+      </style>
+      <defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      <rect class="b" x="40"  y="120" width="160" height="120" fill="#ede9fe"/>
+      <text class="t" x="58" y="142">Presentation</text>
+      <text class="s" x="58" y="160">Page · ViewModel</text>
+      <text class="s" x="58" y="176">(signals)</text>
+      <rect class="b" x="230" y="120" width="160" height="120" fill="#dcfce7"/>
+      <text class="t" x="248" y="142">Domain</text>
+      <text class="s" x="248" y="160">UseCase · Model</text>
+      <text class="s" x="248" y="176">Repository port</text>
+      <rect class="b" x="420" y="120" width="160" height="120" fill="#ffedd5"/>
+      <text class="t" x="438" y="142">Data</text>
+      <text class="s" x="438" y="160">DTO · RepositoryImpl</text>
+      <rect class="b" x="610" y="120" width="120" height="120" fill="#eaf1ff"/>
+      <text class="t" x="628" y="142">Core</text>
+      <text class="s" x="628" y="160">http · storage</text>
+      <text class="s" x="628" y="176">crypto · log</text>
+      <line class="ln" x1="200" y1="180" x2="228" y2="180"/>
+      <line class="ln" x1="390" y1="180" x2="418" y2="180"/>
+      <line class="ln" x1="580" y1="180" x2="608" y2="180"/>
+      <text class="s" x="300" y="270">Result&lt;T&gt; / AppError flow back up ←</text>
+    </svg>
+
+    <h2 class="section">Two Angular adaptations</h2>
+    <div class="card core">
+      <p><b>Ports are DI tokens.</b> TypeScript interfaces vanish at runtime, so each
+      <code class="inline">I…Repository</code> is paired with an <code class="inline">InjectionToken</code>,
+      bound <strong>globally</strong> in <code class="inline">app.config.ts</code> via <code class="inline">...AUTH_PROVIDERS</code> / <code class="inline">...USERS_PROVIDERS</code>. Use cases and repository impls are <code class="inline">providedIn:'root'</code>; only ViewModels are route-scoped.</p>
+      <p><b>Domain uses Angular DI, not HTTP/storage/UI.</b> Use cases (<code class="inline">@Injectable</code>/<code class="inline">inject</code>),
+      ports (<code class="inline">InjectionToken</code>), and viewmodels import <code class="inline">@angular/core</code> —
+      but never <code class="inline">HttpClient</code>, <code class="inline">localStorage</code>, or DOM APIs.</p>
+    </div>
+
+    <h2 class="section">Folder map</h2>
+    <pre class="tree"><span class="g">src/app/</span>
+  app.ts                 <span class="note"># root shell (class App): &lt;router-outlet&gt; + notification host</span>
+  app.config.ts          <span class="note"># composition root: provideRouter, provideHttpClient(authInterceptor), ...AUTH_PROVIDERS, ...USERS_PROVIDERS</span>
+  app.routes.ts          <span class="note"># route table: lazy pages + ViewModel providers (route-scoped)</span>
+  <span class="g core">core/</span>                 <span class="note"># cross-cutting infra (see Core Files)</span>
+    config/
+    crypto/
+    datasource/keyvalue/
+    domain/{errors,result,roles,usecase}
+    logging/
+    network/api/          <span class="note"># base-response-rs.ts · http-client.ts · http-error.ts</span>
+    ui/{components,theme}
+  <span class="g">features/</span>          <span class="note"># every feature is a vertical slice:</span> <span class="g pres">presentation/</span>  <span class="g dom">domain/</span>  <span class="g data">data/</span>
+    <span class="g data">auth/</span>             <span class="note"># data · domain · presentation (login, change-password, session store, guards)</span>
+    home/             <span class="note"># presentation (HomePage)</span>
+    <span class="g dom">user-management/</span>  <span class="note"># data · domain · presentation (users CRUD + UsersViewModel)</span>
+  <span class="g pres">layout/</span>            <span class="note"># LayoutComponent — auth-protected app shell (&lt;router-outlet&gt; for children)</span></pre>
+
+    <h2 class="section">Walkthrough: user-management list slice</h2>
+    <p class="lead">Following the one-way dependency rule through a real feature shows every layer in action.</p>
+    <div class="flow">
+      <div class="node pres">
+        <div class="nh">1. <span class="tag pres">presentation</span> — <code>UserManagementPage</code> / <code>UsersViewModel</code></div>
+        <div class="nf">presentation/pages/user-management/user-management.page.ts · presentation/pages/user-management/users.viewmodel.ts</div>
+      </div>
+      <div class="arrow"><div class="down">↓</div><span class="what">calls <code>ListUsersUseCase.run()</code></span></div>
+      <div class="node dom">
+        <div class="nh">2. <span class="tag dom">domain</span> — <code>ListUsersUseCase</code></div>
+        <div class="nf">domain/usecases/user-management/list-users.use-case.ts · providedIn:'root'</div>
+      </div>
+      <div class="arrow"><div class="down">↓</div><span class="what">calls <code>inject(USERS_REPOSITORY).list()</code></span></div>
+      <div class="node dom">
+        <div class="nh">2b. <span class="tag dom">domain</span> — <code>IUsersRepository</code> / <code>USERS_REPOSITORY</code> token</div>
+        <div class="nf">domain/repositories/users.repository.ts — bound globally via USERS_PROVIDERS in app.config.ts</div>
+      </div>
+      <div class="arrow"><div class="down">↓</div><span class="what">resolved to impl</span></div>
+      <div class="node data">
+        <div class="nh">3. <span class="tag data">data</span> — <code>UsersRepositoryImpl</code></div>
+        <div class="nf">data/repositories/users.repository.impl.ts · providedIn:'root'</div>
+      </div>
+      <div class="arrow"><div class="down">↓</div><span class="what">GET /api/users via <code>HttpClientService</code></span></div>
+      <div class="node core">
+        <div class="nh">4. <span class="tag core">core</span> — <code>HttpClientService</code> + <code>authInterceptor</code></div>
+        <div class="nf">core/network/api/http-client.ts — Bearer token injected by authInterceptor</div>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:0.93rem;">The use case owns the single <code class="inline">try/catch</code> — it validates each <code class="inline">UserDtoRs</code> via <code class="inline">isUserDtoRsValid</code>, maps to <code class="inline">User[]</code> via <code class="inline">toUser</code>, and returns <code class="inline">Result&lt;User[]&gt;</code>. The ViewModel writes the result into a signal; the Page renders it.</p>
+
+    <h2 class="section">Composition root: mobile ↔ Angular</h2>
+    <table class="conv">
+      <tr><th>React Native (mobile)</th><th>Angular (this base)</th></tr>
+      <tr><td><code>index.js</code></td><td><code>src/main.ts</code> (<code>bootstrapApplication</code>)</td></tr>
+      <tr><td><code>App.tsx</code></td><td><code>src/app/app.ts</code> (class <code>App</code>, <code>&lt;router-outlet&gt;</code>)</td></tr>
+      <tr><td><code>providers/RootProviders.tsx</code></td><td><code>app.config.ts</code></td></tr>
+      <tr><td><code>RootNavigator.tsx</code></td><td><code>app.routes.ts</code></td></tr>
+    </table>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the
+      <a href="superpowers/specs/2026-06-26-angular-base-design.md">design spec</a>
+      and the other pages above.
+    </footer>
+  </div>
+</body>
+</html>

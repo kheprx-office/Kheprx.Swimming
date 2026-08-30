@@ -1,0 +1,19 @@
+// theme.scss: design tokens as CSS custom properties (the source of truth for styles).
+:root {
+  --color-primary: #0a84ff;
+  --color-text: #111;
+  --color-muted: #555;
+  --color-error: #c00;
+  --color-border: #ccc;
+  --color-background: #fff;
+  --color-on-primary: #fff;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+}

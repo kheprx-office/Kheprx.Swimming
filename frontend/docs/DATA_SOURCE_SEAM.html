@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repository Layer — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl active" aria-current="page" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1>Repository Layer</h1>
+      <p>Repositories are fetch-only: they call <code class="inline">HttpClientService</code> directly and return the raw DTO envelope. Validation and domain mapping belong to the use case — there is no data-source seam.</p>
+    </header>
+
+    <div class="banner"><strong>The rule:</strong> a repository returns <code class="inline">BaseResponseRs&lt;T&gt;</code> (the raw server envelope). It does <em>not</em> unwrap <code class="inline">.data</code>, validate, or map to a domain model. Those steps live in the use case.</div>
+
+    <h2 class="section">The boundary rule — fetch-only repositories</h2>
+    <div class="card dom">
+      <div class="ch"><h3>Data flow</h3><span class="tag dom">domain</span></div>
+      <p>The full data path is: <strong>Page → ViewModel (signals) → UseCase.run() → IXxxRepository → XxxRepositoryImpl → HttpClientService</strong>. The repository is the network boundary. The use case owns the single <code class="inline">try/catch</code> and returns <code class="inline">Result&lt;T&gt;</code>.</p>
+      <p>Inside a use case's <code class="inline">execute()</code>:</p>
+      <pre><span class="tok-k">const</span> res = <span class="tok-k">await this</span>.repo.<span class="tok-t">list</span>();                                    <span class="tok-c">// returns UsersDtoRs (the envelope)</span>
+<span class="tok-k">if</span> (!res.data.<span class="tok-t">every</span>(<span class="tok-t">isUserDtoRsValid</span>)) <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid user data received'</span>, <span class="tok-s">'validation'</span>);
+<span class="tok-k">return</span> res.data.<span class="tok-t">map</span>(<span class="tok-t">toUser</span>);                                          <span class="tok-c">// maps DTO → domain model</span></pre>
+      <table class="conv">
+        <tr><th>Responsibility</th><th>Where</th></tr>
+        <tr><td>HTTP call + return raw envelope</td><td>Repository impl (<code class="inline">data/repositories/</code>)</td></tr>
+        <tr><td>Validate DTO fields (<code class="inline">isXxxDtoRsValid</code>)</td><td>Use case (<code class="inline">domain/usecases/</code>)</td></tr>
+        <tr><td>Map DTO → domain model (<code class="inline">toXxx</code>)</td><td>Use case, via mapper in <code class="inline">domain/model/</code></td></tr>
+        <tr><td>Single <code class="inline">try/catch</code> → <code class="inline">Result&lt;T&gt;</code></td><td>Use case base (<code class="inline">UseCase.run()</code>)</td></tr>
+      </table>
+    </div>
+
+    <h2 class="section">The port + token (domain)</h2>
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">IUsersRepository</code> + <code class="inline">USERS_REPOSITORY</code></h3><span class="tag dom">domain</span><span class="file">features/user-management/domain/repositories/users.repository.ts</span></div>
+      <p>The interface returns DTO envelopes directly. The injection token is a plain <code class="inline">InjectionToken</code> — no interface-level coupling to Angular DI, just a typed key for the provider binding.</p>
+      <pre><span class="tok-k">export interface</span> <span class="tok-t">IUsersRepository</span> {
+  <span class="tok-t">list</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UsersDtoRs</span>&gt;;
+  <span class="tok-t">create</span>(rq: <span class="tok-t">CreateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;;
+  <span class="tok-t">update</span>(id: <span class="tok-k">string</span>, rq: <span class="tok-t">UpdateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;;
+  <span class="tok-t">setStatus</span>(id: <span class="tok-k">string</span>, rq: <span class="tok-t">SetUserStatusDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;;
+}
+<span class="tok-k">export const</span> <span class="tok-t">USERS_REPOSITORY</span> = <span class="tok-k">new</span> <span class="tok-t">InjectionToken</span>&lt;<span class="tok-t">IUsersRepository</span>&gt;(<span class="tok-s">'USERS_REPOSITORY'</span>);</pre>
+    </div>
+
+    <h2 class="section">The impl (data)</h2>
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">UsersRepositoryImpl</code></h3><span class="tag data">data</span><span class="file">features/user-management/data/repositories/users.repository.impl.ts</span></div>
+      <p>The implementation injects <code class="inline">HttpClientService</code> directly. Every method forwards the call and returns the envelope untouched — no unwrapping, no validation, no mapping. It is <code class="inline">@Injectable({ providedIn: 'root' })</code> so Angular can create it without an extra provider entry.</p>
+      <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">UsersRepositoryImpl</span> <span class="tok-k">implements</span> <span class="tok-t">IUsersRepository</span> {
+  <span class="tok-k">private readonly</span> http = <span class="tok-t">inject</span>(<span class="tok-t">HttpClientService</span>);
+  <span class="tok-t">list</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UsersDtoRs</span>&gt; { <span class="tok-k">return this</span>.http.<span class="tok-t">get</span>&lt;<span class="tok-t">UsersDtoRs</span>&gt;(<span class="tok-s">'/api/users'</span>); }
+  <span class="tok-t">create</span>(rq: <span class="tok-t">CreateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt; { <span class="tok-k">return this</span>.http.<span class="tok-t">post</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;(<span class="tok-s">'/api/users'</span>, { body: rq }); }
+  <span class="tok-t">update</span>(id: <span class="tok-k">string</span>, rq: <span class="tok-t">UpdateUserDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt; { <span class="tok-k">return this</span>.http.<span class="tok-t">patch</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;(`/api/users/${id}`, { body: rq }); }
+  <span class="tok-t">setStatus</span>(id: <span class="tok-k">string</span>, rq: <span class="tok-t">SetUserStatusDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt; { <span class="tok-k">return this</span>.http.<span class="tok-t">patch</span>&lt;<span class="tok-t">UserItemDtoRs</span>&gt;(`/api/users/${id}/status`, { body: rq }); }
+}</pre>
+    </div>
+
+    <h2 class="section">Wiring — providers and composition root</h2>
+    <div class="card core">
+      <div class="ch"><h3>Token → impl binding</h3><span class="tag core">core</span><span class="file">features/user-management/data/users.providers.ts · src/app/app.config.ts</span></div>
+      <p>The token→impl binding is declared in the feature's <code class="inline">data/users.providers.ts</code> and spread globally into <code class="inline">app.config.ts</code>. Use cases and repository impls are all <code class="inline">providedIn: 'root'</code>; only ViewModels are route-scoped (provided in <code class="inline">app.routes.ts</code>).</p>
+      <pre><span class="tok-c">// data/users.providers.ts</span>
+<span class="tok-k">export const</span> <span class="tok-t">USERS_PROVIDERS</span>: <span class="tok-t">Provider</span>[] = [{ provide: <span class="tok-t">USERS_REPOSITORY</span>, useClass: <span class="tok-t">UsersRepositoryImpl</span> }];
+
+<span class="tok-c">// app.config.ts (excerpt)</span>
+providers: [
+  <span class="tok-t">provideRouter</span>(routes),
+  <span class="tok-t">provideHttpClient</span>(<span class="tok-t">withInterceptors</span>([authInterceptor])),
+  <span class="tok-t">provideAnimations</span>(),
+  ...<span class="tok-t">AUTH_PROVIDERS</span>,
+  ...<span class="tok-t">USERS_PROVIDERS</span>,
+],</pre>
+    </div>
+
+    <h2 class="section">Testing the seam</h2>
+    <div class="card core">
+      <div class="ch"><h3>Fake repository via token</h3><span class="tag core">core</span></div>
+      <p>In a <code class="inline">TestBed</code> spec, override the token with a fake implementation. The use case receives the interface it expects; no real HTTP calls are made.</p>
+      <pre><span class="tok-k">const</span> fakeRepo: <span class="tok-t">IUsersRepository</span> = {
+  <span class="tok-t">list</span>: () =&gt; <span class="tok-t">Promise</span>.<span class="tok-t">resolve</span>({ data: [], success: <span class="tok-k">true</span> }),
+  <span class="tok-t">create</span>: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>(),
+  <span class="tok-t">update</span>: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>(),
+  <span class="tok-t">setStatus</span>: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>(),
+};
+
+<span class="tok-t">TestBed</span>.<span class="tok-t">configureTestingModule</span>({
+  providers: [
+    { provide: <span class="tok-t">USERS_REPOSITORY</span>, useValue: fakeRepo },
+    <span class="tok-t">ListUsersUseCase</span>,
+  ],
+});</pre>
+      <p>Alternatively, spy on <code class="inline">HttpClientService</code> directly when testing the repository impl in isolation — useful for verifying that the correct path and body are sent.</p>
+    </div>
+
+    <p style="margin-top:28px;">Read next: <a href="AUTH.html">Auth</a> — the same repository pattern applied to authentication: DTOs, session store, use cases, interceptor, and guards.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

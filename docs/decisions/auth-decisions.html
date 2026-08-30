@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kheprx — Auth Decisions Log</title>
+<style>
+  :root{
+    --bg:#0f172a;--panel:#0b1220;--card:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;
+    --accent:#60a5fa;--ok:#34d399;--warn:#fbbf24;--open:#f87171;--fe:#a78bfa;--be:#34d399;--x:#60a5fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  header{position:sticky;top:0;z-index:10;padding:.8rem 1.2rem;background:var(--panel);border-bottom:1px solid var(--line)}
+  header h1{font-size:1.05rem;margin:0;font-weight:600}
+  header .sub{font-size:.8rem;color:var(--muted);margin-top:.15rem}
+  main{max-width:980px;margin:0 auto;padding:1.4rem 1.2rem 3rem}
+  h2.sec{font-size:.95rem;color:var(--accent);margin:1.8rem 0 .7rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+  .ar{unicode-bidi:plaintext}
+  .card{background:var(--card);border:1px solid var(--line);border-inline-start-width:5px;border-radius:10px;
+    padding:.9rem 1.1rem;margin-bottom:1rem}
+  .card.decided{border-inline-start-color:var(--ok)}
+  .card.retired{border-inline-start-color:var(--muted);opacity:.85}
+  .chead{display:flex;gap:.6rem;align-items:baseline;flex-wrap:wrap;margin-bottom:.5rem}
+  .cid{font-weight:700;font-family:Consolas,Monaco,monospace}
+  .ctitle{font-weight:600}
+  .badge{font-size:.66rem;font-weight:700;padding:.1rem .5rem;border-radius:5px;text-transform:uppercase;letter-spacing:.03em}
+  .b-decided{background:#064e3b;color:#6ee7b7}
+  .b-open{background:#7f1d1d;color:#fecaca}
+  .b-fe{background:#3b0764;color:#ddd6fe}
+  .b-be{background:#064e3b;color:#a7f3d0}
+  .b-x{background:#1e3a8a;color:#bfdbfe}
+  .b-retired{background:#44403c;color:#d6d3d1}
+  .meta{font-size:.74rem;color:var(--muted);margin-inline-start:auto}
+  .row{display:grid;grid-template-columns:108px 1fr;gap:.3rem .8rem;font-size:.88rem;margin-top:.45rem}
+  .row .k{color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;padding-top:.1rem}
+  code,.mono{font-family:Consolas,Monaco,monospace;background:var(--panel);border:1px solid var(--line);
+    border-radius:4px;padding:.05rem .35rem;font-size:.84em}
+  table.gaps{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:.3rem}
+  table.gaps th,table.gaps td{text-align:start;padding:.4rem .7rem;border-top:1px solid var(--line);vertical-align:top}
+  table.gaps th{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;background:var(--panel)}
+  table.gaps td:first-child{font-family:Consolas,Monaco,monospace;font-weight:700;white-space:nowrap}
+  .tag{display:inline-block;font-size:.64rem;font-weight:700;padding:.05rem .4rem;border-radius:4px;margin-inline-end:.3rem}
+  .t-sec{background:#7f1d1d;color:#fecaca}.t-arch{background:#1e3a8a;color:#bfdbfe}
+  .t-scope{background:#854d0e;color:#fde68a}.t-policy{background:#334155;color:#cbd5e1}
+  footer{color:var(--muted);font-size:.74rem;border-top:1px solid var(--line);margin-top:2rem;padding-top:1rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>Kheprx — Auth Decisions Log</h1>
+  <div class="sub">Living record of auth/identity design decisions and open gaps · planning only, no code yet · see also the
+    <span class="mono">auth-api-blueprint.html</span> / <span class="mono">auth-feature-flows.html</span> blueprints</div>
+</header>
+<main>
+
+  <h2 class="sec">Decisions</h2>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-001</span>
+      <span class="ctitle">Frontend token storage</span>
+      <span class="badge b-decided">Decided</span>
+      <span class="badge b-fe">Frontend</span>
+      <span class="meta">2026-06-30 · gap G1</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>localStorage + Bearer header (Option A).</b> Tokens are kept in the existing
+      <code>TokenStore</code> (localStorage-backed <code>KeyValueStore</code>); the access token is sent on the
+      <code>Authorization: Bearer &lt;token&gt;</code> header via <code>authInterceptor</code>; the refresh token is sent in the
+      <code>POST /api/auth/refresh</code> request <b>body</b>. No httpOnly cookies.</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Matches what the frontend already implements (no rework); simplest path with no backend contract change; this is an
+      internal ERP with a controlled user base. The XSS exposure of a JS-readable refresh token is mitigated by a
+      short-lived access token and refresh-token rotation + reuse detection.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      <code>/api/auth/refresh</code> &amp; <code>/api/auth/logout</code> keep taking the refresh token in the body (not a cookie);
+      CORS stays header-based (no credentialed cookies); frontend keeps its current <code>TokenStore</code> + interceptor.
+      Security posture <b>depends on</b> G2 (reuse detection) and G10 (short access-token TTL) — both still open.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-002</span>
+      <span class="ctitle">Refresh-token reuse detection</span>
+      <span class="badge b-decided">Decided</span>
+      <span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G2</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Revoke all the user's sessions on reuse (Option C).</b> When a refresh token that has already been
+      rotated/revoked is replayed at <code>/api/auth/refresh</code> (the token is found by hash but is no longer active),
+      treat it as a theft signal and revoke <b>every</b> refresh token for that user, then return <code>401</code>. The
+      user must sign in again on all devices.</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Simplest to build — a single "revoke all for this user" operation, with <b>no token-family tracking / no
+      <code>FamilyId</code> column</code>. Strongest containment: a stolen token cannot outlive detection on any device.
+      Acceptable for an internal ERP where forcing a full re-login on a theft signal is fine.</div></div>
+    <div class="row"><div class="k">Detection</div><div>
+      <code>/refresh</code> looks up the presented token by hash: <b>active</b> → normal rotate; <b>found but revoked</b>
+      → reuse → revoke all of the user's tokens + 401; <b>expired</b> or <b>not found</b> → plain 401 (no mass revoke).</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      No schema change. Refines the <code>/api/auth/refresh</code> logic (the earlier plan returned null on any inactive
+      token; now a <i>revoked</i> token additionally triggers the mass revoke). Pairs with G1.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-003</span>
+      <span class="ctitle">Sessions on password change / reset</span>
+      <span class="badge b-decided">Decided</span>
+      <span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G3 · deferred feature</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Keep current device, revoke the rest (Option C).</b>
+      <b>change-password</b> (authenticated): revoke <i>all</i> of the user's refresh tokens, then issue a <b>fresh token
+      pair for the caller</b> — so the current device stays signed in and every other session drops.
+      <b>reset-password</b> (unauthenticated): revoke all refresh tokens, no reissue — the user signs in fresh.</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Standard, good-UX pattern: don't sign the user out of the device they're actively using to change the password,
+      while still killing other (possibly compromised) sessions. Reset has no current session, so revoke everything.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Applies to the <b>deferred</b> password feature (not in the first build slice). <code>change-password</code> returns a
+      new <code>SessionDto</code>; "keep current" is achieved by revoke-all + reissue-for-caller (no need to identify which
+      stored token is the current one). No schema change.</div></div>
+    <div class="row"><div class="k">Superseded</div><div>
+      The <b>reset-password</b> half is removed by <b>AD-014</b> (no email-based recovery). The
+      <code>change-password</code> revoke-all + reissue-for-caller behaviour stands.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-004</span>
+      <span class="ctitle">Login abuse protection</span>
+      <span class="badge b-decided">Decided · defer</span>
+      <span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G4</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Defer — no rate-limiting or account lockout in this build.</b> Protection rests on strong passwords (G11),
+      short-lived access tokens (G10), and refresh-reuse detection (AD-002). Revisit if/when the API is exposed beyond the
+      internal network.</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Internal ERP with a controlled user base → lower brute-force risk; keep the first build lean.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Nothing built now. When added, the simplest option is an IP-based ASP.NET Core rate limiter on
+      <code>/api/auth/login</code> (no schema change); account lockout would need <code>FailedLoginCount</code> /
+      <code>LockedUntil</code> columns.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-005</span>
+      <span class="ctitle">Unified Users identity</span>
+      <span class="badge b-decided">Decided</span>
+      <span class="badge b-x">Architecture</span>
+      <span class="meta">2026-06-30 · gap G5 · reflected in blueprint ✓</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>One unified <code>identity.Users</code> (Option A).</b> The auth <code>Users</code> table <i>is</i> the canonical
+      person + login identity the ERP attaches profiles to. <code>Email</code> and <code>PasswordHash</code> are
+      <b>nullable</b> (a login-less person — e.g. a field worker — has neither); login rejects any user with no
+      <code>PasswordHash</code>. The Identity module owns <code>Users</code> + <code>Roles</code>; a later People/HR
+      feature owns the <code>Manager/Moqawel/Worker</code> profiles, which reference <code>Users.Id</code> via the module
+      contract.</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Single source of truth for identity; avoids a painful identity split/merge migration later; matches the ERP
+      blueprint's existing <code>Users</code> + profiles design.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Backend blueprint updated: <code>Users.Email</code> &amp; <code>Users.PasswordHash</code> are now nullable with
+      updated notes (visible in <code>auth-api-blueprint.html</code>). Login flow must reject login-less users. The
+      profiles + extra person fields (Code/Gender/Age/Nid…) come with the future People/HR feature.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-006</span>
+      <span class="ctitle">Build phasing</span>
+      <span class="badge b-decided">Decided</span>
+      <span class="badge b-x">Scope</span>
+      <span class="meta">2026-06-30 · gap G6 · reflected in blueprint ✓</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Phase 1 (first build):</b> Login &amp; Sessions, Refresh &amp; Logout, Roles &amp; Authorization —
+      <code>/api/auth/login,refresh,logout,me</code> + <code>/api/roles</code>, JWT validation, the 4 seeded roles, and a
+      seeded initial admin.<br>
+      <b>Phase 2 (later):</b> Password Management (forgot/reset/change + email seam) and User Management
+      (<code>/api/users</code> CRUD + role assignment).<br>
+      <b>Frontend (parallel):</b> Mock→Http switch + role-model 2→4 (G8).</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Smallest coherent first slice that delivers working auth end-to-end; an initial seeded admin removes the need for
+      user-management in Phase 1.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Each feature in <code>auth-api-blueprint.html</code> now carries a <code>[Phase 1]</code> / <code>[Phase 2]</code>
+      tag in its description.</div></div>
+    <div class="row"><div class="k">Superseded</div><div>
+      <b>AD-014</b> drops email-based forgot/reset and the email seam from Phase 2; the only password
+      feature is <code>change-password</code> (pulled into Phase 1 by AD-007).</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-007</span>
+      <span class="ctitle">Initial accounts &amp; forced first-login change</span>
+      <span class="badge b-decided">Decided</span>
+      <span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G7 · reflected in blueprint ✓</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Seed one fixed account per role (Option B, all four roles):</b>
+      <code>admin@kheprx.local</code>, <code>manager@kheprx.local</code>, <code>moqawel@kheprx.local</code>,
+      <code>worker@kheprx.local</code> — each with a known default password (from the seeder/config), and
+      <code>MustChangePassword = true</code> so the app <b>forces a password change on first login</b>.</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Simplest bootstrap — a working account for every role out of the box; force-change-on-first-login closes the
+      default-credential risk. For production, set strong default passwords via config secrets; the forced change rotates
+      them on first sign-in.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Schema: <code>Users.MustChangePassword</code> (bool, default false; seeded accounts true). <code>SessionDto</code>
+      gains <code>mustChangePassword</code> so login/refresh signal the client to redirect to change-password.
+      <b>Phasing consequence:</b> <b>change-password is pulled into Phase 1</b> (it's required to satisfy the forced
+      change); forgot/reset removed entirely (AD-014). Updates AD-006.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-008</span><span class="ctitle">Frontend role model 2→4</span>
+      <span class="badge b-decided">Decided</span><span class="badge b-fe">Frontend</span>
+      <span class="meta">2026-06-30 · gap G8</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      Extend the frontend <code>UserRole</code> union from <code>'admin'|'user'</code> to
+      <code>'admin'|'manager'|'moqawel'|'worker'</code>; update <code>roleGuard(...)</code> usages and the mock seed users
+      accordingly. Done as part of the Mock→Http data-source switch (frontend, parallel to Phase 1).</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-009</span><span class="ctitle">Multi-device sessions &amp; logout scope</span>
+      <span class="badge b-decided">Decided</span><span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G9 · reflected in blueprint ✓</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      A user may be signed in on <b>multiple devices</b> (a new login does not revoke prior sessions). <b>Logout signs out
+      everywhere</b>: <code>POST /api/auth/logout</code> revokes <i>all</i> the caller's refresh tokens (userId from the
+      access token; no request body needed).</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Blueprint logout endpoint updated (was "revoke caller's refresh token", now "revoke ALL … sign out everywhere", req
+      <code>—</code>). Consistent with AD-002/AD-003's "revoke all" stance.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-010</span><span class="ctitle">Token lifetimes</span>
+      <span class="badge b-decided">Decided</span><span class="badge b-x">Policy</span>
+      <span class="meta">2026-06-30 · gap G10</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      Access token <b>15 min</b>; refresh token <b>7 days</b>, both <b>absolute</b> (the refresh window is <i>not</i>
+      extended on use — 7 days from issue). Config: <code>Jwt:AccessTokenMinutes=15</code>,
+      <code>Jwt:RefreshTokenDays=7</code>. A continuously-active user re-authenticates weekly.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-011</span><span class="ctitle">Password policy</span>
+      <span class="badge b-decided">Decided</span><span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G11 · reflected in blueprint ✓</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Minimum length 8, no complexity rules</b> (length over complexity). Applies to password-<i>creation</i> fields
+      (<code>newPassword</code>, <code>temporaryPassword</code>). Login itself enforces no length rule — it validates the
+      submitted password against the stored hash, so existing short passwords still work.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Blueprint DTO rules updated to <code>MinLength(8)</code> on creation fields; <code>LoginRequest.password</code> is
+      now just <code>NotEmpty</code>.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-012</span><span class="ctitle">CORS policy</span>
+      <span class="badge b-decided">Decided</span><span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G12</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Lock CORS to configured origins.</b> Replace the base <code>AllowAll</code> with an allowlist of frontend origins
+      read from config (dev + prod URLs). Because tokens go on the <code>Authorization</code> header (not cookies, per
+      AD-001), the policy does <b>not</b> need <code>AllowCredentials</code>.</div></div>
+  </div>
+
+  <div class="card retired">
+    <div class="chead">
+      <span class="cid">AD-013</span><span class="ctitle">Email-sending seam</span>
+      <span class="badge b-retired">Retired</span><span class="badge b-be">Backend</span>
+      <span class="meta">2026-06-30 · gap G13 · retired by AD-014</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Define an <code>IEmailSender</code> abstraction now; pick the concrete provider later.</b> The Phase-2
+      password-reset (forgot-password) flow depends on it; the actual implementation (SMTP or a provider) is chosen when
+      that feature is built. No provider commitment now.</div></div>
+    <div class="row"><div class="k">Retired</div><div>
+      <b>Superseded by AD-014.</b> The only consumer was the email-based forgot/reset flow, which is removed.
+      No email-based recovery now or in the future; <code>IEmailSender</code> is <b>not</b> introduced. Kept for audit trail.</div></div>
+  </div>
+
+  <div class="card decided">
+    <div class="chead">
+      <span class="cid">AD-014</span><span class="ctitle">Drop email-based password recovery (forgot / reset)</span>
+      <span class="badge b-decided">Decided</span><span class="badge b-be">Backend</span><span class="badge b-fe">Frontend</span>
+      <span class="badge b-x">Scope</span>
+      <span class="meta">2026-06-30 · client request</span>
+    </div>
+    <div class="row"><div class="k">Decision</div><div>
+      <b>Remove self-service / email-based password recovery entirely.</b> Drop <code>POST /api/auth/forgot-password</code>
+      and <code>POST /api/auth/reset-password</code>, the <code>ForgotPasswordRequest</code> / <code>ResetPasswordRequest</code>
+      DTOs, the <code>identity.PasswordResetTokens</code> table, and the email seam (<code>IEmailSender</code>, AD-013).
+      <b><code>change-password</code> is kept</b> — it is required to satisfy AD-007 (forced password change on first login).</div></div>
+    <div class="row"><div class="k">Why</div><div>
+      Client request: no email-based recovery now or in the future. Removing it deletes the only consumer of the email
+      seam, so the seam is retired rather than carried as dead scope. Forced-first-login security is unaffected —
+      <code>change-password</code> + <code>MustChangePassword</code> still cover it.</div></div>
+    <div class="row"><div class="k">Affects</div><div>
+      Supersedes the <b>reset-password</b> half of <b>AD-003</b>; removes forgot/reset + the email seam from <b>AD-006</b>
+      Phase 2; updates the phasing note in <b>AD-007</b>; <b>retires AD-013</b>. Blueprint docs
+      (<code>auth-api-blueprint.html</code>, <code>auth-feature-flows.html</code>) updated to match. <code>MustChangePassword</code>,
+      the login → change-password redirect, and AD-011 password policy are unchanged.</div></div>
+  </div>
+
+  <h2 class="sec">Open gaps — all decided ✓</h2>
+  <p style="color:var(--ok);font-size:.9rem;margin:.3rem 0 0">All 13 gaps (G1–G13) now have recorded decisions above; AD-014 later removed the email-based recovery scope (retiring AD-013 / G13).
+    Contract-level decisions are reflected in <span class="mono">auth-api-blueprint.html</span>; policy/ops decisions are
+    captured here. Remaining fold-in: secrets handling (below).</p>
+
+  <h2 class="sec">Decided in the spec, to fold into the blueprint HTML</h2>
+  <table class="gaps">
+    <thead><tr><th>Item</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Password hashing = <b>PBKDF2</b> (blueprint <code>PasswordHash</code> note now reads "PBKDF2 hash")</td><td>folded ✓</td></tr>
+      <tr><td>JWT lifetimes 15 min / 7 day, absolute (G10)</td><td>confirmed ✓</td></tr>
+      <tr><td>Seed accounts <code>admin/manager/moqawel/worker@kheprx.local</code> + force first-login change</td><td>folded ✓ (AD-007)</td></tr>
+      <tr><td>Secrets via .NET user-secrets / env (connection string + signing key)</td><td>folded ✓</td></tr>
+      <tr><td>Guid PKs for Identity entities (deviation from int <code>BaseEntity</code>)</td><td>already shown</td></tr>
+    </tbody>
+  </table>
+
+  <footer>Auth decisions log · Kheprx.Electric · planning artifact (no implementation) · 13 decided, 0 open.</footer>
+</main>
+</body>
+</html>

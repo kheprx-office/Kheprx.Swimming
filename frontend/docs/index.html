@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — Base Frontend</title>
+  <style>
+  :root {
+    --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+    --accent:#2563eb; --accent-soft:#eaf1ff;
+    --pres:#5b21b6; --dom:#166534; --data:#9a3412; --core:#2563eb;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+  .wrap { max-width:980px; margin:0 auto; }
+  .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+  .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+  .topnav a { text-decoration:none; }
+  .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+  .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+  .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+  .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+  header.hero { padding:36px 0 8px; }
+  header.hero h1 { margin:0 0 6px; font-size:1.9rem; }
+  header.hero h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+  header.hero p { margin:0; color:var(--muted); font-size:0.98rem; max-width:70ch; }
+  .start { display:inline-block; margin-top:16px; background:var(--accent); color:#fff; font-weight:600; font-size:0.92rem; padding:10px 18px; border-radius:8px; text-decoration:none; }
+  .start:hover { background:#1d4ed8; }
+  .stage { margin:30px 0 0; }
+  .stage .lab { display:flex; align-items:center; gap:9px; font-size:0.74rem; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:11px; }
+  .stage .lab .pill { background:var(--accent-soft); color:var(--accent); width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.74rem; }
+  .grid { display:flex; flex-direction:column; gap:9px; }
+  a.doc { display:flex; gap:13px; align-items:flex-start; background:var(--card); border:1px solid var(--border); border-left-width:5px; border-radius:10px; padding:13px 15px; text-decoration:none; color:inherit; }
+  a.doc:hover { box-shadow:0 3px 12px rgba(0,0,0,.08); transform:translateY(-1px); }
+  a.doc .n { flex-shrink:0; width:25px; height:25px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; font-size:0.82rem; display:flex; align-items:center; justify-content:center; }
+  a.doc .tt { font-size:1.0rem; font-weight:700; color:var(--text); }
+  a.doc .dd { font-size:0.86rem; color:var(--muted); margin-top:2px; }
+  a.doc.pres { border-left-color:var(--pres); } a.doc.dom { border-left-color:var(--dom); }
+  a.doc.data { border-left-color:var(--data); } a.doc.core { border-left-color:var(--core); }
+  footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  footer.page a { color:var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl active" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="hero">
+      <h1><span class="mono">Base Frontend</span> — Documentation</h1>
+      <p>An Angular v20 base — Clean Architecture + MVVM, feature-first — explained end to end. New here? Follow the path below in order; each step builds on the last.</p>
+      <a class="start" href="ARCHITECTURE_OVERVIEW.html">Start here → Architecture Overview</a>
+    </header>
+
+    <div class="stage">
+      <div class="lab"><span class="pill">1</span> Foundations</div>
+      <div class="grid">
+        <a class="doc core" href="ARCHITECTURE_OVERVIEW.html"><span class="n">1</span><span><span class="tt">Architecture Overview</span><span class="dd">The big picture: Clean Architecture + MVVM and the one-way layer dependency. Read this first.</span></span></a>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="lab"><span class="pill">2</span> Structure &amp; Building Blocks</div>
+      <div class="grid">
+        <a class="doc core" href="PROJECT_LIBRARIES.html"><span class="n">2</span><span><span class="tt">Project Libraries</span><span class="dd">The dependencies the base relies on, and why each one is used.</span></span></a>
+        <a class="doc core" href="CORE_FILES.html"><span class="n">3</span><span><span class="tt">Core Files</span><span class="dd">The shared kernel: Result, AppError, UseCase, HTTP client, storage, crypto, logging, UI.</span></span></a>
+        <a class="doc dom" href="FEATURE_ANATOMY.html"><span class="n">4</span><span><span class="tt">Feature Anatomy</span><span class="dd">Inside one feature: the data / domain / presentation vertical slice.</span></span></a>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="lab"><span class="pill">3</span> How a View Renders</div>
+      <div class="grid">
+        <a class="doc pres" href="DATA_FLOW.html"><span class="n">5</span><span><span class="tt">Data Flow</span><span class="dd">How a button press travels Page → ViewModel → UseCase → Repository and back.</span></span></a>
+        <a class="doc core" href="COMPOSITION_ROOT.html"><span class="n">6</span><span><span class="tt">Composition Root &amp; DI</span><span class="dd">How the app boots and how every dependency is wired: tokens and route-scoped providers.</span></span></a>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="lab"><span class="pill">4</span> In Depth</div>
+      <div class="grid">
+        <a class="doc dom" href="ERROR_HANDLING.html"><span class="n">7</span><span><span class="tt">Error Handling &amp; Result</span><span class="dd">The Result&lt;T&gt; contract, AppError kinds, and the UseCase base's single try/catch.</span></span></a>
+        <a class="doc data" href="VALIDATION.html"><span class="n">8</span><span><span class="tt">Validation &amp; Forms</span><span class="dd">DTO validation at the boundary and the app's signal-based form validation.</span></span></a>
+        <a class="doc pres" href="ADD_A_FEATURE.html"><span class="n">9</span><span><span class="tt">Add a Feature</span><span class="dd">A step-by-step cookbook for a new vertical slice, following user-management.</span></span></a>
+        <a class="doc core" href="TESTING.html"><span class="n">10</span><span><span class="tt">Testing</span><span class="dd">What each layer's spec covers, and the TestBed patterns for use cases and viewmodels.</span></span></a>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="lab"><span class="pill">5</span> HTTP, Auth &amp; Styling</div>
+      <div class="grid">
+        <a class="doc core" href="HTTP_CLIENT.html"><span class="n">11</span><span><span class="tt">HTTP Client</span><span class="dd">Five-verb HttpClientService: retry/backoff, timeout, and error mapping via toAppError.</span></span></a>
+        <a class="doc data" href="DATA_SOURCE_SEAM.html"><span class="n">12</span><span><span class="tt">Repository Layer</span><span class="dd">How repositories work: a fetch-only repository returns the DTO envelope; the use case validates (isXxxDtoRsValid) and maps (toXxx). Ports are InjectionTokens bound in app.config.ts.</span></span></a>
+        <a class="doc dom" href="AUTH.html"><span class="n">13</span><span><span class="tt">Auth</span><span class="dd">Auth stack end to end: DTOs, session store, use cases incl. LoadCurrentUser, interceptor, guards.</span></span></a>
+        <a class="doc pres" href="STYLING.html"><span class="n">14</span><span><span class="tt">Styling</span><span class="dd">SCSS CSS-variable tokens, Tailwind mapped to them, the UI kit, and @lucide/angular icon usage.</span></span></a>
+      </div>
+    </div>
+
+    <footer class="page">Base Frontend docs — <a href="index.html">Home</a> · <a href="ARCHITECTURE_OVERVIEW.html">Architecture</a> · <a href="PROJECT_LIBRARIES.html">Libraries</a> · <a href="CORE_FILES.html">Core Files</a> · <a href="FEATURE_ANATOMY.html">Feature Anatomy</a> · <a href="DATA_FLOW.html">Data Flow</a> · <a href="COMPOSITION_ROOT.html">Composition Root</a> · <a href="ERROR_HANDLING.html">Error Handling</a> · <a href="VALIDATION.html">Validation</a> · <a href="ADD_A_FEATURE.html">Add a Feature</a> · <a href="TESTING.html">Testing</a> · <a href="HTTP_CLIENT.html">HTTP Client</a> · <a href="DATA_SOURCE_SEAM.html">Repository Layer</a> · <a href="AUTH.html">Auth</a> · <a href="STYLING.html">Styling</a></footer>
+  </div>
+</body>
+</html>

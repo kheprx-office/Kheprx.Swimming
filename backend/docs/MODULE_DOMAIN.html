@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain — Kheprx.BaseBackend.Catalog.Domain</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    --dom: #166534; --dom-bg: #dcfce7; --app: #5b21b6; --app-bg: #ede9fe;
+    --inf: #9a3412; --inf-bg: #ffedd5; --con: #0f766e; --con-bg: #ccfbf1;
+    --host: #2563eb; --host-bg: #eaf1ff; --shared: #475569; --shared-bg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.page { padding: 30px 0 18px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.85rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .backlink { margin: 14px 0 0; font-size: 0.9rem; }
+  .backlink a { color: var(--accent); text-decoration: none; }
+  .deps { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 12px 16px; margin: 16px 0; font-size: 0.9rem; }
+  .deps b { color: var(--text); }
+  h2.section { font-size: 1.18rem; margin: 34px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p { font-size: 0.95rem; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); } .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); } .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); } .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .simple { background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #166534; border-radius: 10px; padding: 11px 15px; margin: 14px 0; font-size: 0.92rem; }
+  .simple b { color: #166534; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid var(--border); background: var(--card); border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: var(--accent); }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: var(--accent); margin-top: 3px; }
+  footer.page { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer.page a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="tag dom">Domain</span> <span class="mono">Kheprx.BaseBackend.Catalog.Domain</span></h1>
+      <p>The pure business core of the Catalog module — entities, their invariants, the domain exception, and the repository port. No framework, no database.</p>
+    </header>
+    <p class="backlink"><a href="MODULE_ANATOMY.html">← Back to Module Anatomy</a></p>
+    <div class="deps"><b>Depends on:</b> SharedKernel only. &nbsp;·&nbsp; <b>Referenced by:</b> Application, Infrastructure. &nbsp;·&nbsp; ★ This is the core — it points at nothing outward (see the <a href="ARCHITECTURE_OVERVIEW.html">reference graph</a>).</div>
+
+    <h2 class="section">Files in this project</h2>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>Product — the aggregate root</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/Entities/Product.cs</div>
+      <p>The <code class="inline">Product</code> entity. All properties have <b>private setters</b>; the only way to change state is through guard methods that enforce the business rules.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Domain.Exceptions;
+using Kheprx.BaseBackend.SharedKernel.Domain;
+
+namespace Kheprx.BaseBackend.Catalog.Domain.Entities;
+
+public sealed class Product : BaseEntity
+{
+    public string Name { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
+    public decimal Price { get; private set; }
+
+    private Product() { } // EF Core
+
+    public Product(string name, decimal price, string? description = null)
+    {
+        Rename(name);
+        ChangePrice(price);
+        UpdateDescription(description);
+    }
+
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new InvalidProductException("Product name is required.");
+        Name = name.Trim();
+        Touch();
+    }
+
+    public void ChangePrice(decimal price)
+    {
+        if (price &lt;= 0)
+            throw new InvalidProductException("Product price must be greater than zero.");
+        Price = price;
+        Touch();
+    }
+
+    public void UpdateDescription(string? description)
+    {
+        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        Touch();
+    }
+}</pre>
+      <p><b>What's happening here:</b> the public constructor routes through <code class="inline">Rename</code>/<code class="inline">ChangePrice</code>/<code class="inline">UpdateDescription</code>, so an invalid <code class="inline">Product</code> can never be built — bad input throws <code class="inline">InvalidProductException</code>. The private parameterless constructor exists only so EF Core can materialise rows. <code class="inline">Product</code> extends <code class="inline">BaseEntity</code> (from SharedKernel), which supplies <code class="inline">Id</code>/<code class="inline">CreatedAt</code>/<code class="inline">UpdatedAt</code> and the <code class="inline">Touch()</code> helper that stamps <code class="inline">UpdatedAt</code>.</p>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>InvalidProductException</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/Exceptions/InvalidProductException.cs</div>
+      <p>The domain error thrown when a <code class="inline">Product</code> invariant is violated.</p>
+<pre>using Kheprx.BaseBackend.SharedKernel.Domain;
+
+namespace Kheprx.BaseBackend.Catalog.Domain.Exceptions;
+
+public sealed class InvalidProductException : DomainException
+{
+    public InvalidProductException(string message) : base(message) { }
+}</pre>
+      <p><b>What's happening here:</b> it extends <code class="inline">DomainException</code> (SharedKernel). The host's <code class="inline">ExceptionHandlingMiddleware</code> catches any <code class="inline">DomainException</code> and turns it into a clean <code class="inline">400</code> response — so domain rule violations become friendly API errors without the domain knowing anything about HTTP.</p>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>IProductRepository — the port</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/Repositories/IProductRepository.cs</div>
+      <p>The repository <b>interface</b> — declared here in Domain, implemented in Infrastructure. This inversion is what keeps Domain ignorant of EF Core and the database.</p>
+<pre>using Kheprx.BaseBackend.Catalog.Domain.Entities;
+
+namespace Kheprx.BaseBackend.Catalog.Domain.Repositories;
+
+public interface IProductRepository
+{
+    Task&lt;IReadOnlyList&lt;Product&gt;&gt; GetAllAsync(CancellationToken ct = default);
+    Task&lt;Product?&gt; GetByIdAsync(int id, CancellationToken ct = default);
+    Task AddAsync(Product product, CancellationToken ct = default);
+    void Remove(Product product);
+    Task&lt;bool&gt; ExistsAsync(int id, CancellationToken ct = default);
+    Task SaveChangesAsync(CancellationToken ct = default);
+}</pre>
+      <p><b>What's happening here:</b> Domain owns the <em>contract</em> ("something must store Products"), and Infrastructure provides the <em>how</em> (<code class="inline">ProductRepository</code>). Application depends on this interface, never on Infrastructure — see <a href="RUNTIME_VS_REFERENCES.html">Two Flows: Runtime vs References</a>.</p>
+    </div>
+
+    <div class="simple"><b>In simple words:</b> Domain is the rulebook. It defines what a <code class="inline">Product</code> is, what makes it valid, and what a repository must be able to do — but it never touches a database or the web.</div>
+
+    <div class="pager">
+      <a href="MODULE_ANATOMY.html"><span class="dir">← Previous</span><span class="ttl">Module Anatomy</span></a>
+      <a class="next" href="MODULE_APPLICATION.html"><span class="dir">Next →</span><span class="ttl">Application</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="index.html">Home</a> · <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<main class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#0B1F4D] p-4">
+  <app-decor-background variant="auth" />
+
+  <!-- Outer card wrapper -->
+  <div class="relative z-10 w-full max-w-md animate-slide-up">
+
+    <!-- Inner card — shake class toggled on auth failure -->
+    <div
+      class="rounded-3xl border border-white/15 bg-ink/60 p-8 shadow-2xl shadow-black/40 backdrop-blur-2xl sm:p-10"
+      [class.animate-shake]="vm.shakeKey() % 2 === 1">
+
+      <!-- Logo -->
+      <div class="mb-8 flex flex-col items-center text-center">
+        <div class="shine animate-scale-in mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-accent shadow-lg shadow-accent/40">
+          <svg [lucideIcon]="ZapIcon" [size]="38" class="text-white" />
+        </div>
+        <h1 class="text-3xl font-extrabold text-white">النور كهرباء</h1>
+        <p class="mt-2 text-sm text-white/70">
+          نظام إدارة مقاولات الكهرباء
+        </p>
+      </div>
+
+      <div class="space-y-5">
+        <!-- Email -->
+        <div class="animate-slide-up stagger-1 space-y-1.5">
+          <label for="email" class="block text-sm font-semibold text-white/90">
+            البريد الإلكتروني
+          </label>
+          <div class="relative">
+            <svg
+              [lucideIcon]="MailIcon"
+              [size]="18"
+              class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50" />
+            <input
+              id="email"
+              type="email"
+              [value]="vm.email()"
+              (input)="vm.email.set($any($event.target).value)"
+              (keydown)="onKeyDown($event)"
+              dir="ltr"
+              class="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pr-11 pl-4 text-base text-white placeholder:text-white/40 outline-none transition-all focus:border-accent focus:bg-white/15 focus:ring-2 focus:ring-accent/40"
+              placeholder="you&#64;example.com" />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="animate-slide-up stagger-2 space-y-1.5">
+          <label for="password" class="block text-sm font-semibold text-white/90">
+            كلمة المرور
+          </label>
+          <div class="relative">
+            <svg
+              [lucideIcon]="LockIcon"
+              [size]="18"
+              class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50" />
+            <input
+              id="password"
+              type="password"
+              [value]="vm.password()"
+              (input)="vm.password.set($any($event.target).value)"
+              (keydown)="onKeyDown($event)"
+              dir="ltr"
+              class="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pr-11 pl-4 text-base text-white placeholder:text-white/40 outline-none transition-all focus:border-accent focus:bg-white/15 focus:ring-2 focus:ring-accent/40"
+              placeholder="••••••••" />
+          </div>
+        </div>
+
+        <!-- Error -->
+        @if (vm.error()) {
+          <div
+            class="overflow-hidden animate-slide-up"
+            role="alert">
+            <div class="flex items-center gap-2 rounded-xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm font-medium text-red-200">
+              <svg [lucideIcon]="AlertCircleIcon" [size]="16" class="shrink-0" />
+              {{ vm.error() }}
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Login button -->
+      <button
+        (click)="vm.submit()"
+        [disabled]="vm.loading()"
+        class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:brightness-110 disabled:opacity-70 animate-slide-up stagger-3 active:scale-[0.97]">
+        @if (vm.loading()) {
+          <svg [lucideIcon]="Loader2Icon" [size]="20" class="animate-spin" />
+        } @else {
+          <svg [lucideIcon]="LogInIcon" [size]="20" />
+        }
+        {{ vm.loading() ? 'جارٍ التحقق...' : 'تسجيل الدخول' }}
+      </button>
+
+      <!-- Demo credentials hint -->
+      <div class="mt-6 rounded-xl border border-white/10 bg-white/5 p-3 text-center animate-fade-in stagger-4">
+        <p class="mb-1.5 text-[11px] font-semibold text-white/60">
+          حسابات تجريبية
+        </p>
+        <div class="space-y-0.5 text-[11px] text-white/45" dir="ltr">
+          <p>admin&#64;kheprx.local / gvxWlsofL2b1OSQm9UE5</p>
+          <p>manager&#64;kheprx.local / ruV3G5SFnldqj6QIDx0E</p>
+          <p>moqawel&#64;kheprx.local / ruV3G5SFnldqj6QIDx0E</p>
+          <p>worker&#64;kheprx.local / ruV3G5SFnldqj6QIDx0E</p>
+        </div>
+      </div>
+
+      <p class="mt-6 text-center text-xs text-white/50">
+        © 2026 النور كهرباء — جميع الحقوق محفوظة
+      </p>
+    </div>
+  </div>
+</main>

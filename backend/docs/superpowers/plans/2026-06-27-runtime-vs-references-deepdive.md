@@ -1,0 +1,358 @@
+# Runtime vs Project References Deep-Dive Page — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Create a standalone, beginner-friendly explainer page (`docs/RUNTIME_VS_REFERENCES.html`) that teaches the runtime request flow vs the compile-time project-reference flow with the real repo code, and link to it from the Architecture banner and the Request Flow page.
+
+**Architecture:** One new self-contained offline HTML page reusing the shared docs style + top nav bar + footer (no pager, not a nav item), plus two additive one-line link edits to existing pages. No JavaScript.
+
+**Tech Stack:** Hand-written HTML5 + CSS. Verification by `Select-String`/`grep` and opening the pages in a browser.
+
+## Global Constraints
+
+- **Fully offline:** no JavaScript, no external assets, no CDN/network links.
+- **Reuse the shared docs visual language** (the `:root` palette + component classes). New-only styling (`.simple` callout, `.compare`, `.refchain`, `.dodont`) uses literal hex and unique class names.
+- **All C# code is the real repo code, verbatim** (HTML-escaped). Explanations must not contradict it. Key accuracy point: `IProductRepository` is a **Domain port** (declared in Domain, implemented in Infrastructure); `IProductService` is declared in Application.
+- **The new page is NOT in the nav item list and has NO prev/next pager.** It carries the standard top nav bar (no item marked active) and the standard footer.
+- Edits to existing pages are **additive single links** — change nothing else.
+
+## Reference facts (for explanation accuracy)
+
+- Runtime call order: `ProductsController` (Host/Api) → `IProductService` → `ProductService` (Application) → `IProductRepository` *(Domain port)* → `ProductRepository` (Infrastructure) → `CatalogDbContext` (Infrastructure) → PostgreSQL (External).
+- Reference chain (transitive): `Api → Infrastructure → Application → Domain`.
+- The host references Infrastructure because the module's DI registration (`CatalogModule.Register`) lives there; `Program.cs` calls `AddModules(...)` which discovers every `IModule` and calls its `Register`.
+
+---
+
+### Task 1: Create the deep-dive page `docs/RUNTIME_VS_REFERENCES.html`
+
+**Files:**
+- Create: `docs/RUNTIME_VS_REFERENCES.html`
+
+**Interfaces:**
+- Consumes: nothing (self-contained page).
+- Produces: `docs/RUNTIME_VS_REFERENCES.html`, the link target Task 2 points at.
+
+- [ ] **Step 1: Create `docs/RUNTIME_VS_REFERENCES.html` with this exact content**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two Flows: Runtime vs Project References — BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    --dom: #166534; --dom-bg: #dcfce7; --app: #5b21b6; --app-bg: #ede9fe;
+    --inf: #9a3412; --inf-bg: #ffedd5; --con: #0f766e; --con-bg: #ccfbf1;
+    --host: #2563eb; --host-bg: #eaf1ff; --shared: #475569; --shared-bg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  header.page { padding: 32px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.9rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  h2.section { font-size: 1.22rem; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p.lead { color: var(--muted); margin: 0 0 16px; }
+  p { font-size: 0.95rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 18px 0; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); } .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); } .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); } .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 10px 0 6px; }
+  .node { border: 1px solid var(--border); border-left-width: 5px; background: var(--card); border-radius: 10px; padding: 10px 14px; }
+  .node .nh { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; font-size: 0.95rem; }
+  .node .nf { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+  .node.host { border-left-color: var(--host); } .node.app { border-left-color: var(--app); }
+  .node.inf { border-left-color: var(--inf); } .node.dom { border-left-color: var(--dom); }
+  .node.shared { border-left-color: var(--shared); } .node.plain { border-left-color: #94a3b8; }
+  .arrow { align-self: center; color: var(--muted); font-size: 0.76rem; padding: 5px 0; text-align: center; }
+  .arrow .down { font-size: 1.05rem; line-height: 1; display: block; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 11px 14px 11px 50px; margin: 9px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 13px; top: 11px; width: 25px; height: 25px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; }
+  .simple { background: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #166534; border-radius: 10px; padding: 11px 15px; margin: 14px 0; font-size: 0.92rem; }
+  .simple b { color: #166534; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  .compare .col { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: var(--card); }
+  .compare .col h4 { margin: 0 0 8px; font-size: 0.95rem; }
+  .compare .chain { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem; }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .refchain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+  .refchain .rc { border: 1px solid var(--border); border-left-width: 4px; border-radius: 8px; padding: 6px 11px; font-weight: 700; font-size: 0.86rem; background: #fff; }
+  .refchain .rc.host { border-left-color: var(--host); } .refchain .rc.inf { border-left-color: var(--inf); }
+  .refchain .rc.app { border-left-color: var(--app); } .refchain .rc.dom { border-left-color: var(--dom); }
+  .refchain .sep { color: #94a3b8; font-weight: 700; }
+  .dodont { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+  .dodont .line { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.83rem; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); }
+  .dodont .ok { background: #ecfdf5; border-color: #a7f3d0; }
+  .dodont .no { background: #fef2f2; border-color: #fecaca; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer.page a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">BaseBackend</span> — Two Flows: Runtime vs Project References</h1>
+      <p>Why the runtime call path and the compile-time project references point in different directions — from first principles, with the real code.</p>
+    </header>
+
+    <div class="banner"><strong>Your thinking is correct.</strong> A request really does flow <b>API &#8594; Application &#8594; Infrastructure &#8594; database</b>. The architecture diagram that shows <code class="inline">API &#8594; Infrastructure</code> is drawing something <em>else</em> — project references (startup wiring), not the request path. This page untangles the two.</div>
+
+    <h2 class="section">1 &middot; The runtime request flow</h2>
+    <p class="lead">What actually happens, top to bottom, when someone calls <code class="inline">GET /api/products</code>.</p>
+    <div class="flow">
+      <div class="node plain"><div class="nh">HTTP request</div><div class="nf">GET /api/products</div></div>
+      <div class="arrow"><span class="down">&#8595;</span> routed to the controller</div>
+      <div class="node host"><div class="nh"><span class="tag host">Host / Api</span> ProductsController</div><div class="nf">BaseBackend.Api/Controllers/ProductsController.cs</div></div>
+      <div class="arrow"><span class="down">&#8595;</span> calls <code class="inline">IProductService</code></div>
+      <div class="node app"><div class="nh"><span class="tag app">Application</span> ProductService</div><div class="nf">Application/Services/ProductService.cs</div></div>
+      <div class="arrow"><span class="down">&#8595;</span> calls <code class="inline">IProductRepository</code> (a Domain port)</div>
+      <div class="node inf"><div class="nh"><span class="tag inf">Infrastructure</span> ProductRepository</div><div class="nf">Infrastructure/Repositories/ProductRepository.cs</div></div>
+      <div class="arrow"><span class="down">&#8595;</span> uses</div>
+      <div class="node inf"><div class="nh"><span class="tag inf">Infrastructure</span> CatalogDbContext</div><div class="nf">Infrastructure/Data/CatalogDbContext.cs</div></div>
+      <div class="arrow"><span class="down">&#8595;</span> SQL</div>
+      <div class="node shared"><div class="nh"><span class="tag shared">External</span> PostgreSQL</div></div>
+    </div>
+    <p>So yes — the real request path is <b>API &#8594; Application &#8594; Infrastructure &#8594; database</b>. But there is one subtlety that makes the whole architecture work:</p>
+
+    <div class="banner"><strong>Application never names Infrastructure.</strong> It only knows an <em>interface</em>. The Application service asks for <code class="inline">IProductRepository</code> — and that interface is declared in <span class="tag dom">Domain</span>, not Infrastructure.</div>
+
+    <p><b>The Application service depends on the interface:</b></p>
+<pre>internal sealed class ProductService : IProductService
+{
+    private readonly IProductRepository _repository;   // a Domain port (just an interface)
+    private readonly CatalogMapper _mapper;
+
+    public ProductService(IProductRepository repository, CatalogMapper mapper)
+    {
+        _repository = repository;
+        _mapper = mapper;
+    }
+
+    public async Task&lt;IReadOnlyList&lt;ProductDto&gt;&gt; GetAllAsync(CancellationToken ct = default)
+        =&gt; _mapper.ToDtoList(await _repository.GetAllAsync(ct));
+}</pre>
+    <p><b>What's happening here:</b> <code class="inline">ProductService</code> says &ldquo;give me something that can do <code class="inline">IProductRepository</code>&rdquo; in its constructor. It never mentions a database, EF Core, or a concrete class. It cannot — Application doesn't reference Infrastructure at all.</p>
+
+    <p><b>Infrastructure provides the real implementation:</b></p>
+<pre>internal sealed class ProductRepository : IProductRepository
+{
+    private readonly CatalogDbContext _db;
+    public ProductRepository(CatalogDbContext db) =&gt; _db = db;
+
+    public async Task&lt;IReadOnlyList&lt;Product&gt;&gt; GetAllAsync(CancellationToken ct = default)
+        =&gt; await _db.Products.AsNoTracking().OrderBy(p =&gt; p.Id).ToListAsync(ct);
+}</pre>
+    <p><b>What's happening here:</b> <code class="inline">ProductRepository</code> is the real thing that touches the database. It <em>implements</em> the same <code class="inline">IProductRepository</code> the service asked for.</p>
+
+    <div class="banner"><strong>Analogy.</strong> Application orders from a <b>catalog</b> (<code class="inline">IProductRepository</code>) — &ldquo;I need a repository.&rdquo; Infrastructure is the <b>warehouse</b> that actually ships the item — &ldquo;I am the real repository.&rdquo; Application never visits the warehouse; it just orders from the catalog.</div>
+
+    <div class="simple"><b>In simple words:</b> at runtime the request flows down through Application into Infrastructure — but Application only ever talks to an <em>interface</em>, so it stays clean and testable.</div>
+
+    <h2 class="section">2 &middot; The compile-time / project-reference flow</h2>
+    <p class="lead">A different question: which <code class="inline">.csproj</code> references which? This is about <em>building</em>, not running.</p>
+    <div class="refchain">
+      <span class="rc host">Api</span><span class="sep">&#8594;</span>
+      <span class="rc inf">Infrastructure</span><span class="sep">&#8594;</span>
+      <span class="rc app">Application</span><span class="sep">&#8594;</span>
+      <span class="rc dom">Domain</span>
+    </div>
+    <p>This feels backwards — you'd expect the Api to reference Application (it uses the service!). The reason is that <span class="tag inf">Infrastructure</span> contains the module's <b>registration</b> code, and the host needs it. Here is the real registration:</p>
+<pre>public sealed class CatalogModule : IModule
+{
+    public IServiceCollection Register(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext&lt;CatalogDbContext&gt;(options =&gt;
+            options.UseNpgsql(configuration.GetConnectionString("Postgres")));
+
+        services.AddSingleton&lt;CatalogMapper&gt;();
+        services.AddScoped&lt;IProductRepository, ProductRepository&gt;();
+        services.AddScoped&lt;IProductService, ProductService&gt;();
+        services.AddScoped&lt;ICatalogModule, CatalogModuleApi&gt;();
+        return services;
+    }
+}</pre>
+    <p>And the host calls it indirectly at startup:</p>
+<pre>// BaseBackend.Api/Program.cs
+builder.Services.AddModules(builder.Configuration);   // finds every IModule and calls Register(...)</pre>
+    <p><b>What's happening here:</b> <code class="inline">AddModules</code> discovers each <code class="inline">IModule</code> (like <code class="inline">CatalogModule</code>) and runs its <code class="inline">Register</code>. Because <code class="inline">CatalogModule</code> lives in <b>Infrastructure</b>, the host must reference Infrastructure to reach it. Notice the host does <em>not</em> reference Application directly — it comes in <b>transitively</b> (Infrastructure already references Application), which is why the controller can still see <code class="inline">IProductService</code>.</p>
+    <div class="simple"><b>In simple words:</b> the host references Infrastructure because that's where the &ldquo;wiring sheet&rdquo; (<code class="inline">Register</code>) lives. Application tags along for free through Infrastructure.</div>
+
+    <h2 class="section">The key difference</h2>
+    <div class="compare">
+      <div class="col"><h4>Runtime flow — who <em>calls</em> whom</h4><div class="chain">API &#8594; Application &#8594; Infrastructure &#8594; Database</div></div>
+      <div class="col"><h4>Project references — who <em>builds against</em> whom</h4><div class="chain">API &#8594; Infrastructure &#8594; Application &#8594; Domain</div></div>
+    </div>
+    <p>They are <b>not the same diagram</b>. The <a href="ARCHITECTURE_OVERVIEW.html">reference graph</a> on the Architecture page draws the second; the <a href="REQUEST_FLOW.html">Request Flow</a> page draws the first.</p>
+
+    <h2 class="section">Why the API references Infrastructure</h2>
+    <p>Because the Host/Api is the <b>composition root</b> — the one place where dependency injection is configured. Think of it as the <b>electrician</b> who, at startup, wires every plug (interface) to the right socket (implementation) so the appliances just work. Here is what the container does:</p>
+    <ol class="steps">
+      <li>At startup, <code class="inline">Register</code> records the bindings: <code class="inline">IProductService &#8594; ProductService</code> and <code class="inline">IProductRepository &#8594; ProductRepository</code>.</li>
+      <li>A request arrives. The container needs a <code class="inline">ProductsController</code>; it sees the constructor wants <code class="inline">IProductService</code>.</li>
+      <li>It looks up the binding and builds a <code class="inline">ProductService</code>.</li>
+      <li><code class="inline">ProductService</code>'s constructor wants <code class="inline">IProductRepository</code>; the container builds a <code class="inline">ProductRepository</code>.</li>
+      <li><code class="inline">ProductRepository</code> wants a <code class="inline">CatalogDbContext</code>; the container builds that too, then hands the finished controller back to ASP.NET.</li>
+    </ol>
+    <div class="simple"><b>In simple words:</b> nobody calls <code class="inline">new</code>. The host wires interfaces to implementations once, and the container assembles the whole chain for you on every request.</div>
+
+    <h2 class="section">The expert rule</h2>
+    <p>The controller should depend on an <b>Application abstraction</b>, never on a concrete database type:</p>
+    <div class="dodont">
+      <div class="line ok">private readonly IProductService _service;        // &#10003; depend on the Application interface</div>
+      <div class="line no">private readonly CatalogDbContext _db;            // &#10007; never inject the DbContext into a controller</div>
+      <div class="line no">private readonly ProductRepository _repository;   // &#10007; not preferred — a concrete Infrastructure type</div>
+    </div>
+    <p>The real controller follows the rule exactly:</p>
+<pre>public sealed class ProductsController : BaseApiController
+{
+    private readonly IProductService _service;
+    public ProductsController(IProductService service) =&gt; _service = service;
+
+    [HttpGet]
+    public async Task&lt;ActionResult&lt;ApiResponse&lt;IReadOnlyList&lt;ProductDto&gt;&gt;&gt;&gt; GetAll(CancellationToken ct)
+        =&gt; Ok(ApiResponse&lt;IReadOnlyList&lt;ProductDto&gt;&gt;.Success(
+            "Products retrieved", await _service.GetAllAsync(ct)));
+}</pre>
+
+    <h2 class="section">Simple mental model</h2>
+    <ol class="steps">
+      <li><b>API calls Application.</b> The controller uses <code class="inline">IProductService</code>.</li>
+      <li><b>Application asks for an interface.</b> The service uses <code class="inline">IProductRepository</code> (a Domain port).</li>
+      <li><b>Infrastructure implements the interface.</b> <code class="inline">ProductRepository</code> is the real implementation.</li>
+      <li><b>DI connects them at startup.</b> The host (composition root) wires it all together.</li>
+    </ol>
+    <div class="banner"><strong>See also:</strong> the compile-time <a href="ARCHITECTURE_OVERVIEW.html">reference graph</a> (Architecture) and the runtime <a href="REQUEST_FLOW.html">Request Flow</a> — the two diagrams this page reconciles.</div>
+
+    <footer class="page">BaseBackend docs — <a href="index.html">Home</a> &middot; <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> &middot; <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> &middot; <a href="PROJECT_LIBRARIES.html">Project Libraries</a> &middot; <a href="MODULE_ANATOMY.html">Module Anatomy</a> &middot; <a href="REQUEST_FLOW.html">Request Flow</a> &middot; <a href="VALIDATION.html">Validation</a> &middot; <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>
+```
+
+- [ ] **Step 2: Verify the page**
+
+Run (PowerShell, from repo root):
+
+```powershell
+$c = Get-Content docs/RUNTIME_VS_REFERENCES.html -Raw
+"title (expect 1):        " + ([regex]'Two Flows: Runtime vs Project References').Matches($c).Count
+"sections h2 (expect 6):  " + ([regex]'<h2 class="section">').Matches($c).Count
+"In simple words (>=3):   " + ([regex]'In simple words').Matches($c).Count
+"code blocks (expect 5):  " + ([regex]'<pre>').Matches($c).Count
+"script tags (expect 0):  " + ([regex]'<script').Matches($c).Count
+"external http (expect 0):" + ([regex]'https?://(?!www\.w3\.org)').Matches($c).Count
+'index.html','ARCHITECTURE_OVERVIEW.html','REQUEST_FLOW.html' | ForEach-Object { if ($c -match [regex]::Escape($_)) { "link OK: $_" } else { "link MISSING: $_" } }
+```
+
+Expected: `title 1`, `sections 6`, `In simple words 3`, `code blocks 5`, `script 0`, `external http 0`, three `link OK` lines.
+
+Then run: `Start-Process "docs/RUNTIME_VS_REFERENCES.html"`
+Expected: a docs-styled page with the top nav bar and footer (no prev/next pager); a runtime ladder (HTTP → Controller → ProductService → ProductRepository → DbContext → PostgreSQL with layer tags); two code blocks under it; a reference chain `Api → Infrastructure → Application → Domain`; the `CatalogModule`/`Program.cs` code; a two-column "key difference"; a numbered DI walkthrough; the do/don't block + real controller; and a four-step mental model. All nav/footer/cross links resolve.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/RUNTIME_VS_REFERENCES.html
+git commit -m "docs: add runtime-vs-references deep-dive explainer page"
+```
+
+---
+
+### Task 2: Link to the deep-dive from Architecture and Request Flow
+
+**Files:**
+- Modify: `docs/ARCHITECTURE_OVERVIEW.html` (the "Compile-time, not runtime" banner, line 177)
+- Modify: `docs/REQUEST_FLOW.html` (the sequence-diagram lead, line 196)
+
+**Interfaces:**
+- Consumes: `docs/RUNTIME_VS_REFERENCES.html` created in Task 1.
+
+- [ ] **Step 1: Add a "Learn more" link to the Architecture banner**
+
+FIND this exact substring (the end of the banner):
+
+```html
+Application is pulled in <em>transitively</em> through it.</div>
+```
+
+REPLACE with:
+
+```html
+Application is pulled in <em>transitively</em> through it. <a href="RUNTIME_VS_REFERENCES.html">Learn more — runtime vs references &#8594;</a></div>
+```
+
+- [ ] **Step 2: Add a link note to the Request Flow sequence-diagram lead**
+
+FIND this exact substring (the end of the sequence-diagram lead):
+
+```html
+The pill above each participant shows which project / layer it lives in (colours match the legend).</p>
+```
+
+REPLACE with:
+
+```html
+The pill above each participant shows which project / layer it lives in (colours match the legend). New to why the project <em>references</em> run the other way (Api &#8594; Infrastructure)? See <a href="RUNTIME_VS_REFERENCES.html">Two Flows: Runtime vs References</a>.</p>
+```
+
+- [ ] **Step 3: Verify the links**
+
+Run (PowerShell, from repo root):
+
+```powershell
+"arch link (expect 1):  " + ([regex]'Learn more — runtime vs references').Matches((Get-Content docs/ARCHITECTURE_OVERVIEW.html -Raw)).Count
+"flow link (expect 1):  " + ([regex]'Two Flows: Runtime vs References').Matches((Get-Content docs/REQUEST_FLOW.html -Raw)).Count
+"target exists:          " + (Test-Path docs/RUNTIME_VS_REFERENCES.html)
+```
+
+Expected: `arch link 1`, `flow link 1`, `target exists True`.
+
+Then open both pages and click each link — both open `RUNTIME_VS_REFERENCES.html`.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add docs/ARCHITECTURE_OVERVIEW.html docs/REQUEST_FLOW.html
+git commit -m "docs: link the runtime-vs-references deep-dive from Architecture and Request Flow"
+```
+
+---
+
+## Final verification (after both tasks)
+
+- [ ] `docs/RUNTIME_VS_REFERENCES.html` opens standalone, styled like the rest, with working nav/footer and no broken links; all five code blocks match the real repo code.
+- [ ] The Architecture banner and the Request Flow sequence-diagram note both link to the new page and resolve.
+- [ ] `git diff --stat` for Task 2 shows only the two existing pages changed, additively (one link each).
+- [ ] No `<script>`, no external URLs anywhere in the new or edited content.

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Libraries — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl active" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1>Project libraries</h1>
+      <p>What each dependency is for and why it's here. Versions reflect <code class="inline">package.json</code>.</p>
+    </header>
+
+    <div class="banner"><strong>Snapshot:</strong> versions below reflect the current
+      <code class="inline">package.json</code> (Angular <code class="inline">^20.3.0</code>) and may change as you update.</div>
+
+    <h2 class="section">Runtime dependencies <span class="file">(dependencies)</span></h2>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/core</h3><span class="file">^20.3.0</span></div>
+      <p>The framework: components, dependency injection (<code class="inline">inject</code>, <code class="inline">InjectionToken</code>), and signals.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/common</h3><span class="file">^20.3.0</span></div>
+      <p>Common directives/pipes and <code class="inline">HttpClient</code> (<code class="inline">provideHttpClient</code>) — wrapped by <code class="inline">core/network/api/http-client.ts</code>.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/compiler</h3><span class="file">^20.3.0</span></div>
+      <p>The Angular template compiler. Required at runtime in JIT mode and as a peer dependency; the CLI/build uses it during AOT compilation to turn templates into optimised JavaScript.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/router</h3><span class="file">^20.3.0</span></div>
+      <p>Client-side routing. Provides <code class="inline">provideRouter</code>, lazy <code class="inline">loadComponent</code> for feature routes, and <code class="inline">&lt;router-outlet&gt;</code> used in the root <code class="inline">App</code> shell.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/forms</h3><span class="file">^20.3.0</span></div>
+      <p>Used by <code class="inline">features/auth/presentation/pages/change-password/change-password.page.ts</code> via <code class="inline">FormsModule</code> (<code class="inline">ngModel</code>); other forms use signal-bound input handlers.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/platform-browser</h3><span class="file">^20.3.0</span></div>
+      <p>Browser bootstrapping. Provides <code class="inline">bootstrapApplication</code> (called in <code class="inline">src/main.ts</code>) and the DOM-renderer that backs component views.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/animations</h3><span class="file">^20.3.0</span></div>
+      <p><code class="inline">provideAnimations()</code> is registered in <code class="inline">app.config.ts</code> (enables Angular's animation system); no current feature defines animation triggers — UI transitions are CSS-based.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>rxjs</h3><span class="file">~7.8.0</span></div>
+      <p>Used internally by <code class="inline">http-client.ts</code> (<code class="inline">timeout</code>, <code class="inline">retry</code>, <code class="inline">timer</code>); the Observable is adapted to a Promise via an explicit <code class="inline">new Promise(...).subscribe(...)</code> at the boundary so the rest of the app stays framework-light.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@lucide/angular</h3><span class="file">^1.22.0</span></div>
+      <p>Crisp, tree-shakeable SVG icon set. Standalone, signal-based directives — import the icon you need (e.g. <code class="inline">LucideHome</code>) and apply it on an <code class="inline">&lt;svg&gt;</code>: <code class="inline">&lt;svg lucideHome [size]="20"&gt;</code>. Only the icons you import are bundled. See <a href="STYLING.html">Styling</a> for usage.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>tslib</h3><span class="file">^2.3.0</span></div>
+      <p>TypeScript runtime helper library. The TypeScript compiler emits <code class="inline">import … from 'tslib'</code> instead of inlining helpers (e.g. <code class="inline">__awaiter</code>, <code class="inline">__extends</code>), keeping bundle size down.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>zone.js</h3><span class="file">~0.15.0</span></div>
+      <p>Angular's change-detection trigger. Patches browser async APIs (timers, XHR, Promises) so Angular knows when to re-render. Configured as a build polyfill in <code class="inline">angular.json</code> (<code class="inline">polyfills: ['zone.js']</code>); change detection is set up via <code class="inline">provideZoneChangeDetection()</code> in <code class="inline">app.config.ts</code>.</p>
+    </div>
+
+    <h2 class="section">Styling toolchain</h2>
+
+    <div class="card core">
+      <div class="ch"><h3>tailwindcss</h3><span class="file">^3.4.17</span></div>
+      <p>Utility-first CSS framework. Its theme is mapped to the SCSS CSS-variable tokens in <code class="inline">tailwind.config.js</code> so classes like <code class="inline">text-primary</code> resolve to <code class="inline">var(--color-primary)</code> — the same value the rest of the stylesheet uses directly. One palette, no duplication.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>postcss</h3><span class="file">^8.5.16</span></div>
+      <p>CSS transformation pipeline. Angular's build runs PostCSS automatically; Tailwind and <code class="inline">autoprefixer</code> are registered as PostCSS plugins in <code class="inline">postcss.config.js</code>.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>autoprefixer</h3><span class="file">^10.5.2</span></div>
+      <p>PostCSS plugin that adds vendor prefixes for cross-browser compatibility. Runs as part of the PostCSS pipeline alongside Tailwind.</p>
+    </div>
+
+    <h2 class="section">Dev dependencies <span class="file">(devDependencies)</span></h2>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/cli</h3><span class="file">^20.3.26</span></div>
+      <p>The <code class="inline">ng</code> command-line tool: <code class="inline">ng serve</code>, <code class="inline">ng build</code>, <code class="inline">ng generate</code>. Orchestrates the build pipeline and dev server.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/build</h3><span class="file">^20.3.26</span></div>
+      <p>The official Angular application builder (Vite + esbuild). Consumed by the CLI to compile, bundle, and optimise the app for development and production.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@angular/compiler-cli</h3><span class="file">^20.3.0</span></div>
+      <p>The Angular AOT compiler (<code class="inline">ngc</code>). Runs ahead-of-time template compilation during the build step and powers language-service type checking in editors.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>typescript</h3><span class="file">~5.9.2</span></div>
+      <p>The TypeScript language compiler. All source files are <code class="inline">.ts</code>; TypeScript enforces strict typing at build time and is consumed by both <code class="inline">@angular/compiler-cli</code> and Jest.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>jest</h3><span class="file">^30.4.2</span></div>
+      <p>The test runner invoked by <code class="inline">npm test</code>. Replaces Karma/Jasmine entirely; runs unit tests in a jsdom environment and produces coverage reports.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>jest-preset-angular</h3><span class="file">^17.0.0</span></div>
+      <p>Jest preset that adds Angular-specific transforms (template compilation, module resolution). Configured in <code class="inline">jest.config.ts</code> via <code class="inline">preset: 'jest-preset-angular'</code>.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>jest-environment-jsdom</h3><span class="file">^30.4.1</span></div>
+      <p>A DOM simulation environment for Jest. Provides <code class="inline">document</code>, <code class="inline">window</code>, and related browser globals so Angular component tests can render without a real browser.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@types/jest</h3><span class="file">^30.0.0</span></div>
+      <p>TypeScript type declarations for Jest globals (<code class="inline">describe</code>, <code class="inline">it</code>, <code class="inline">expect</code>, etc.). Allows test files to be type-checked without explicit imports when <code class="inline">@jest/globals</code> is not used.</p>
+    </div>
+
+    <div class="card core">
+      <div class="ch"><h3>@jest/globals</h3><span class="file">^30.4.1</span></div>
+      <p>Provides explicit ESM-compatible imports of Jest globals (<code class="inline">import { describe, it, expect } from '@jest/globals'</code>), avoiding implicit global pollution in strict TypeScript setups.</p>
+    </div>
+
+    <h2 class="section">Deliberately NOT included</h2>
+    <div class="card core">
+      <p><b>No global state library</b> (NgRx, etc.) — local <code class="inline">signal</code>s suffice (YAGNI).</p>
+      <p><b>No extra HTTP client</b> — Angular <code class="inline">HttpClient</code>, wrapped for the Promise + <code class="inline">Result</code> contract.</p>
+      <p><b>No Karma/Jasmine</b> — testing is Jest-only via <code class="inline">jest-preset-angular</code>.</p>
+    </div>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the
+      <a href="superpowers/specs/2026-06-26-angular-base-design.md">design spec</a>
+      and the other pages above.
+    </footer>
+  </div>
+</body>
+</html>

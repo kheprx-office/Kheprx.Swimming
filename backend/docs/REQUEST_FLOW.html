@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Flow — Kheprx.BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    /* backend layer colors */
+    --dom: #166534;   --dom-bg: #dcfce7;   /* Domain */
+    --app: #5b21b6;   --app-bg: #ede9fe;   /* Application */
+    --inf: #9a3412;   --inf-bg: #ffedd5;   /* Infrastructure */
+    --con: #0f766e;   --con-bg: #ccfbf1;   /* Contracts */
+    --host: #2563eb;  --host-bg: #eaf1ff;  /* Host/Api */
+    --shared: #475569; --shared-bg: #e2e8f0; /* SharedKernel */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { padding: 40px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.95rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 22px 0 6px; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; font-size: 0.8rem; align-items: center; }
+  .legend .lab { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); }
+  .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); }
+  .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); }
+  .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  .tag.ext { color: var(--shared); background: var(--shared-bg); }
+  h2.section { font-size: 1.22rem; margin: 42px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p.lead { color: var(--muted); margin: 0 0 18px; }
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 8px 0 6px; }
+  .node { border: 1px solid var(--border); border-left-width: 5px; background: var(--card); border-radius: 10px; padding: 12px 16px; }
+  .node .ch { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 5px; }
+  .node .nh { font-weight: 700; font-size: 0.98rem; }
+  .node .nf { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; color: var(--muted); }
+  .kind { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.72rem; letter-spacing: .2px; color: var(--muted); background: #fff; border: 1px solid var(--border); }
+  .node.dom { border-left-color: var(--dom); } .node.app { border-left-color: var(--app); }
+  .node.inf { border-left-color: var(--inf); } .node.con { border-left-color: var(--con); }
+  .node.host { border-left-color: var(--host); } .node.shared { border-left-color: var(--shared); }
+  .node.ext { border-left-color: var(--shared); }
+  .arrow { align-self: center; color: var(--muted); font-size: 0.78rem; padding: 6px 0; text-align: center; }
+  .arrow .down { font-size: 1.1rem; line-height: 1; }
+  .arrow .what { display: inline-block; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; font-size: 0.72rem; margin-left: 6px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-c { color: #94a3b8; } .tok-k { color: #93c5fd; } .tok-s { color: #86efac; } .tok-t { color: #fca5a5; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 12px 14px 12px 52px; margin: 10px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  ol.steps > li b { display: block; margin-bottom: 2px; }
+  table.conv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 6px 0; }
+  table.conv th, table.conv td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.conv th { background: #f0f3f6; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  /* ===== docs cross-page navigation (added to every page) ===== */
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  .topnav .nl.active { background: rgba(255,255,255,.24); opacity: 1; font-weight: 600; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 44px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid #e1e4e8; background: #ffffff; border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: #2563eb; }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: #2563eb; margin-top: 3px; }
+  /* ===== request-flow sequence diagram (HTML) ===== */
+  .seqdiag-scroll { overflow-x: auto; margin: 10px 0 6px; }
+  .seqdiag { min-width: 620px; }
+  .seqdiag .head { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; margin-bottom: 4px; }
+  .seqdiag .badge { font-size: 0.64rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; display: inline-block; }
+  .seqdiag .badge.host { color: #2563eb; background: #eaf1ff; }
+  .seqdiag .badge.app { color: #5b21b6; background: #ede9fe; }
+  .seqdiag .badge.inf { color: #9a3412; background: #ffedd5; }
+  .seqdiag .badge.ext { color: #475569; background: #e2e8f0; }
+  .seqdiag .box { border: 1px solid #e1e4e8; background: #fff; border-radius: 7px; padding: 6px 2px; font-weight: 700; font-size: 0.82rem; margin-top: 3px; }
+  .seqdiag .body { position: relative; height: 236px; margin-top: 2px; }
+  .seqdiag .life { position: absolute; top: 0; bottom: 0; border-left: 1px dashed #cbd5e1; }
+  .seqdiag .msg { position: absolute; height: 0; }
+  .seqdiag .msg .line { border-top: 2px solid #2563eb; }
+  .seqdiag .msg.ret .line { border-top: 1.7px dashed #16a34a; }
+  .seqdiag .msg .lab { position: absolute; left: 0; right: 0; top: -14px; text-align: center; font-size: 0.68rem; color: #334155; white-space: nowrap; }
+  .seqdiag .msg .hd { position: absolute; top: -7px; font-size: 0.72rem; line-height: 1; }
+  .seqdiag .msg.call .hd { right: -3px; color: #2563eb; }
+  .seqdiag .msg.ret .hd { left: -3px; color: #16a34a; }
+  .seqdiag-legend { font-size: 0.74rem; color: #57606a; margin-top: 10px; }
+  .seqdiag-legend .c { color: #2563eb; font-weight: 700; }
+  .seqdiag-legend .g { color: #16a34a; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl active" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Kheprx.BaseBackend</span> — Request Flow</h1>
+      <p>Follow one request end-to-end: <code class="inline">GET /api/products</code>.</p>
+    </header>
+
+    <div class="banner">Follow one request from HTTP to PostgreSQL and back as <strong><code class="inline">ApiResponse&lt;T&gt;</code></strong>. The example is <code class="inline">GET /api/products</code> — the simplest read path through the whole stack.</div>
+
+    <div class="legend"><span class="lab">Layers:</span>
+      <span class="tag dom">Domain</span><span class="tag app">Application</span>
+      <span class="tag inf">Infrastructure</span><span class="tag con">Contracts</span>
+      <span class="tag host">Host / Api</span><span class="tag shared">SharedKernel</span>
+    </div>
+
+    <h2 class="section">Flow diagram</h2>
+    <p class="lead">Each node is one stop on the request's journey. The solid colour pill is its <strong>layer</strong>; the outlined chip is its <strong>role</strong>. Layer colours match those in Architecture Overview.</p>
+
+    <div class="flow">
+      <div class="node host">
+        <div class="ch"><span class="tag host">Host / Api</span><span class="kind">Controller</span></div>
+        <div class="nh">ProductsController</div>
+        <div class="nf">Kheprx.BaseBackend.Api/Controllers/ProductsController.cs</div>
+      </div>
+      <div class="arrow">
+        <span class="down">&#8595;</span>
+        <span class="what">ASP.NET Core action-filter pipeline</span>
+      </div>
+      <div class="node host">
+        <div class="ch"><span class="tag host">Host / Api</span><span class="kind">Filter</span></div>
+        <div class="nh">ValidationFilter</div>
+        <div class="nf">Kheprx.BaseBackend.Api/Filters/ValidationFilter.cs</div>
+      </div>
+      <div class="arrow">
+        <span class="down">&#8595;</span>
+        <span class="what">validated request &#8594; action method invoked</span>
+      </div>
+      <div class="node app">
+        <div class="ch"><span class="tag app">Application</span><span class="kind">Service</span></div>
+        <div class="nh">IProductService &#8594; ProductService</div>
+        <div class="nf">.Application/Services/Interfaces/IProductService.cs · .Application/Services/ProductService.cs</div>
+      </div>
+      <div class="arrow">
+        <span class="down">&#8595;</span>
+        <span class="what">GetAllAsync(ct)</span>
+      </div>
+      <div class="node inf">
+        <div class="ch"><span class="tag dom">Domain</span><span class="tag inf">Infrastructure</span><span class="kind">Repository</span></div>
+        <div class="nh">IProductRepository &#8594; ProductRepository</div>
+        <div class="nf">.Domain/Repositories/IProductRepository.cs · .Infrastructure/Repositories/ProductRepository.cs</div>
+      </div>
+      <div class="arrow">
+        <span class="down">&#8595;</span>
+        <span class="what">GetAllAsync(ct)</span>
+      </div>
+      <div class="node inf">
+        <div class="ch"><span class="tag inf">Infrastructure</span><span class="kind">DbContext</span></div>
+        <div class="nh">CatalogDbContext</div>
+        <div class="nf">.Infrastructure/Data/CatalogDbContext.cs</div>
+      </div>
+      <div class="arrow">
+        <span class="down">&#8595;</span>
+        <span class="what">Products.AsNoTracking().OrderBy(p =&gt; p.Id).ToListAsync(ct)</span>
+      </div>
+      <div class="node ext">
+        <div class="ch"><span class="tag ext">External</span><span class="kind">Database</span></div>
+        <div class="nh">PostgreSQL</div>
+        <div class="nf">connection string "Postgres" · Npgsql.EntityFrameworkCore.PostgreSQL driver</div>
+      </div>
+    </div>
+
+    <h2 class="section">Sequence diagram</h2>
+    <p class="lead">The same journey as a numbered sequence diagram — solid arrows are calls, dashed green arrows are returns. The pill above each participant shows which project / layer it lives in (colours match the legend). New to why the project <em>references</em> run the other way (Api &#8594; Infrastructure)? See <a href="RUNTIME_VS_REFERENCES.html">Two Flows: Runtime vs References</a>.</p>
+
+    <div class="seqdiag-scroll">
+      <div class="seqdiag">
+        <div class="head">
+          <div><span class="badge host">Host / Api</span><div class="box">Controller</div></div>
+          <div><span class="badge app">Application</span><div class="box">Service</div></div>
+          <div><span class="badge inf">Infrastructure</span><div class="box">Repository</div></div>
+          <div><span class="badge inf">Infrastructure</span><div class="box">DbContext</div></div>
+          <div><span class="badge ext">External</span><div class="box">PostgreSQL</div></div>
+        </div>
+        <div class="body">
+          <div class="life" style="left:10%"></div>
+          <div class="life" style="left:30%"></div>
+          <div class="life" style="left:50%"></div>
+          <div class="life" style="left:70%"></div>
+          <div class="life" style="left:90%"></div>
+          <div class="msg call" style="left:10%;width:20%;top:16px"><div class="line"></div><div class="lab">1. GetAllAsync(ct)</div><div class="hd">&#9654;</div></div>
+          <div class="msg call" style="left:30%;width:20%;top:44px"><div class="line"></div><div class="lab">2. GetAllAsync(ct)</div><div class="hd">&#9654;</div></div>
+          <div class="msg call" style="left:50%;width:20%;top:72px"><div class="line"></div><div class="lab">3. ToListAsync(ct)</div><div class="hd">&#9654;</div></div>
+          <div class="msg call" style="left:70%;width:20%;top:100px"><div class="line"></div><div class="lab">4. SQL SELECT</div><div class="hd">&#9654;</div></div>
+          <div class="msg ret" style="left:70%;width:20%;top:132px"><div class="line"></div><div class="lab">rows</div><div class="hd">&#9664;</div></div>
+          <div class="msg ret" style="left:50%;width:20%;top:164px"><div class="line"></div><div class="lab">List&lt;Product&gt;</div><div class="hd">&#9664;</div></div>
+          <div class="msg ret" style="left:30%;width:20%;top:192px"><div class="line"></div><div class="lab">IReadOnlyList&lt;Product&gt;</div><div class="hd">&#9664;</div></div>
+          <div class="msg ret" style="left:10%;width:20%;top:220px"><div class="line"></div><div class="lab">IReadOnlyList&lt;ProductDto&gt;</div><div class="hd">&#9664;</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="seqdiag-legend"><span class="c">Solid blue</span> = a call (down the stack) &nbsp;·&nbsp; <span class="g">dashed green</span> = a return (back up)</div>
+
+    <h2 class="section">Layer code</h2>
+    <p class="lead">Real implementation at each stop in the request chain.</p>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>ProductsController.GetAll</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Controllers/ProductsController.cs</div>
+      <p>Receives the HTTP request. Extends <code class="inline">BaseApiController</code> which applies <code class="inline">[ApiController]</code> and <code class="inline">[Route("api/[controller]")]</code>. Returns <code class="inline">ApiResponse&lt;T&gt;</code> from SharedKernel as the envelope.</p>
+<pre><span class="tok-k">[HttpGet]</span>
+<span class="tok-k">public async</span> Task&lt;ActionResult&lt;ApiResponse&lt;IReadOnlyList&lt;ProductDto&gt;&gt;&gt;&gt; GetAll(CancellationToken ct)
+    =&gt; Ok(ApiResponse&lt;IReadOnlyList&lt;ProductDto&gt;&gt;.Success(
+        <span class="tok-s">"Products retrieved"</span>, <span class="tok-k">await</span> _service.GetAllAsync(ct)));</pre>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>ProductService.GetAllAsync</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Services/ProductService.cs</div>
+      <p>Implements <code class="inline">IProductService</code> — the use-case orchestration lives entirely in Application. Delegates data access to the repository through the <code class="inline">IProductRepository</code> port and uses the Mapperly source-generated <code class="inline">CatalogMapper</code> to convert <code class="inline">Product</code> entities to <code class="inline">ProductDto</code> records. It has no EF Core or database dependency.</p>
+<pre><span class="tok-k">public async</span> Task&lt;IReadOnlyList&lt;ProductDto&gt;&gt; GetAllAsync(CancellationToken ct = <span class="tok-k">default</span>)
+    =&gt; _mapper.ToDtoList(<span class="tok-k">await</span> _repository.GetAllAsync(ct));</pre>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>ProductRepository.GetAllAsync</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Repositories/ProductRepository.cs</div>
+      <p>Implements <code class="inline">IProductRepository</code> — the repository port declared in <strong>Domain</strong>. Uses EF Core with <code class="inline">AsNoTracking()</code> (read-only, no change tracking) and <code class="inline">OrderBy(p =&gt; p.Id)</code> for stable ordering.</p>
+<pre><span class="tok-k">public async</span> Task&lt;IReadOnlyList&lt;Product&gt;&gt; GetAllAsync(CancellationToken ct = <span class="tok-k">default</span>)
+    =&gt; <span class="tok-k">await</span> _db.Products.AsNoTracking().OrderBy(p =&gt; p.Id).ToListAsync(ct);</pre>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>CatalogDbContext</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Data/CatalogDbContext.cs</div>
+      <p>Module-scoped EF Core <code class="inline">DbContext</code>. Loads entity configurations from the assembly (Fluent API via <code class="inline">ApplyConfigurationsFromAssembly</code>). Each module has its own isolated <code class="inline">DbContext</code> — there is no shared cross-module context.</p>
+<pre><span class="tok-k">public sealed class</span> CatalogDbContext : DbContext
+{
+    <span class="tok-k">public</span> CatalogDbContext(DbContextOptions&lt;CatalogDbContext&gt; options) : <span class="tok-k">base</span>(options) { }
+
+    <span class="tok-k">public</span> DbSet&lt;Product&gt; Products =&gt; Set&lt;Product&gt;();
+
+    <span class="tok-k">protected override void</span> OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(<span class="tok-k">typeof</span>(CatalogDbContext).Assembly);
+        <span class="tok-k">base</span>.OnModelCreating(modelBuilder);
+    }
+}</pre>
+    </div>
+
+    <h2 class="section">Conventions</h2>
+    <p class="lead">Rules that every endpoint in this codebase follows.</p>
+    <table class="conv">
+      <tr><th>Convention</th><th>Mechanism</th><th>Where defined</th></tr>
+      <tr>
+        <td><strong>Response envelope</strong></td>
+        <td>All endpoints return <code class="inline">ApiResponse&lt;T&gt;</code> with <code class="inline">.Success(message, data)</code> or <code class="inline">.Failure(message, errorCode)</code>. Never return raw data or bare error strings.</td>
+        <td><code class="inline">src/SharedKernel/…/Responses/ApiResponse.cs</code></td>
+      </tr>
+      <tr>
+        <td><strong>Validation</strong></td>
+        <td><code class="inline">ValidationFilter</code> is registered globally. It resolves the matching <code class="inline">IValidator&lt;T&gt;</code> for each action argument and returns a 400 with <code class="inline">ApiResponse&lt;object&gt;.Failure(…)</code> on failure — before the action method runs.</td>
+        <td><code class="inline">Kheprx.BaseBackend.Api/Filters/ValidationFilter.cs</code> · validators in <code class="inline">.Application/Validators/</code> · see <a href="VALIDATION.html">Validation</a> &amp; <a href="VALIDATION_GUIDE.html">Validation Guide</a></td>
+      </tr>
+      <tr>
+        <td><strong>Error handling</strong></td>
+        <td><code class="inline">ExceptionHandlingMiddleware</code> catches unhandled <code class="inline">DomainException</code> and converts it to a structured 400 JSON response using <code class="inline">ApiResponse&lt;object&gt;.Failure(…)</code>. All other exceptions become 500.</td>
+        <td><code class="inline">Kheprx.BaseBackend.Api/Middlewares/ExceptionHandlingMiddleware.cs</code></td>
+      </tr>
+      <tr>
+        <td><strong>Routing</strong></td>
+        <td>All controllers extend <code class="inline">BaseApiController</code> which carries <code class="inline">[ApiController]</code> and <code class="inline">[Route("api/[controller]")]</code>. Routes are therefore <code class="inline">api/products</code>, <code class="inline">api/orders</code>, etc. — derived from the controller name automatically.</td>
+        <td><code class="inline">Kheprx.BaseBackend.Api/Controllers/BaseApiController.cs</code></td>
+      </tr>
+      <tr>
+        <td><strong>Cancellation</strong></td>
+        <td>Every action and service method accepts a <code class="inline">CancellationToken ct</code> parameter. ASP.NET Core injects the request's token automatically; it is threaded through to EF Core queries so the database call is cancelled when the client disconnects.</td>
+        <td>Convention — enforced by code review and architecture tests.</td>
+      </tr>
+      <tr>
+        <td><strong>CORS</strong></td>
+        <td>The template ships a permissive <code class="inline">AllowAll</code> policy (any origin, header, and method) as a local-development default. <strong>Tighten this before deploying to production</strong> by restricting allowed origins in <code class="inline">ServiceCollectionExtensions.cs</code>.</td>
+        <td><code class="inline">Kheprx.BaseBackend.Api/Extensions/ServiceCollectionExtensions.cs</code></td>
+      </tr>
+    </table>
+
+    <h2 class="section">Add a new endpoint</h2>
+    <p class="lead">Follow these steps to add e.g. <code class="inline">GET /api/products/{id}</code> or any other new action.</p>
+    <ol class="steps">
+      <li>
+        <b>Add a DTO and validator in Application</b>
+        Create a new request record (or reuse an existing one) in <code class="inline">.Application/DTOs/ProductDtos.cs</code> and a matching <code class="inline">AbstractValidator&lt;T&gt;</code> in <code class="inline">.Application/Validators/ProductRequestValidators.cs</code>. <code class="inline">ValidationFilter</code> will pick it up automatically.
+      </li>
+      <li>
+        <b>Extend <code class="inline">IProductService</code> and implement in <code class="inline">ProductService</code></b>
+        Add the method signature to <code class="inline">IProductService.cs</code> and implement it in <code class="inline">ProductService.cs</code> — both in the <strong>Application</strong> layer — delegating to the repository and using <code class="inline">CatalogMapper</code> for entity-to-DTO conversion.
+      </li>
+      <li>
+        <b>Add a repository method if needed</b>
+        If the new endpoint requires a query not already on <code class="inline">IProductRepository</code>, add it to the port in <strong>Domain</strong> (<code class="inline">.Domain/Repositories/IProductRepository.cs</code>) and implement it in <code class="inline">ProductRepository</code> (Infrastructure) using EF Core. Use <code class="inline">AsNoTracking()</code> for read-only queries.
+      </li>
+      <li>
+        <b>Add the controller action</b>
+        In <code class="inline">ProductsController</code>, add the new <code class="inline">[Http*]</code> action method. It must: accept a <code class="inline">CancellationToken ct</code>, call the service, and return <code class="inline">ActionResult&lt;ApiResponse&lt;T&gt;&gt;</code> wrapping <code class="inline">ApiResponse&lt;T&gt;.Success(…)</code> or <code class="inline">.Failure(…)</code>.
+      </li>
+      <li>
+        <b>Run <code class="inline">dotnet test</code></b>
+        Add a unit test for the new service method in <code class="inline">tests/Kheprx.BaseBackend.Catalog.UnitTests/ProductServiceTests.cs</code>, then run <code class="inline">dotnet test Kheprx.BaseBackend.sln</code> to confirm all tests pass including the architecture tests.
+      </li>
+    </ol>
+
+    <div class="pager">
+      <a href="MODULE_ANATOMY.html"><span class="dir">← Previous</span><span class="ttl">Module Anatomy</span></a>
+      <a class="next" href="VALIDATION.html"><span class="dir">Next →</span><span class="ttl">Validation</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

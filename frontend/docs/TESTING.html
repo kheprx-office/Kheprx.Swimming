@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl active" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Base Frontend</span> — Testing</h1>
+      <p>How testing is set up, what each layer's spec covers, and the TestBed recipes for use cases and viewmodels.</p>
+    </header>
+
+    <h2 class="section">Where specs live — the <code class="inline">testing/</code> folder</h2>
+    <div class="card core">
+      <p>Every <code class="inline">*.spec.ts</code> file lives inside the feature's <code class="inline">testing/</code> folder, which mirrors the source tree down to the screen folder. No spec file lives next to its source file.</p>
+      <pre class="tree"><span class="g">features/&lt;feature&gt;/</span>
+  data/                                      <span class="note"># source only — no specs here</span>
+  domain/                                    <span class="note"># source only — no specs here</span>
+  presentation/                              <span class="note"># source only — no specs here</span>
+  testing/                                   <span class="note"># all *.spec.ts live here</span>
+    data/
+      dto/&lt;entity&gt;.dto.spec.ts
+      repositories/&lt;entity&gt;.repository.impl.spec.ts
+    domain/
+      usecases/&lt;verb&gt;-&lt;entity&gt;.use-case.spec.ts
+    presentation/
+      &lt;non-page&gt;.spec.ts                     <span class="note"># e.g. auth-session.store.spec.ts, auth.guard.spec.ts</span>
+      pages/
+        &lt;screen&gt;/
+          &lt;screen&gt;.viewmodel.spec.ts         <span class="note"># or &lt;screen&gt;.page.spec.ts for smoke tests</span></pre>
+      <p><strong>Two rules:</strong></p>
+      <ol>
+        <li><strong>Mirror the source path.</strong> The path inside <code class="inline">testing/</code> matches the corresponding source path down to the screen folder (e.g. a spec for <code class="inline">presentation/pages/user-management/users.viewmodel.ts</code> lives at <code class="inline">testing/presentation/pages/user-management/users.viewmodel.spec.ts</code>).</li>
+        <li><strong>Import via aliases, not relative paths.</strong> Specs import the unit under test using <code class="inline">@features/…</code> or <code class="inline">@core/…</code> path aliases — never a relative <code class="inline">../…</code> import from inside <code class="inline">testing/</code>. The <code class="inline">moduleNameMapper</code> in <code class="inline">jest.config.js</code> resolves aliases identically to the compiler.</li>
+      </ol>
+      <p>Jest discovers all specs automatically via its <code class="inline">**/*.spec.ts</code> glob — no Jest config change is needed when adding new spec files inside <code class="inline">testing/</code>.</p>
+    </div>
+
+    <h2 class="section">Setup</h2>
+    <div class="card core">
+      <div class="ch"><h3>jest-preset-angular</h3><span class="tag core">core</span></div>
+      <p>Tests run with Jest via <code class="inline">jest-preset-angular</code>. The CommonJS preset handles the Angular compiler transform; <code class="inline">setup-jest.ts</code> initialises the zone environment for each test run. Run the full suite with <code class="inline">npm test</code>.</p>
+      <pre><span class="tok-c">// jest.config.js</span>
+<span class="tok-k">const</span> { <span class="tok-t">createCjsPreset</span> } = <span class="tok-t">require</span>(<span class="tok-s">'jest-preset-angular/presets'</span>);
+
+<span class="tok-t">module</span>.exports = {
+  ...<span class="tok-t">createCjsPreset</span>(),
+  setupFilesAfterEnv: [<span class="tok-s">'&lt;rootDir&gt;/setup-jest.ts'</span>],
+  moduleNameMapper: {
+    <span class="tok-s">'^@core/(.*)$'</span>: <span class="tok-s">'&lt;rootDir&gt;/src/app/core/$1'</span>,
+    <span class="tok-s">'^@features/(.*)$'</span>: <span class="tok-s">'&lt;rootDir&gt;/src/app/features/$1'</span>,
+  },
+};</pre>
+      <pre><span class="tok-c">// setup-jest.ts</span>
+<span class="tok-k">import</span> { <span class="tok-t">setupZoneTestEnv</span> } <span class="tok-k">from</span> <span class="tok-s">'jest-preset-angular/setup-env/zone'</span>;
+
+<span class="tok-t">setupZoneTestEnv</span>();</pre>
+      <p>The <code class="inline">moduleNameMapper</code> path aliases mirror <code class="inline">tsconfig.json</code> so import paths are resolved identically in tests and in the compiler.</p>
+    </div>
+
+    <h2 class="section">Coverage</h2>
+    <p class="lead">One spec file per testable unit. Component-level tests are deliberately light smoke tests — matching the pragmatic depth of the mobile base.</p>
+    <table class="conv">
+      <thead>
+        <tr>
+          <th>Spec file</th>
+          <th>What the tests verify</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="inline">result.spec.ts</code></td>
+          <td><code class="inline">ok()</code> and <code class="inline">fail()</code> constructors; type narrowing via <code class="inline">.ok</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">use-case.spec.ts</code></td>
+          <td>Success path returns <code class="inline">ok(data)</code>; thrown <code class="inline">AppError</code> returns <code class="inline">fail(error)</code> with correct kind; non-<code class="inline">AppError</code> normalised to <code class="inline">'unknown'</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">app-error.spec.ts</code></td>
+          <td><code class="inline">AppError</code> constructor sets <code class="inline">kind</code> and <code class="inline">message</code>; <code class="inline">instanceof</code> check distinguishes it from a plain <code class="inline">Error</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">logger.spec.ts</code></td>
+          <td>Logger does not throw; levels propagate correctly.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">http-client.spec.ts</code></td>
+          <td>Transport failure → <code class="inline">AppError('network')</code>; non-2xx → <code class="inline">AppError('http', status)</code>; timeout maps to <code class="inline">network</code>; retry count is respected. Uses <code class="inline">HttpClientTestingModule</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">key-value.store.spec.ts</code></td>
+          <td>Round-trip set/get; missing key returns <code class="inline">null</code> / fallback; corrupt object throws <code class="inline">AppError('storage')</code>; corrupt primitive falls back silently.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">crypto.service.spec.ts</code></td>
+          <td>Encrypt → decrypt round-trip; tampered ciphertext throws <code class="inline">AppError('crypto')</code>. Uses Node's <code class="inline">webcrypto</code> and an in-memory <code class="inline">KeyProvider</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">nav-button.component.spec.ts</code></td>
+          <td>Renders label; emits <code class="inline">press</code> on click; disabled state prevents emit.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">text-field.component.spec.ts</code></td>
+          <td>Renders the label binding; emits <code class="inline">valueChange</code> on user input, updating the parent signal.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">decor-background.component.spec.ts</code></td>
+          <td>Smoke test: decorative background component renders without error.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">notification.service.spec.ts</code></td>
+          <td><code class="inline">success()</code> / <code class="inline">error()</code> enqueue the correct notification type.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">app.routes.spec.ts</code></td>
+          <td>Route configuration is valid; <code class="inline">login</code> is public; protected routes require <code class="inline">authGuard</code>; <code class="inline">user-management</code> additionally requires <code class="inline">roleGuard('admin')</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">layout.component.spec.ts</code></td>
+          <td>Layout shell renders the <code class="inline">&lt;router-outlet&gt;</code> and navigation; smoke test.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">session.dto.spec.ts</code></td>
+          <td><code class="inline">isSessionDtoRsValid</code> passes on a complete session DTO; rejects empty tokens, unknown role, or non-boolean <code class="inline">mustChangePassword</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">current-user.dto.spec.ts</code></td>
+          <td><code class="inline">isCurrentUserDtoRsValid</code> passes on a complete current-user DTO; rejects empty <code class="inline">userId</code> or unknown role.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">auth.spec.ts</code></td>
+          <td><code class="inline">toAuthSession</code>, <code class="inline">toAuthTokens</code>, and <code class="inline">toAuthPrincipal</code> map DTO shapes to the correct domain model fields.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">auth.repository.impl.spec.ts</code></td>
+          <td>Each method delegates to the correct <code class="inline">/api/auth/…</code> endpoint and returns the raw envelope; uses <code class="inline">HttpClientTestingModule</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">token-store.spec.ts</code></td>
+          <td>Round-trip store/retrieve of access and refresh tokens; missing token returns <code class="inline">null</code>; clear removes both.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">login.use-case.spec.ts</code></td>
+          <td>Valid credentials return <code class="inline">ok(AuthSession)</code>; invalid DTO response causes <code class="inline">fail('validation')</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">refresh-token.use-case.spec.ts</code></td>
+          <td>No stored refresh token → <code class="inline">fail('auth')</code> (status 401); valid response → validates + maps to <code class="inline">AuthTokens</code> and persists them in <code class="inline">TokenStore</code>; malformed session DTO (e.g. empty <code class="inline">accessToken</code>) → <code class="inline">fail('validation')</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">logout.use-case.spec.ts</code></td>
+          <td>Calls the logout endpoint; token store is cleared on success.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">change-password.use-case.spec.ts</code></td>
+          <td>Valid password change returns <code class="inline">ok</code>; HTTP failure propagates as <code class="inline">fail</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">load-current-user.use-case.spec.ts</code></td>
+          <td>Valid current-user DTO → mapped to <code class="inline">AuthPrincipal</code>; malformed DTO (e.g. unknown role) → <code class="inline">fail('validation')</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">auth-session.store.spec.ts</code></td>
+          <td>Rehydrates session on init via <code class="inline">LoadCurrentUserUseCase</code>; session signal updates on login; clears on logout.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">auth.guard.spec.ts</code></td>
+          <td><code class="inline">authGuard</code> redirects to <code class="inline">/login</code> when unauthenticated; <code class="inline">roleGuard('admin')</code> blocks users without the admin role.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">auth.interceptor.spec.ts</code></td>
+          <td>Attaches <code class="inline">Bearer</code> token to outgoing requests; intercepts 401, refreshes token, and retries; bypasses <code class="inline">/api/auth/login</code>, <code class="inline">/refresh</code>, and <code class="inline">/logout</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">login.viewmodel.spec.ts</code></td>
+          <td>Login success populates the session signal and clears the error; failure sets the error signal and leaves session null.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">change-password.viewmodel.spec.ts</code></td>
+          <td>Success clears the error signal; failure sets it with the correct message.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">user.dto.spec.ts</code></td>
+          <td><code class="inline">isUserDtoRsValid</code> passes on a valid DTO; rejects unknown role, invalid status, empty id, or non-boolean <code class="inline">mustChangePassword</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">user.spec.ts</code></td>
+          <td><code class="inline">toUser</code> maps a valid <code class="inline">UserDtoRs</code> to a <code class="inline">User</code> domain model with correct field types.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">users.repository.impl.spec.ts</code></td>
+          <td><code class="inline">list</code>, <code class="inline">create</code>, <code class="inline">update</code>, and <code class="inline">setStatus</code> delegate to the correct <code class="inline">/api/users/…</code> endpoints; uses <code class="inline">HttpClientTestingModule</code>.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">users.use-cases.spec.ts</code></td>
+          <td><code class="inline">ListUsersUseCase</code> maps valid DTOs to <code class="inline">User[]</code>; invalid DTO row → <code class="inline">fail('validation')</code>. Fake <code class="inline">USERS_REPOSITORY</code> injected via token.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">users.viewmodel.spec.ts</code></td>
+          <td>Success populates the <code class="inline">users</code> signal; failure calls <code class="inline">notify.error(...)</code> (NotificationService); create/update/setStatus success refreshes the user list.</td>
+        </tr>
+        <tr>
+          <td><code class="inline">home.page.spec.ts</code></td>
+          <td>Home page renders navigation links.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="section">Use-case test recipe</h2>
+    <div class="card dom">
+      <div class="ch"><h3>Bind a fake repository to the port token</h3><span class="tag dom">domain</span></div>
+      <p>The use case depends on <code class="inline">USERS_REPOSITORY</code> (an <code class="inline">InjectionToken</code>), so tests swap the real implementation for a minimal in-memory fake — no HTTP, no Angular HTTP testing module needed.</p>
+      <pre><span class="tok-k">import</span> { <span class="tok-t">TestBed</span> } <span class="tok-k">from</span> <span class="tok-s">'@angular/core/testing'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">ListUsersUseCase</span> } <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/usecases/user-management/list-users.use-case'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">USERS_REPOSITORY</span>, <span class="tok-t">IUsersRepository</span> } <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/repositories/users.repository'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">UserDtoRs</span> } <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/data/dto/user-management/user.dto'</span>;
+
+<span class="tok-k">const</span> dto: <span class="tok-t">UserDtoRs</span> = { id: <span class="tok-s">'USR-1'</span>, fullName: <span class="tok-s">'A'</span>, email: <span class="tok-s">'a@b.c'</span>,
+  role: <span class="tok-s">'worker'</span>, status: <span class="tok-s">'active'</span>, mustChangePassword: <span class="tok-k">false</span> };
+
+<span class="tok-k">function</span> <span class="tok-t">repo</span>(overrides: <span class="tok-t">Partial</span>&lt;<span class="tok-t">IUsersRepository</span>&gt; = {}): <span class="tok-t">IUsersRepository</span> {
+  <span class="tok-k">return</span> { list: <span class="tok-k">async</span> () =&gt; ({ data: [dto] }), ...overrides } <span class="tok-k">as</span> <span class="tok-t">IUsersRepository</span>;
+}
+
+<span class="tok-t">TestBed</span>.<span class="tok-t">configureTestingModule</span>({
+  providers: [{ provide: <span class="tok-t">USERS_REPOSITORY</span>, useValue: <span class="tok-t">repo</span>() }],
+});
+<span class="tok-k">const</span> uc = <span class="tok-t">TestBed</span>.<span class="tok-t">inject</span>(<span class="tok-t">ListUsersUseCase</span>);
+<span class="tok-k">const</span> r = <span class="tok-k">await</span> uc.<span class="tok-t">run</span>();
+<span class="tok-c">// use case validates each DTO with isUserDtoRsValid, then maps via toUser</span>
+<span class="tok-t">expect</span>(r.ok).<span class="tok-t">toBe</span>(<span class="tok-k">true</span>);
+<span class="tok-k">if</span> (r.ok) <span class="tok-t">expect</span>(r.data).<span class="tok-t">toEqual</span>([{ id: <span class="tok-s">'USR-1'</span>, fullName: <span class="tok-s">'A'</span>, email: <span class="tok-s">'a@b.c'</span>,
+  role: <span class="tok-s">'worker'</span>, status: <span class="tok-s">'active'</span>, mustChangePassword: <span class="tok-k">false</span> }]);</pre>
+      <p>The second case overrides <code class="inline">list</code> to return a DTO row with an invalid <code class="inline">status</code> value. The use case's <code class="inline">isUserDtoRsValid</code> guard rejects it and <code class="inline">toUser</code> is never called, causing <code class="inline">r.ok === false</code> with <code class="inline">r.error.kind === 'validation'</code>. No try/catch is needed in the test — <code class="inline">UseCase.run()</code> normalises all thrown errors into a typed <code class="inline">Result</code>.</p>
+    </div>
+
+    <h2 class="section">ViewModel test recipe</h2>
+    <div class="card pres">
+      <div class="ch"><h3>Stub all use cases and assert on signal transitions</h3><span class="tag pres">presentation</span></div>
+      <p>The viewmodel injects four use cases plus <code class="inline">NotificationService</code>. Tests replace all of them with stubs, set <code class="inline">list.run</code> to resolve <code class="inline">ok([user])</code>, then assert on signal values after calling <code class="inline">vm.load()</code>. All four use-case stubs must be provided or Angular's DI will throw.</p>
+      <pre><span class="tok-k">import</span> { <span class="tok-t">TestBed</span> } <span class="tok-k">from</span> <span class="tok-s">'@angular/core/testing'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">UsersViewModel</span> } <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/presentation/pages/user-management/users.viewmodel'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">ListUsersUseCase</span> }     <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/usecases/user-management/list-users.use-case'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">CreateUserUseCase</span> }    <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/usecases/user-management/create-user.use-case'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">UpdateUserUseCase</span> }    <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/usecases/user-management/update-user.use-case'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">SetUserStatusUseCase</span> } <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/usecases/user-management/set-user-status.use-case'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">NotificationService</span> }  <span class="tok-k">from</span> <span class="tok-s">'@core/ui/notification.service'</span>;
+<span class="tok-k">import</span> { ok } <span class="tok-k">from</span> <span class="tok-s">'@core/domain/result/result'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">User</span> } <span class="tok-k">from</span> <span class="tok-s">'@features/user-management/domain/model/user-management/user'</span>;
+
+<span class="tok-k">const</span> user: <span class="tok-t">User</span> = { id: <span class="tok-s">'USR-1'</span>, fullName: <span class="tok-s">'A'</span>, email: <span class="tok-s">'a@b.c'</span>,
+  role: <span class="tok-s">'worker'</span>, status: <span class="tok-s">'active'</span>, mustChangePassword: <span class="tok-k">false</span> };
+
+<span class="tok-k">const</span> list      = { run: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>().<span class="tok-t">mockResolvedValue</span>(<span class="tok-t">ok</span>([user])) };
+<span class="tok-k">const</span> create    = { run: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>() };
+<span class="tok-k">const</span> update    = { run: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>() };
+<span class="tok-k">const</span> setStatus = { run: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>() };
+<span class="tok-k">const</span> notify    = { success: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>(), error: <span class="tok-t">jest</span>.<span class="tok-t">fn</span>() };
+
+<span class="tok-t">TestBed</span>.<span class="tok-t">configureTestingModule</span>({
+  providers: [
+    <span class="tok-t">UsersViewModel</span>,
+    { provide: <span class="tok-t">ListUsersUseCase</span>,     useValue: list },
+    { provide: <span class="tok-t">CreateUserUseCase</span>,    useValue: create },
+    { provide: <span class="tok-t">UpdateUserUseCase</span>,    useValue: update },
+    { provide: <span class="tok-t">SetUserStatusUseCase</span>, useValue: setStatus },
+    { provide: <span class="tok-t">NotificationService</span>,  useValue: notify },
+  ],
+});
+<span class="tok-k">const</span> vm = <span class="tok-t">TestBed</span>.<span class="tok-t">inject</span>(<span class="tok-t">UsersViewModel</span>);
+<span class="tok-k">await</span> vm.<span class="tok-t">load</span>();
+<span class="tok-t">expect</span>(vm.<span class="tok-t">loading</span>()).<span class="tok-t">toBe</span>(<span class="tok-k">false</span>);
+<span class="tok-t">expect</span>(vm.<span class="tok-t">users</span>()).<span class="tok-t">toHaveLength</span>(1);</pre>
+      <p>Additional cases override <code class="inline">create.run</code> / <code class="inline">setStatus.run</code> with a resolved <code class="inline">fail(…)</code> to confirm the viewmodel surfaces the error message via <code class="inline">notify.error()</code> and keeps the modal open — the signals are never inconsistent.</p>
+      <p>Component tests (<code class="inline">nav-button.component.spec.ts</code>, <code class="inline">decor-background.component.spec.ts</code>, etc.) are light smoke tests that confirm rendering and basic interaction — matching the pragmatic depth of the mobile base.</p>
+    </div>
+
+    <p style="margin-top:28px;">Read next: <a href="index.html">Home</a> — back to the documentation index.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

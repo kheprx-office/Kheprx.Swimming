@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error Handling &amp; Result — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px; }
+    .nav a { font-size:0.82rem; text-decoration:none; color:var(--accent); border:1px solid var(--border);
+      background:var(--card); border-radius:999px; padding:4px 12px; }
+    .nav a.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; font-size:0.8rem; align-items:center; }
+    .legend .lab { color:var(--muted); font-weight:600; }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .flow { display:flex; flex-direction:column; gap:0; margin:8px 0 6px; }
+    .node { border:1px solid var(--border); border-left-width:5px; background:var(--card); border-radius:10px; padding:12px 16px; }
+    .node .nh { font-weight:700; font-size:0.98rem; }
+    .node .nf { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.78rem; color:var(--muted); }
+    .node.pres { border-left-color:var(--pres); } .node.dom { border-left-color:var(--dom); }
+    .node.data { border-left-color:var(--data); } .node.core { border-left-color:var(--core); }
+    .arrow { align-self:center; color:var(--muted); font-size:0.78rem; padding:6px 0; text-align:center; }
+    .arrow .down { font-size:1.1rem; line-height:1; }
+    .arrow .what { display:inline-block; background:#fff; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:0.72rem; margin-left:6px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    ol.steps { counter-reset:step; list-style:none; padding-left:0; }
+    ol.steps > li { position:relative; padding:12px 14px 12px 52px; margin:10px 0; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+    ol.steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:14px; top:12px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+    ol.steps > li b { display:block; margin-bottom:2px; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    pre.tree { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; font-size:0.86rem; line-height:1.7; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text); }
+    pre.tree .g { font-weight:700; } pre.tree .g.pres { color:var(--pres); } pre.tree .g.dom { color:var(--dom); }
+    pre.tree .g.data { color:var(--data); } pre.tree .g.core { color:var(--core); } pre.tree .note { color:var(--muted); }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl active" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Base Frontend</span> — Error Handling &amp; Result</h1>
+      <p>The single error contract end to end: how every failure becomes a typed <code class="inline">Result</code> that callers switch on — no scattered try/catch.</p>
+    </header>
+
+    <h2 class="section"><code class="inline">Result&lt;T&gt;</code> — the uniform return type</h2>
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">Result&lt;T&gt;</code></h3><span class="tag dom">domain</span><span class="file">src/app/core/domain/result/result.ts</span></div>
+      <p>Every use case returns a <code class="inline">Result&lt;T&gt;</code> — a discriminated union with two shapes. The <code class="inline">ok</code> boolean acts as a discriminant: TypeScript narrows the type in each branch, so there is no casting and no unchecked property access.</p>
+      <pre><span class="tok-k">export type</span> <span class="tok-t">Result</span>&lt;<span class="tok-t">T</span>&gt; =
+  | { ok: true; data: T }
+  | { ok: false; error: AppError };
+
+<span class="tok-k">export const</span> <span class="tok-t">ok</span> = &lt;<span class="tok-t">T</span>&gt;(data: <span class="tok-t">T</span>): <span class="tok-t">Result</span>&lt;<span class="tok-t">T</span>&gt; =&gt; ({ ok: <span class="tok-k">true</span>, data });
+<span class="tok-k">export const</span> <span class="tok-t">fail</span> = (error: <span class="tok-t">AppError</span>): <span class="tok-t">Result</span>&lt;<span class="tok-k">never</span>&gt; =&gt; ({ ok: <span class="tok-k">false</span>, error });</pre>
+      <p>Callers switch on <code class="inline">result.ok</code> instead of writing their own try/catch. When <code class="inline">ok</code> is <code class="inline">true</code>, TypeScript knows <code class="inline">result.data</code> is <code class="inline">T</code>; when <code class="inline">false</code>, it knows <code class="inline">result.error</code> is <code class="inline">AppError</code> — the union narrows automatically.</p>
+    </div>
+
+    <h2 class="section"><code class="inline">AppError</code> and its kinds</h2>
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">AppError</code></h3><span class="tag data">data</span><span class="file">src/app/core/domain/errors/app-error.ts</span></div>
+      <p><code class="inline">AppError</code> is the only error type that crosses layer boundaries. Every failure — network, HTTP, validation, storage, crypto — is mapped to an <code class="inline">AppError</code> before it reaches the viewmodel, giving the UI a single uniform type to handle.</p>
+      <pre><span class="tok-k">export type</span> <span class="tok-t">AppErrorKind</span> =
+  | <span class="tok-s">'network'</span> | <span class="tok-s">'http'</span> | <span class="tok-s">'validation'</span>
+  | <span class="tok-s">'storage'</span> | <span class="tok-s">'crypto'</span> | <span class="tok-s">'auth'</span> | <span class="tok-s">'unknown'</span>;
+
+<span class="tok-k">export class</span> <span class="tok-t">AppError</span> <span class="tok-k">extends</span> <span class="tok-t">Error</span> {
+  <span class="tok-k">readonly</span> kind:    <span class="tok-t">AppErrorKind</span>;
+  <span class="tok-k">readonly</span> status?: <span class="tok-k">number</span>;
+  <span class="tok-k">readonly</span> code?:   <span class="tok-k">string</span>;
+  constructor(message: <span class="tok-k">string</span>, kind: <span class="tok-t">AppErrorKind</span>, status?: <span class="tok-k">number</span>, code?: <span class="tok-k">string</span>) {
+    <span class="tok-k">super</span>(message);
+    <span class="tok-k">this</span>.name = <span class="tok-s">'AppError'</span>;
+    <span class="tok-k">this</span>.kind = kind;
+    <span class="tok-k">this</span>.status = status;
+    <span class="tok-k">this</span>.code = code;
+  }
+}</pre>
+      <p>The <code class="inline">kind</code> field tells the UI what category of failure occurred without leaking implementation details. The optional <code class="inline">status</code> carries the HTTP status code; the optional <code class="inline">code</code> carries a backend error-code string parsed from the response body — both are set by <code class="inline">http-error.ts</code> when the server returns a JSON error body with <code class="inline">{ message?, code? }</code>.</p>
+      <table class="conv">
+        <tr><th>Kind</th><th>Origin</th></tr>
+        <tr>
+          <td><code class="inline">'network'</code></td>
+          <td><code class="inline">http-error.ts</code> — transport failure (status 0) or timeout</td>
+        </tr>
+        <tr>
+          <td><code class="inline">'http'</code></td>
+          <td><code class="inline">http-error.ts</code> — non-2xx (not 401) response; carries <code class="inline">status</code> and optional <code class="inline">code</code></td>
+        </tr>
+        <tr>
+          <td><code class="inline">'auth'</code></td>
+          <td><code class="inline">http-error.ts</code> — HTTP 401 response (<code class="inline">toAppError</code> maps 401 &#8594; <code class="inline">'auth'</code>), e.g. the Identity backend rejecting invalid login credentials</td>
+        </tr>
+        <tr>
+          <td><code class="inline">'validation'</code></td>
+          <td>a use case — bad DTO payload (e.g. <code class="inline">ListUsersUseCase</code> when <code class="inline">isUserDtoRsValid</code> fails)</td>
+        </tr>
+        <tr>
+          <td><code class="inline">'storage'</code></td>
+          <td><code class="inline">key-value.store.ts</code> — corrupt stored object</td>
+        </tr>
+        <tr>
+          <td><code class="inline">'crypto'</code></td>
+          <td><code class="inline">crypto.service.ts</code> — decrypt/tamper failure</td>
+        </tr>
+        <tr>
+          <td><code class="inline">'unknown'</code></td>
+          <td><code class="inline">UseCase.run()</code> — any non-<code class="inline">AppError</code> throw, normalised</td>
+        </tr>
+      </table>
+      <p style="margin-top:10px;font-size:0.93rem;">See <a href="HTTP_CLIENT.html">HTTP Client</a> for the full <code class="inline">toAppError</code> mapping from <code class="inline">HttpErrorResponse</code> to these kinds.</p>
+    </div>
+
+    <h2 class="section">The <code class="inline">UseCase</code> base owns the single try/catch</h2>
+    <div class="card core">
+      <div class="ch"><h3><code class="inline">UseCase&lt;I, O&gt;</code></h3><span class="tag core">core</span><span class="file">src/app/core/domain/usecase/use-case.ts</span></div>
+      <p>The abstract base uses the template-method pattern: subclasses implement only <code class="inline">execute()</code> (the happy path, throws an <code class="inline">AppError</code> on failure). <code class="inline">run()</code> wraps every call in a single try/catch and normalizes the result, so no use case repeats the same boilerplate.</p>
+      <pre><span class="tok-k">export abstract class</span> <span class="tok-t">UseCase</span>&lt;<span class="tok-t">I</span>, <span class="tok-t">O</span>&gt; {
+  <span class="tok-k">protected readonly</span> log: <span class="tok-t">Logger</span>;
+  constructor(name: <span class="tok-k">string</span>) { <span class="tok-k">this</span>.log = <span class="tok-t">createLogger</span>(<span class="tok-s">'usecase'</span>, name); }
+
+  <span class="tok-c">// happy path only — throw an AppError to signal failure</span>
+  <span class="tok-k">protected abstract</span> <span class="tok-t">execute</span>(input: <span class="tok-t">I</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">O</span>&gt;;
+
+  <span class="tok-k">async</span> <span class="tok-t">run</span>(input: <span class="tok-t">I</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">Result</span>&lt;<span class="tok-t">O</span>&gt;&gt; {
+    <span class="tok-k">try</span> {
+      <span class="tok-k">return</span> <span class="tok-t">ok</span>(<span class="tok-k">await this</span>.<span class="tok-t">execute</span>(input));
+    } <span class="tok-k">catch</span> (e) {
+      <span class="tok-k">const</span> error =
+        e <span class="tok-k">instanceof</span> <span class="tok-t">AppError</span> ? e : <span class="tok-k">new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Unexpected error'</span>, <span class="tok-s">'unknown'</span>);
+      <span class="tok-k">return</span> <span class="tok-t">fail</span>(error);
+    }
+  }
+}</pre>
+      <p><strong>Template-method split:</strong> subclasses write only <code class="inline">execute()</code> — the happy path — and throw an <code class="inline">AppError</code> on failure. <code class="inline">run()</code> normalizes every throw into a <code class="inline">Result</code> exactly once. Any non-<code class="inline">AppError</code> exception is wrapped as <code class="inline">'unknown'</code>, so the rest of the app only ever sees typed <code class="inline">AppError</code> values.</p>
+      <p><em>Note: the two <code class="inline">this.log.*</code> calls present in the source are omitted here for brevity; all logic is shown.</em></p>
+    </div>
+
+    <h2 class="section">The rule: no try/catch above <code class="inline">run()</code></h2>
+    <div class="card pres">
+      <div class="ch"><h3>Viewmodel consumes <code class="inline">Result</code></h3><span class="tag pres">presentation</span><span class="file">src/app/features/user-management/presentation/pages/user-management/users.viewmodel.ts</span></div>
+      <p>The viewmodel awaits <code class="inline">run()</code> and switches on <code class="inline">r.ok</code>. There is no try/catch here — the base already normalized every error into a typed value. On success the <code class="inline">users</code> signal is updated; on failure the error message is surfaced via <code class="inline">NotificationService</code> — the ViewModel does not maintain a separate error signal.</p>
+      <pre><span class="tok-k">async</span> <span class="tok-t">load</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; {
+  <span class="tok-k">this</span>.<span class="tok-t">loading</span>.<span class="tok-t">set</span>(<span class="tok-k">true</span>);
+  <span class="tok-k">const</span> r = <span class="tok-k">await this</span>.<span class="tok-t">listUsers</span>.<span class="tok-t">run</span>();
+  <span class="tok-k">this</span>.<span class="tok-t">loading</span>.<span class="tok-t">set</span>(<span class="tok-k">false</span>);
+  <span class="tok-k">if</span> (r.ok) <span class="tok-k">this</span>.<span class="tok-t">users</span>.<span class="tok-t">set</span>(r.data);
+  <span class="tok-k">else</span> <span class="tok-k">this</span>.<span class="tok-t">notify</span>.<span class="tok-t">error</span>(r.error.message);
+}</pre>
+      <p>Switching on <code class="inline">r.ok</code> is the only pattern needed across the entire presentation layer. The viewmodel exposes signals (<code class="inline">loading</code>, <code class="inline">users</code>) that the template binds to directly — no manual subscriptions, no error propagation, no try/catch. Transient failures are delivered to the user as toast notifications via <code class="inline">NotificationService</code>.</p>
+    </div>
+
+    <p style="margin-top:28px;">Read next: <a href="VALIDATION.html">Validation</a> — how DTOs are validated in use cases before they become domain models, and <a href="DATA_FLOW.html">Data Flow</a> — the full request/response lifecycle from press to rendered signal.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>

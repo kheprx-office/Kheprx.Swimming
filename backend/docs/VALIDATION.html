@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validation — Kheprx.BaseBackend</title>
+  <style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --border: #e1e4e8; --text: #1f2328; --muted: #57606a;
+    --accent: #2563eb; --accent-soft: #eaf1ff; --code-bg: #0f172a; --code-text: #e2e8f0;
+    /* backend layer colors */
+    --dom: #166534;   --dom-bg: #dcfce7;   /* Domain */
+    --app: #5b21b6;   --app-bg: #ede9fe;   /* Application */
+    --inf: #9a3412;   --inf-bg: #ffedd5;   /* Infrastructure */
+    --con: #0f766e;   --con-bg: #ccfbf1;   /* Contracts */
+    --host: #2563eb;  --host-bg: #eaf1ff;  /* Host/Api */
+    --shared: #475569; --shared-bg: #e2e8f0; /* SharedKernel */
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0 16px 72px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { padding: 40px 0 22px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+  header.page h1 { margin: 0 0 6px; font-size: 1.95rem; }
+  header.page h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); }
+  header.page p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .banner { background: var(--accent-soft); border: 1px solid #c7dbff; border-radius: 12px; padding: 14px 18px; margin: 22px 0 6px; font-size: 0.95rem; }
+  .banner strong { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; font-size: 0.8rem; align-items: center; }
+  .legend .lab { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; letter-spacing: .2px; }
+  .tag.dom { color: var(--dom); background: var(--dom-bg); }
+  .tag.app { color: var(--app); background: var(--app-bg); }
+  .tag.inf { color: var(--inf); background: var(--inf-bg); }
+  .tag.con { color: var(--con); background: var(--con-bg); }
+  .tag.host { color: var(--host); background: var(--host-bg); }
+  .tag.shared { color: var(--shared); background: var(--shared-bg); }
+  h2.section { font-size: 1.22rem; margin: 42px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  p.lead { color: var(--muted); margin: 0 0 18px; }
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 8px 0 6px; }
+  .node { border: 1px solid var(--border); border-left-width: 5px; background: var(--card); border-radius: 10px; padding: 12px 16px; }
+  .node .nh { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-weight: 700; font-size: 0.98rem; }
+  .node .nh .tags { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .kind { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 0.72rem; letter-spacing: .2px; color: var(--muted); background: #fff; border: 1px solid var(--border); }
+  .node .nf { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; color: var(--muted); }
+  .node.dom { border-left-color: var(--dom); } .node.app { border-left-color: var(--app); }
+  .node.inf { border-left-color: var(--inf); } .node.con { border-left-color: var(--con); }
+  .node.host { border-left-color: var(--host); } .node.shared { border-left-color: var(--shared); }
+  .arrow { align-self: center; color: var(--muted); font-size: 0.78rem; padding: 6px 0; text-align: center; }
+  .arrow .down { font-size: 1.1rem; line-height: 1; }
+  .arrow .what { display: inline-block; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; font-size: 0.72rem; margin-left: 6px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .card.dom { border-left: 5px solid var(--dom); } .card.app { border-left: 5px solid var(--app); }
+  .card.inf { border-left: 5px solid var(--inf); } .card.con { border-left: 5px solid var(--con); }
+  .card.host { border-left: 5px solid var(--host); } .card.shared { border-left: 5px solid var(--shared); }
+  .card .ch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .card .ch h3 { margin: 0; font-size: 1.02rem; }
+  .card .file { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.76rem; color: var(--muted); }
+  .card p { margin: 8px 0; font-size: 0.93rem; }
+  pre { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 10px 0 2px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code.inline { background: #eef1f4; color: #0f172a; border-radius: 5px; padding: 1px 6px; font-size: 0.86em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-c { color: #94a3b8; } .tok-k { color: #93c5fd; } .tok-s { color: #86efac; } .tok-t { color: #fca5a5; }
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li { position: relative; padding: 12px 14px 12px 52px; margin: 10px 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 14px; top: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  ol.steps > li b { display: block; margin-bottom: 2px; }
+  table.conv { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 6px 0; }
+  table.conv th, table.conv td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.conv th { background: #f0f3f6; }
+  footer.page { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  /* ===== docs cross-page navigation (added to every page) ===== */
+  .topnav { position: sticky; top: 0; z-index: 50; background: #2563eb; margin: 0 -16px; }
+  .topnav .ti { max-width: 980px; margin: 0 auto; padding: 9px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+  .topnav a { text-decoration: none; }
+  .topnav .brand { color: #fff; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin-right: 12px; font-size: 0.95rem; }
+  .topnav .nl { color: #fff; font-size: 0.85rem; padding: 4px 9px; border-radius: 6px; opacity: .9; }
+  .topnav .nl:hover { background: rgba(255,255,255,.16); opacity: 1; }
+  .topnav .nl.active { background: rgba(255,255,255,.24); opacity: 1; font-weight: 600; }
+  .pager { display: flex; justify-content: space-between; gap: 12px; margin: 44px 0 0; }
+  .pager a { flex: 1 1 0; min-width: 0; border: 1px solid #e1e4e8; background: #ffffff; border-radius: 10px; padding: 11px 15px; text-decoration: none; }
+  .pager a:hover { border-color: #2563eb; }
+  .pager a.next { text-align: right; }
+  .pager .dir { display: block; font-size: 0.72rem; color: #57606a; text-transform: uppercase; letter-spacing: .4px; }
+  .pager .ttl { display: block; font-size: 0.96rem; font-weight: 700; color: #2563eb; margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Kheprx.BaseBackend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="SOLUTION_STRUCTURE.html">Structure</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="MODULE_ANATOMY.html">Module</a>
+      <a class="nl" href="REQUEST_FLOW.html">Request Flow</a>
+      <a class="nl active" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="VALIDATION_GUIDE.html">Guide</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">Kheprx.BaseBackend</span> — Validation</h1>
+      <p>Five layers of validation, from the HTTP edge to the database. Each owns a different kind of rule.</p>
+    </header>
+
+    <div class="banner"><strong>Fail fast, cheapest first.</strong> A request is checked at five points on its way in. Body validation (layers 2–4) all return the same <code class="inline">ApiResponse&lt;T&gt;</code> envelope. New to the topic? The <a href="VALIDATION_GUIDE.html">Validation Guide</a> teaches the types and catalogs every rule.</div>
+
+    <div class="legend"><span class="lab">Runs in:</span>
+      <span class="tag host">Host / Api</span><span class="tag app">Application</span>
+      <span class="tag dom">Domain</span><span class="tag inf">Infrastructure</span>
+    </div>
+
+    <h2 class="section">The validation pipeline</h2>
+    <p class="lead">A request passes these checks in order. The first one that fails short-circuits with a response.</p>
+    <div class="flow">
+      <div class="node host"><div class="nh"><span>1 · Route constraints</span><span class="tags"><span class="tag host">Host / Api</span><span class="kind">&#9312; Syntactic / structural</span></span></div><div class="nf">[HttpGet("{id:int}")] — malformed id never matches → 404</div></div>
+      <div class="arrow"><span class="down">&#8595;</span><span class="what">route matched</span></div>
+      <div class="node host"><div class="nh"><span>2 · Model binding / [ApiController]</span><span class="tags"><span class="tag host">Host / Api</span><span class="kind">&#9312; Syntactic / structural</span></span></div><div class="nf">missing or malformed fields → 400 ApiResponse "Validation failed"</div></div>
+      <div class="arrow"><span class="down">&#8595;</span><span class="what">body bound</span></div>
+      <div class="node app"><div class="nh"><span>3 · FluentValidation (ValidationFilter)</span><span class="tags"><span class="tag app">Application</span><span class="kind">&#9313; Semantic / business-rule</span></span></div><div class="nf">request-DTO business rules → 400 ApiResponse "Validation failed"</div></div>
+      <div class="arrow"><span class="down">&#8595;</span><span class="what">request valid</span></div>
+      <div class="node dom"><div class="nh"><span>4 · Domain invariants</span><span class="tags"><span class="tag dom">Domain</span><span class="kind">&#9314; Domain invariant</span></span></div><div class="nf">entity guards throw DomainException → 400 ApiResponse "DOMAIN_RULE_VIOLATION"</div></div>
+      <div class="arrow"><span class="down">&#8595;</span><span class="what">invariants hold</span></div>
+      <div class="node inf"><div class="nh"><span>5 · Persistence constraints</span><span class="tags"><span class="tag inf">Infrastructure</span><span class="kind">&#9315; Integrity / persistence</span></span></div><div class="nf">EF/DB integrity backstop → 500 on breach</div></div>
+    </div>
+
+    <div class="banner"><strong>Layers vs. types.</strong> These five entries are <em>runtime layers</em> — ordered by <em>where</em> each check runs. The <a href="VALIDATION_GUIDE.html">Validation Guide</a> groups them into four <em>conceptual types</em> (by <em>what kind</em> of check it is), so the numbers do not match: layers 1 and 2 are both the "syntactic" type. The guide has the full mapping table.</div>
+
+    <h2 class="section">The five layers</h2>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>Layer 1 — Route constraints</h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Controllers/ProductsController.cs</div>
+<pre>[<span class="tok-t">HttpGet</span>(<span class="tok-s">"{id:int}"</span>)]
+<span class="tok-k">public async</span> <span class="tok-t">Task</span>&lt;<span class="tok-t">ActionResult</span>&lt;<span class="tok-t">ApiResponse</span>&lt;<span class="tok-t">ProductDto</span>&gt;&gt;&gt; GetById(<span class="tok-k">int</span> id, <span class="tok-t">CancellationToken</span> ct)</pre>
+      <p>The <code class="inline">:int</code> route constraint rejects a non-integer id at routing time — the route simply does not match, so the client gets a 404 and the action never runs.</p>
+      <p><strong>Owns:</strong> route value shape / type.</p>
+      <p><strong>Failure response:</strong> 404 — no body.</p>
+    </div>
+
+    <div class="card host">
+      <div class="ch"><span class="tag host">Host / Api</span><h3>Layer 2 — Model binding / <code class="inline">[ApiController]</code></h3></div>
+      <div class="file">Kheprx.BaseBackend.Api/Validation/ModelStateResponse.cs · Kheprx.BaseBackend.Api/Extensions/ServiceCollectionExtensions.cs</div>
+<pre><span class="tok-c">// ServiceCollectionExtensions.cs</span>
+.ConfigureApiBehaviorOptions(options =&gt;
+    options.InvalidModelStateResponseFactory = context =&gt;
+        <span class="tok-k">new</span> <span class="tok-t">BadRequestObjectResult</span>(<span class="tok-t">ModelStateResponse</span>.From(context.ModelState)));
+
+<span class="tok-c">// ModelStateResponse.From(...)</span>
+<span class="tok-k">public static</span> <span class="tok-t">ApiResponse</span>&lt;<span class="tok-k">object</span>&gt; From(<span class="tok-t">ModelStateDictionary</span> modelState)
+{
+    <span class="tok-k">var</span> errors = <span class="tok-k">string</span>.Join(<span class="tok-s">"; "</span>, modelState.Values
+        .SelectMany(entry =&gt; entry.Errors)
+        .Select(error =&gt; error.ErrorMessage)
+        .Where(message =&gt; !<span class="tok-k">string</span>.IsNullOrWhiteSpace(message)));
+
+    <span class="tok-k">if</span> (<span class="tok-k">string</span>.IsNullOrWhiteSpace(errors))
+        errors = <span class="tok-t">CommonMessages</span>.Errors.ValidationFallback(<span class="tok-t">AppLanguage</span>.Current);
+
+    <span class="tok-k">return</span> <span class="tok-t">ApiResponse</span>&lt;<span class="tok-k">object</span>&gt;.Failure(<span class="tok-t">CommonMessages</span>.Errors.ValidationFailed(<span class="tok-t">AppLanguage</span>.Current), errors);
+}</pre>
+      <p><code class="inline">[ApiController]</code> (on <code class="inline">BaseApiController</code>) runs automatic model-state validation. Non-nullable request properties are treated as required, so a missing or wrong-typed field fails binding. The <code class="inline">InvalidModelStateResponseFactory</code> converts that failure into the same <code class="inline">ApiResponse.Failure(CommonMessages.Errors.ValidationFailed(AppLanguage.Current), …)</code> envelope the rest of the stack uses. <code class="inline">CommonMessages</code> lives in <code class="inline">SharedKernel/Resources</code> and returns Arabic for the current app language, with English as the default arm.</p>
+      <p><strong>Owns:</strong> presence / shape / type of the request body.</p>
+      <p><strong>Failure response:</strong> 400 <code class="inline">ApiResponse.Failure(CommonMessages.Errors.ValidationFailed(AppLanguage.Current), joinedErrors)</code>.</p>
+    </div>
+
+    <div class="card app">
+      <div class="ch"><span class="tag app">Application</span><h3>Layer 3 — FluentValidation</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Application/Validators/ProductRequestValidators.cs (run by Kheprx.BaseBackend.Api/Filters/ValidationFilter.cs)</div>
+<pre><span class="tok-k">public sealed class</span> <span class="tok-t">CreateProductRequestValidator</span> : <span class="tok-t">AbstractValidator</span>&lt;<span class="tok-t">CreateProductRequest</span>&gt;
+{
+    <span class="tok-k">public</span> CreateProductRequestValidator()
+    {
+        RuleFor(x =&gt; x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x =&gt; x.Price).GreaterThan(0);
+        RuleFor(x =&gt; x.Description).MaximumLength(2000);
+    }
+}</pre>
+      <p>The global <code class="inline">ValidationFilter</code> resolves the matching <code class="inline">IValidator&lt;T&gt;</code> for each action argument from DI and runs it before the action; on failure it returns <code class="inline">400 ApiResponse.Failure(CommonMessages.Errors.ValidationFailed(AppLanguage.Current), joinedErrors)</code>. Validators are auto-registered by <code class="inline">AddValidatorsFromAssemblies</code>.</p>
+      <p><strong>Owns:</strong> business rules on the request DTO (required, length, range).</p>
+      <p><strong>Failure response:</strong> 400 <code class="inline">ApiResponse.Failure(CommonMessages.Errors.ValidationFailed(AppLanguage.Current), joinedErrors)</code>.</p>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><span class="tag dom">Domain</span><h3>Layer 4 — Domain invariants</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Domain/Entities/Product.cs → Kheprx.BaseBackend.Api/Middlewares/ExceptionHandlingMiddleware.cs</div>
+<pre><span class="tok-k">public void</span> ChangePrice(<span class="tok-k">decimal</span> price)
+{
+    <span class="tok-k">if</span> (price &lt;= 0)
+        <span class="tok-k">throw new</span> <span class="tok-t">InvalidProductException</span>(<span class="tok-s">"Product price must be greater than zero."</span>);
+    Price = price;
+    Touch();
+}</pre>
+      <p>Invariants that must hold no matter how the entity is created or mutated live as guards inside entity methods, throwing an <code class="inline">InvalidProductException : DomainException</code>. <code class="inline">ExceptionHandlingMiddleware</code> catches any <code class="inline">DomainException</code> and returns <code class="inline">400 ApiResponse.Failure(message, "DOMAIN_RULE_VIOLATION")</code>. This is the last line of defense — it holds even if a caller bypasses the DTO validators.</p>
+      <p><strong>Owns:</strong> entity invariants.</p>
+      <p><strong>Failure response:</strong> 400 <code class="inline">ApiResponse.Failure(message, "DOMAIN_RULE_VIOLATION")</code>.</p>
+    </div>
+
+    <div class="card inf">
+      <div class="ch"><span class="tag inf">Infrastructure</span><h3>Layer 5 — Persistence constraints</h3></div>
+      <div class="file">src/Modules/Catalog/Kheprx.BaseBackend.Catalog.Infrastructure/Configurations/ProductConfiguration.cs</div>
+<pre>builder.Property(p =&gt; p.Name).HasMaxLength(200).IsRequired();
+builder.Property(p =&gt; p.Description).HasMaxLength(2000);
+builder.Property(p =&gt; p.Price).HasColumnType(<span class="tok-s">"numeric(18,2)"</span>);</pre>
+      <p>The EF Core fluent configuration mirrors the DTO rules as database constraints — defense in depth. A violation that somehow reaches the database throws <code class="inline">DbUpdateException</code>, which <code class="inline">ExceptionHandlingMiddleware</code> turns into a generic 500. You should rarely hit this layer; it exists so the data can never be corrupted.</p>
+      <p><strong>Owns:</strong> storage integrity.</p>
+      <p><strong>Failure response:</strong> 500 (generic server error — this layer should never be reached in normal operation).</p>
+    </div>
+
+    <h2 class="section">Which layer owns this rule?</h2>
+    <table class="conv">
+      <tr><th>Rule kind</th><th>Lives in</th><th>Mechanism</th></tr>
+      <tr><td>Required / length / format / range on a request field</td><td><span class="tag app">Application</span></td><td><code class="inline">AbstractValidator&lt;TRequest&gt;</code> (FluentValidation)</td></tr>
+      <tr><td>Type/shape of a route value</td><td><span class="tag host">Host / Api</span></td><td>route constraint <code class="inline">{id:int}</code></td></tr>
+      <tr><td>Missing / malformed request body</td><td><span class="tag host">Host / Api</span></td><td>model binding + <code class="inline">InvalidModelStateResponseFactory</code></td></tr>
+      <tr><td>Invariant that must always hold for the entity</td><td><span class="tag dom">Domain</span></td><td>guard in the entity method throwing a <code class="inline">DomainException</code></td></tr>
+      <tr><td>Uniqueness / referential integrity</td><td><span class="tag inf">Infrastructure</span></td><td>repository check and/or DB constraint</td></tr>
+      <tr><td>Last-line storage integrity</td><td><span class="tag inf">Infrastructure</span></td><td>EF fluent config (<code class="inline">HasMaxLength</code>, <code class="inline">IsRequired</code>)</td></tr>
+    </table>
+
+    <h2 class="section">One envelope for every failure</h2>
+    <p class="lead">Layers 2–4 all return the same <code class="inline">ApiResponse&lt;T&gt;</code> shape — only the <code class="inline">error</code> field differs.</p>
+<pre>{
+  "successStatus": false,
+  "message": "Validation failed",
+  "error": "'Price' must be greater than '0'.",
+  "data": null
+}</pre>
+    <table class="conv">
+      <tr><th>Layer</th><th>HTTP</th><th><code>error</code> value</th></tr>
+      <tr><td>1 · Route constraint</td><td>404</td><td>— (no body)</td></tr>
+      <tr><td>2 · Model binding</td><td>400</td><td>joined ModelState messages</td></tr>
+      <tr><td>3 · FluentValidation</td><td>400</td><td>joined validator messages</td></tr>
+      <tr><td>4 · Domain invariant</td><td>400</td><td><code class="inline">DOMAIN_RULE_VIOLATION</code></td></tr>
+      <tr><td>5 · Persistence</td><td>500</td><td><code class="inline">SERVER_ERROR</code></td></tr>
+    </table>
+
+    <h2 class="section">Add a validation rule</h2>
+    <ol class="steps">
+      <li><b>Decide the layer</b> Use the decision table above to pick where the rule belongs.</li>
+      <li><b>Request-shape rule → FluentValidation</b> Add or extend the <code class="inline">AbstractValidator&lt;TRequest&gt;</code> in the module's <code class="inline">.Application/Validators/</code>. The global <code class="inline">ValidationFilter</code> picks it up automatically — no wiring needed.</li>
+      <li><b>Entity invariant → Domain guard</b> Add a guard in the entity constructor or method that throws a <code class="inline">DomainException</code> subtype. <code class="inline">ExceptionHandlingMiddleware</code> converts it to a 400 envelope.</li>
+      <li><b>Storage integrity → EF constraint</b> Add the constraint in the entity's <code class="inline">IEntityTypeConfiguration&lt;T&gt;</code> and generate a migration.</li>
+      <li><b>Run <code class="inline">dotnet test</code></b> Confirm the solution stays green and warning-clean.</li>
+    </ol>
+
+    <div class="pager">
+      <a href="REQUEST_FLOW.html"><span class="dir">← Previous</span><span class="ttl">Request Flow</span></a>
+      <a class="next" href="VALIDATION_GUIDE.html"><span class="dir">Next →</span><span class="ttl">Validation Guide</span></a>
+    </div>
+    <footer class="page">Kheprx.BaseBackend docs — <a href="ARCHITECTURE_OVERVIEW.html">Architecture Overview</a> · <a href="SOLUTION_STRUCTURE.html">Solution Structure</a> · <a href="PROJECT_LIBRARIES.html">Project Libraries</a> · <a href="MODULE_ANATOMY.html">Module Anatomy</a> · <a href="REQUEST_FLOW.html">Request Flow</a> · <a href="VALIDATION.html">Validation</a> · <a href="VALIDATION_GUIDE.html">Validation Guide</a></footer>
+  </div>
+</body>
+</html>

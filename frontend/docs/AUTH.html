@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth — Base Frontend</title>
+  <style>
+    :root {
+      --bg:#f6f8fa; --card:#fff; --border:#e1e4e8; --text:#1f2328; --muted:#57606a;
+      --accent:#2563eb; --accent-soft:#eaf1ff; --code-bg:#0f172a; --code-text:#e2e8f0;
+      --pres:#5b21b6; --pres-bg:#ede9fe;   /* presentation */
+      --dom:#166534;  --dom-bg:#dcfce7;    /* domain */
+      --data:#9a3412; --data-bg:#ffedd5;   /* data */
+      --core:#2563eb; --core-bg:#eaf1ff;   /* core */
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 16px 72px; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .topnav { position:sticky; top:0; z-index:50; background:var(--accent); margin:0 -16px; }
+    .topnav .ti { max-width:980px; margin:0 auto; padding:9px 16px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; }
+    .topnav a { text-decoration:none; }
+    .topnav .brand { color:#fff; font-weight:700; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; margin-right:12px; font-size:0.95rem; }
+    .topnav .nl { color:#fff; font-size:0.85rem; padding:4px 9px; border-radius:6px; opacity:.9; }
+    .topnav .nl:hover { background:rgba(255,255,255,.16); opacity:1; }
+    .topnav .nl.active { background:rgba(255,255,255,.24); opacity:1; font-weight:600; }
+    header.page { padding:40px 0 22px; border-bottom:2px solid var(--border); margin-bottom:8px; }
+    header.page h1 { margin:0 0 6px; font-size:1.95rem; }
+    header.page h1 .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--accent); }
+    header.page p { margin:0; color:var(--muted); font-size:0.98rem; }
+    .banner { background:var(--accent-soft); border:1px solid #c7dbff; border-radius:12px; padding:14px 18px; margin:22px 0 6px; font-size:0.95rem; }
+    .banner strong { color:var(--accent); }
+    .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-weight:600; font-size:0.74rem; letter-spacing:.2px; }
+    .tag.pres { color:var(--pres); background:var(--pres-bg); }
+    .tag.dom  { color:var(--dom);  background:var(--dom-bg); }
+    .tag.data { color:var(--data); background:var(--data-bg); }
+    .tag.core { color:var(--core); background:var(--core-bg); }
+    h2.section { font-size:1.22rem; margin:42px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+    p.lead { color:var(--muted); margin:0 0 18px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin:14px 0; }
+    .card.pres { border-left:5px solid var(--pres); } .card.dom { border-left:5px solid var(--dom); }
+    .card.data { border-left:5px solid var(--data); } .card.core { border-left:5px solid var(--core); }
+    .card .ch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .card .ch h3 { margin:0; font-size:1.02rem; }
+    .card .file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.76rem; color:var(--muted); }
+    .card p { margin:8px 0; font-size:0.93rem; }
+    pre { background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:0.82rem; line-height:1.5; margin:10px 0 2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    code.inline { background:#eef1f4; color:#0f172a; border-radius:5px; padding:1px 6px; font-size:0.86em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .tok-c { color:#94a3b8; } .tok-k { color:#93c5fd; } .tok-s { color:#86efac; } .tok-t { color:#fca5a5; }
+    table.conv { width:100%; border-collapse:collapse; font-size:0.88rem; margin:6px 0; }
+    table.conv th, table.conv td { border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top; }
+    table.conv th { background:#f0f3f6; }
+    footer.page { margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:0.86rem; }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="ti">
+      <a class="brand" href="index.html">Base Frontend</a>
+      <a class="nl" href="index.html">Home</a>
+      <a class="nl" href="ARCHITECTURE_OVERVIEW.html">Architecture</a>
+      <a class="nl" href="PROJECT_LIBRARIES.html">Libraries</a>
+      <a class="nl" href="CORE_FILES.html">Core</a>
+      <a class="nl" href="FEATURE_ANATOMY.html">Feature</a>
+      <a class="nl" href="DATA_FLOW.html">Data Flow</a>
+      <a class="nl" href="COMPOSITION_ROOT.html">Composition</a>
+      <a class="nl" href="ERROR_HANDLING.html">Errors</a>
+      <a class="nl" href="VALIDATION.html">Validation</a>
+      <a class="nl" href="ADD_A_FEATURE.html">Add a Feature</a>
+      <a class="nl" href="TESTING.html">Testing</a>
+      <a class="nl" href="HTTP_CLIENT.html">HTTP Client</a>
+      <a class="nl" href="DATA_SOURCE_SEAM.html">Repository Layer</a>
+      <a class="nl active" href="AUTH.html">Auth</a>
+      <a class="nl" href="STYLING.html">Styling</a>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="mono">features/auth/</span> — Auth stack end to end</h1>
+      <p>Feature layout, DTOs + validators, domain models + mappers, repository, use cases, token storage, session signals, interceptor, and guards.</p>
+    </header>
+
+    <h2 class="section">Feature layout — <code class="inline">features/auth/</code></h2>
+    <div class="card core">
+      <div class="ch"><h3>Directory tree</h3><span class="tag core">feature</span></div>
+      <p>Auth follows the standard API_FLOW feature anatomy: data-layer files return DTO envelopes; domain use cases validate and map; presentation holds signals, guards, and pages.</p>
+      <pre>features/auth/
+  data/
+    dto/
+      login/login.dto.ts                   <span class="tok-c"># LoginDtoRq</span>
+      change-password/change-password.dto.ts <span class="tok-c"># ChangePasswordDtoRq</span>
+      shared/session.dto.ts                <span class="tok-c"># SessionDtoRs + envelopes + isSessionDtoRsValid</span>
+      shared/current-user.dto.ts           <span class="tok-c"># CurrentUserDtoRs + envelope + isCurrentUserDtoRsValid</span>
+      shared/refresh.dto.ts                <span class="tok-c"># RefreshDtoRq (shared: used by the interceptor-owned refresh flow)</span>
+    repositories/
+      auth.repository.impl.ts              <span class="tok-c"># AuthRepositoryImpl — fetch-only, returns envelopes</span>
+    token-store.ts               <span class="tok-c"># localStorage access/refresh token persistence</span>
+    auth.interceptor.ts          <span class="tok-c"># Bearer attach + 401→refresh→retry</span>
+    auth.providers.ts            <span class="tok-c"># AUTH_PROVIDERS: bind AUTH_REPOSITORY → AuthRepositoryImpl</span>
+  domain/
+    model/
+      login/login.ts               <span class="tok-c"># LoginInput</span>
+      change-password/change-password.ts <span class="tok-c"># ChangePasswordInput</span>
+      shared/auth.ts               <span class="tok-c"># AuthSession / AuthTokens / AuthPrincipal + toXxx mappers</span>
+    repositories/
+      auth.repository.ts         <span class="tok-c"># IAuthRepository interface + AUTH_REPOSITORY InjectionToken</span>
+    usecases/
+      login/login.use-case.ts
+      change-password/change-password.use-case.ts
+      account/logout.use-case.ts
+      shared/load-current-user.use-case.ts
+      shared/refresh-token.use-case.ts
+  presentation/
+    pages/
+      login/
+        login.page.ts · login.page.html · login.viewmodel.ts
+      change-password/
+        change-password.page.ts · change-password.page.html · change-password.viewmodel.ts
+      account/
+        account.page.ts · account.page.html          <span class="tok-c"># no viewmodel — injects the store directly</span>
+    auth-session.store.ts        <span class="tok-c"># signal store; signIn / signOut / changePassword / rehydrate (non-screen — stays at presentation root)</span>
+    auth.guard.ts                <span class="tok-c"># authGuard + roleGuard (non-screen — stays at presentation root)</span>
+  testing/                       <span class="tok-c"># mirrors data/ · domain/ · presentation/ — all *.spec.ts live here</span>
+    data/
+    domain/
+    presentation/
+      auth-session.store.spec.ts
+      auth.guard.spec.ts
+      pages/
+        login/
+          login.viewmodel.spec.ts
+        change-password/
+          change-password.viewmodel.spec.ts
+  index.ts</pre>
+    </div>
+
+    <h2 class="section">DTOs + validators — <code class="inline">data/dto/{login,change-password,shared}/</code></h2>
+    <div class="card data">
+      <div class="ch"><h3>Response DTOs, request bodies, and validators</h3><span class="tag data">data</span><span class="file">src/app/features/auth/data/dto/{login,change-password,shared}/</span></div>
+      <p>Raw transport shapes returned by the Identity backend. The DTO monolith is split by operation and screen: each request DTO gets its own file under the screen subfolder that owns the operation (<code class="inline">login/login.dto.ts</code>, <code class="inline">change-password/change-password.dto.ts</code>). Response DTOs and their validators live together in <code class="inline">shared/</code> because they are consumed by the store, interceptor, and multiple use cases. Response DTOs extend <code class="inline">BaseResponseRs&lt;T&gt;</code> (the API envelope). Validators check each field before the use case maps to a domain model; <code class="inline">role</code> is hardened against <code class="inline">ROLE_LABELS</code> so an unrecognised role is treated as invalid data.</p>
+      <pre><span class="tok-k">import</span> { <span class="tok-t">BaseResponseRs</span> } <span class="tok-k">from</span> <span class="tok-s">'@core/network/api/base-response-rs'</span>;
+<span class="tok-k">import</span> { <span class="tok-t">ROLE_LABELS</span> } <span class="tok-k">from</span> <span class="tok-s">'@core/domain/roles'</span>;
+
+<span class="tok-c">// Response shapes (raw / untrusted transport)</span>
+<span class="tok-k">export interface</span> <span class="tok-t">SessionDtoRs</span> {
+  accessToken: <span class="tok-k">string</span>; refreshToken: <span class="tok-k">string</span>;
+  role: <span class="tok-k">string</span>; userId: <span class="tok-k">string</span>; mustChangePassword: <span class="tok-k">boolean</span>;
+}
+<span class="tok-k">export interface</span> <span class="tok-t">CurrentUserDtoRs</span> {
+  userId: <span class="tok-k">string</span>; email: <span class="tok-k">string</span>; fullName: <span class="tok-k">string</span>; role: <span class="tok-k">string</span>;
+}
+
+<span class="tok-c">// API envelopes</span>
+<span class="tok-k">export interface</span> <span class="tok-t">SessionItemDtoRs</span>     <span class="tok-k">extends</span> <span class="tok-t">BaseResponseRs</span>&lt;<span class="tok-t">SessionDtoRs</span>&gt;     {}
+<span class="tok-k">export interface</span> <span class="tok-t">CurrentUserItemDtoRs</span> <span class="tok-k">extends</span> <span class="tok-t">BaseResponseRs</span>&lt;<span class="tok-t">CurrentUserDtoRs</span>&gt; {}
+
+<span class="tok-c">// Request bodies</span>
+<span class="tok-k">export interface</span> <span class="tok-t">LoginDtoRq</span>          { email: <span class="tok-k">string</span>; password: <span class="tok-k">string</span>; }
+<span class="tok-k">export interface</span> <span class="tok-t">RefreshDtoRq</span>        { refreshToken: <span class="tok-k">string</span>; }
+<span class="tok-k">export interface</span> <span class="tok-t">ChangePasswordDtoRq</span> { currentPassword: <span class="tok-k">string</span>; newPassword: <span class="tok-k">string</span>; }
+
+<span class="tok-c">// Validators (called by use cases before mapping)</span>
+<span class="tok-k">export function</span> <span class="tok-t">isSessionDtoRsValid</span>(dto: <span class="tok-t">SessionDtoRs</span>): <span class="tok-k">boolean</span> {
+  <span class="tok-k">return</span> (
+    <span class="tok-k">typeof</span> dto.accessToken  === <span class="tok-s">'string'</span> &amp;&amp; dto.accessToken.length  &gt; 0 &amp;&amp;
+    <span class="tok-k">typeof</span> dto.refreshToken === <span class="tok-s">'string'</span> &amp;&amp; dto.refreshToken.length &gt; 0 &amp;&amp;
+    <span class="tok-k">typeof</span> dto.userId       === <span class="tok-s">'string'</span> &amp;&amp; dto.userId.length       &gt; 0 &amp;&amp;
+    <span class="tok-k">typeof</span> dto.role         === <span class="tok-s">'string'</span> &amp;&amp;
+    Object.prototype.hasOwnProperty.<span class="tok-t">call</span>(<span class="tok-t">ROLE_LABELS</span>, dto.role) &amp;&amp;
+    <span class="tok-k">typeof</span> dto.mustChangePassword === <span class="tok-s">'boolean'</span>
+  );
+}
+
+<span class="tok-k">export function</span> <span class="tok-t">isCurrentUserDtoRsValid</span>(dto: <span class="tok-t">CurrentUserDtoRs</span>): <span class="tok-k">boolean</span> {
+  <span class="tok-k">return</span> (
+    <span class="tok-k">typeof</span> dto.userId   === <span class="tok-s">'string'</span> &amp;&amp; dto.userId.length &gt; 0 &amp;&amp;
+    <span class="tok-k">typeof</span> dto.email    === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-k">typeof</span> dto.fullName === <span class="tok-s">'string'</span> &amp;&amp;
+    <span class="tok-k">typeof</span> dto.role     === <span class="tok-s">'string'</span> &amp;&amp;
+    Object.prototype.hasOwnProperty.<span class="tok-t">call</span>(<span class="tok-t">ROLE_LABELS</span>, dto.role)
+  );
+}</pre>
+    </div>
+
+    <h2 class="section">Domain models + mappers — <code class="inline">domain/model/{login,change-password,shared}/</code></h2>
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">AuthSession</code> · <code class="inline">AuthTokens</code> · <code class="inline">AuthPrincipal</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/model/shared/auth.ts</span></div>
+      <p>The auth model is split by screen. Screen-specific input types live under their screen subfolder: <code class="inline">LoginInput</code> in <code class="inline">domain/model/login/login.ts</code>; <code class="inline">ChangePasswordInput</code> in <code class="inline">domain/model/change-password/change-password.ts</code>. Feature-wide types and mappers live in <code class="inline">domain/model/shared/auth.ts</code>. <code class="inline">mustChangePassword</code> is a session-lifecycle flag (forced first-login change) surfaced by login, refresh, and change-password; it is not part of the identity principal. Mappers convert DTO shapes to domain models — the only place where casting happens.</p>
+      <pre><span class="tok-c">// domain/model/login/login.ts</span>
+<span class="tok-k">export interface</span> <span class="tok-t">LoginInput</span>          { email: <span class="tok-k">string</span>; password: <span class="tok-k">string</span>; }
+
+<span class="tok-c">// domain/model/change-password/change-password.ts</span>
+<span class="tok-k">export interface</span> <span class="tok-t">ChangePasswordInput</span> { currentPassword: <span class="tok-k">string</span>; newPassword: <span class="tok-k">string</span>; }
+
+<span class="tok-c">// domain/model/shared/auth.ts</span>
+<span class="tok-k">export interface</span> <span class="tok-t">AuthTokens</span>   { accessToken: <span class="tok-k">string</span>; refreshToken: <span class="tok-k">string</span>; }
+<span class="tok-k">export interface</span> <span class="tok-t">AuthPrincipal</span> { role: <span class="tok-t">UserRole</span>; userId: <span class="tok-k">string</span>; }
+<span class="tok-k">export interface</span> <span class="tok-t">AuthSession</span>   { tokens: <span class="tok-t">AuthTokens</span>; principal: <span class="tok-t">AuthPrincipal</span>; mustChangePassword: <span class="tok-k">boolean</span>; }
+
+<span class="tok-c">// Mappers — called by use cases after validation</span>
+<span class="tok-k">export function</span> <span class="tok-t">toAuthSession</span>(dto: <span class="tok-t">SessionDtoRs</span>): <span class="tok-t">AuthSession</span> {
+  <span class="tok-k">return</span> {
+    tokens: { accessToken: dto.accessToken, refreshToken: dto.refreshToken },
+    principal: { role: dto.role <span class="tok-k">as</span> <span class="tok-t">UserRole</span>, userId: dto.userId },
+    mustChangePassword: dto.mustChangePassword,
+  };
+}
+
+<span class="tok-k">export function</span> <span class="tok-t">toAuthTokens</span>(dto: <span class="tok-t">SessionDtoRs</span>): <span class="tok-t">AuthTokens</span> {
+  <span class="tok-k">return</span> { accessToken: dto.accessToken, refreshToken: dto.refreshToken };
+}
+
+<span class="tok-k">export function</span> <span class="tok-t">toAuthPrincipal</span>(dto: <span class="tok-t">CurrentUserDtoRs</span>): <span class="tok-t">AuthPrincipal</span> {
+  <span class="tok-k">return</span> { role: dto.role <span class="tok-k">as</span> <span class="tok-t">UserRole</span>, userId: dto.userId };
+}</pre>
+    </div>
+
+    <h2 class="section">Repository — port, impl &amp; providers</h2>
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">IAuthRepository</code> + <code class="inline">AUTH_REPOSITORY</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/repositories/auth.repository.ts</span></div>
+      <p>The domain contract. Methods accept request DTOs and return the raw API envelopes (<code class="inline">SessionItemDtoRs</code> / <code class="inline">CurrentUserItemDtoRs</code>). Validation and domain mapping are the use cases' responsibility, not the repository's.</p>
+      <pre><span class="tok-k">export interface</span> <span class="tok-t">IAuthRepository</span> {
+  login(rq: <span class="tok-t">LoginDtoRq</span>):                           <span class="tok-t">Promise</span>&lt;<span class="tok-t">SessionItemDtoRs</span>&gt;;
+  refresh(rq: <span class="tok-t">RefreshDtoRq</span>):                        <span class="tok-t">Promise</span>&lt;<span class="tok-t">SessionItemDtoRs</span>&gt;;
+  logout():                                            <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt;;
+  me():                                                <span class="tok-t">Promise</span>&lt;<span class="tok-t">CurrentUserItemDtoRs</span>&gt;;
+  changePassword(rq: <span class="tok-t">ChangePasswordDtoRq</span>):           <span class="tok-t">Promise</span>&lt;<span class="tok-t">SessionItemDtoRs</span>&gt;;
+}
+<span class="tok-k">export const</span> <span class="tok-t">AUTH_REPOSITORY</span> = <span class="tok-k">new</span> <span class="tok-t">InjectionToken</span>&lt;<span class="tok-t">IAuthRepository</span>&gt;(<span class="tok-s">'AUTH_REPOSITORY'</span>);</pre>
+    </div>
+
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">AuthRepositoryImpl</code> — fetch-only</h3><span class="tag data">data</span><span class="file">src/app/features/auth/data/repositories/auth.repository.impl.ts</span></div>
+      <p>Delegates every method to <code class="inline">HttpClientService</code> and returns the envelope unchanged. The Bearer token is attached by <code class="inline">authInterceptor</code> — the impl itself is auth-unaware.</p>
+      <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">AuthRepositoryImpl</span> <span class="tok-k">implements</span> <span class="tok-t">IAuthRepository</span> {
+  <span class="tok-k">private readonly</span> http = <span class="tok-t">inject</span>(<span class="tok-t">HttpClientService</span>);
+
+  login(rq: <span class="tok-t">LoginDtoRq</span>):                 <span class="tok-t">Promise</span>&lt;<span class="tok-t">SessionItemDtoRs</span>&gt;     { <span class="tok-k">return this</span>.http.<span class="tok-t">post</span>(<span class="tok-s">'/api/auth/login'</span>,           { body: rq }); }
+  refresh(rq: <span class="tok-t">RefreshDtoRq</span>):              <span class="tok-t">Promise</span>&lt;<span class="tok-t">SessionItemDtoRs</span>&gt;     { <span class="tok-k">return this</span>.http.<span class="tok-t">post</span>(<span class="tok-s">'/api/auth/refresh'</span>,         { body: rq }); }
+  <span class="tok-k">async</span> logout():                          <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt;               { <span class="tok-k">await</span>  <span class="tok-k">this</span>.http.<span class="tok-t">post</span>(<span class="tok-s">'/api/auth/logout'</span>,          {}); }
+  me():                                    <span class="tok-t">Promise</span>&lt;<span class="tok-t">CurrentUserItemDtoRs</span>&gt; { <span class="tok-k">return this</span>.http.<span class="tok-t">get</span> (<span class="tok-s">'/api/auth/me'</span>);              }
+  changePassword(rq: <span class="tok-t">ChangePasswordDtoRq</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">SessionItemDtoRs</span>&gt;    { <span class="tok-k">return this</span>.http.<span class="tok-t">post</span>(<span class="tok-s">'/api/auth/change-password'</span>, { body: rq }); }
+}</pre>
+    </div>
+
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">AUTH_PROVIDERS</code> — composition root binding</h3><span class="tag data">data</span><span class="file">src/app/features/auth/data/auth.providers.ts</span></div>
+      <p>Binds the <code class="inline">AUTH_REPOSITORY</code> token to <code class="inline">AuthRepositoryImpl</code>. Spread into <code class="inline">appConfig.providers</code> alongside <code class="inline">USERS_PROVIDERS</code> and <code class="inline">provideHttpClient(withInterceptors([authInterceptor]))</code>.</p>
+      <pre><span class="tok-k">export const</span> <span class="tok-t">AUTH_PROVIDERS</span>: <span class="tok-t">Provider</span>[] = [
+  { provide: <span class="tok-t">AUTH_REPOSITORY</span>, useClass: <span class="tok-t">AuthRepositoryImpl</span> },
+];</pre>
+    </div>
+
+    <h2 class="section">Use cases</h2>
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">LoginUseCase</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/usecases/login/login.use-case.ts</span></div>
+      <p>Calls <code class="inline">repo.login()</code>, validates the session DTO, maps to <code class="inline">AuthSession</code>, and persists both tokens in <code class="inline">TokenStore</code>. Returns the full session including <code class="inline">mustChangePassword</code>.</p>
+      <pre><span class="tok-k">protected async</span> <span class="tok-t">execute</span>({ email, password }: <span class="tok-t">LoginInput</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">AuthSession</span>&gt; {
+  <span class="tok-k">const</span> res = <span class="tok-k">await this</span>.repo.<span class="tok-t">login</span>({ email, password });
+  <span class="tok-k">if</span> (!<span class="tok-t">isSessionDtoRsValid</span>(res.data)) <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid session data received'</span>, <span class="tok-s">'validation'</span>);
+  <span class="tok-k">const</span> session = <span class="tok-t">toAuthSession</span>(res.data);
+  <span class="tok-k">await this</span>.tokens.<span class="tok-t">save</span>(session.tokens);
+  <span class="tok-k">return</span> session;
+}</pre>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">RefreshTokenUseCase</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/usecases/shared/refresh-token.use-case.ts</span></div>
+      <p>Reads the stored refresh token, calls <code class="inline">repo.refresh()</code>, validates the returned session DTO (the backend re-issues a full <code class="inline">SessionDtoRs</code> on refresh), extracts the new token pair via <code class="inline">toAuthTokens()</code>, and saves both. Throws <code class="inline">AppError('auth', 401)</code> if no refresh token is stored.</p>
+      <pre><span class="tok-k">protected async</span> <span class="tok-t">execute</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">AuthTokens</span>&gt; {
+  <span class="tok-k">const</span> refresh = <span class="tok-k">await this</span>.store.<span class="tok-t">getRefresh</span>();
+  <span class="tok-k">if</span> (!refresh) <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'No refresh token'</span>, <span class="tok-s">'auth'</span>, 401);
+  <span class="tok-k">const</span> res = <span class="tok-k">await this</span>.repo.<span class="tok-t">refresh</span>({ refreshToken: refresh });
+  <span class="tok-k">if</span> (!<span class="tok-t">isSessionDtoRsValid</span>(res.data)) <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid session data received'</span>, <span class="tok-s">'validation'</span>);
+  <span class="tok-k">const</span> tokens = <span class="tok-t">toAuthTokens</span>(res.data);
+  <span class="tok-k">await this</span>.store.<span class="tok-t">save</span>(tokens);
+  <span class="tok-k">return</span> tokens;
+}</pre>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">LogoutUseCase</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/usecases/account/logout.use-case.ts</span></div>
+      <p>Best-effort server-side session revoke via <code class="inline">repo.logout()</code> (a failed revoke is swallowed), then clears both tokens from <code class="inline">TokenStore</code>. The local clear always succeeds regardless of backend reachability.</p>
+      <pre><span class="tok-k">protected async</span> <span class="tok-t">execute</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; {
+  <span class="tok-k">try</span> { <span class="tok-k">await this</span>.repo.<span class="tok-t">logout</span>(); } <span class="tok-k">catch</span> { <span class="tok-c">/* best-effort */</span> }
+  <span class="tok-k">await this</span>.store.<span class="tok-t">clear</span>();
+}</pre>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">ChangePasswordUseCase</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/usecases/change-password/change-password.use-case.ts</span></div>
+      <p>Calls <code class="inline">repo.changePassword()</code>, validates and maps the response (the backend rotates tokens on change), and saves the new token pair. Returns the updated <code class="inline">AuthSession</code> — the session store applies it immediately.</p>
+      <pre><span class="tok-k">protected async</span> <span class="tok-t">execute</span>({ currentPassword, newPassword }: <span class="tok-t">ChangePasswordInput</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">AuthSession</span>&gt; {
+  <span class="tok-k">const</span> res = <span class="tok-k">await this</span>.repo.<span class="tok-t">changePassword</span>({ currentPassword, newPassword });
+  <span class="tok-k">if</span> (!<span class="tok-t">isSessionDtoRsValid</span>(res.data)) <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid session data received'</span>, <span class="tok-s">'validation'</span>);
+  <span class="tok-k">const</span> session = <span class="tok-t">toAuthSession</span>(res.data);
+  <span class="tok-k">await this</span>.tokens.<span class="tok-t">save</span>(session.tokens);
+  <span class="tok-k">return</span> session;
+}</pre>
+    </div>
+
+    <div class="card dom">
+      <div class="ch"><h3><code class="inline">LoadCurrentUserUseCase</code></h3><span class="tag dom">domain</span><span class="file">src/app/features/auth/domain/usecases/shared/load-current-user.use-case.ts</span></div>
+      <p>Calls <code class="inline">GET /api/auth/me</code> via <code class="inline">repo.me()</code>, validates with <code class="inline">isCurrentUserDtoRsValid()</code>, and maps to <code class="inline">AuthPrincipal</code> via <code class="inline">toAuthPrincipal()</code>. Used by <code class="inline">AuthSessionStore.rehydrate()</code> on construction to validate a stored token against the real backend before restoring the session.</p>
+      <pre><span class="tok-k">protected async</span> <span class="tok-t">execute</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-t">AuthPrincipal</span>&gt; {
+  <span class="tok-k">const</span> res = <span class="tok-k">await this</span>.repo.<span class="tok-t">me</span>();
+  <span class="tok-k">if</span> (!<span class="tok-t">isCurrentUserDtoRsValid</span>(res.data)) <span class="tok-k">throw new</span> <span class="tok-t">AppError</span>(<span class="tok-s">'Invalid user data received'</span>, <span class="tok-s">'validation'</span>);
+  <span class="tok-k">return</span> <span class="tok-t">toAuthPrincipal</span>(res.data);
+}</pre>
+    </div>
+
+    <h2 class="section">Token storage — <code class="inline">TokenStore</code></h2>
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">TokenStore</code></h3><span class="tag data">data</span><span class="file">src/app/features/auth/data/token-store.ts</span></div>
+      <p>Persists access and refresh tokens in <code class="inline">localStorage</code> via <code class="inline">KeyValueStore</code>. The interceptor reads the access token; <code class="inline">RefreshTokenUseCase</code> reads and updates both. <code class="inline">AuthSessionStore.rehydrate()</code> reads both to detect whether a prior session exists.</p>
+      <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">TokenStore</span> {
+  <span class="tok-k">async</span> <span class="tok-t">save</span>(t: <span class="tok-t">AuthTokens</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; { <span class="tok-c">/* saves both tokens */</span> }
+  <span class="tok-t">getAccess</span>():  <span class="tok-t">Promise</span>&lt;<span class="tok-k">string</span> | <span class="tok-k">null</span>&gt; { <span class="tok-c">/* reads access token */</span> }
+  <span class="tok-t">getRefresh</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">string</span> | <span class="tok-k">null</span>&gt; { <span class="tok-c">/* reads refresh token */</span> }
+  <span class="tok-k">async</span> <span class="tok-t">clear</span>():  <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt;   { <span class="tok-c">/* removes both keys */</span> }
+}</pre>
+    </div>
+
+    <h2 class="section"><code class="inline">AuthSessionStore</code> — session signals</h2>
+    <div class="card pres">
+      <div class="ch"><h3><code class="inline">AuthSessionStore</code></h3><span class="tag pres">presentation</span><span class="file">src/app/features/auth/presentation/auth-session.store.ts</span></div>
+      <p>The single source of truth for the current auth session, exposed as readonly signals. Pages and guards read from here; <code class="inline">signIn</code>/<code class="inline">signOut</code>/<code class="inline">changePassword</code> drive state changes. On construction, <code class="inline">rehydrate()</code> checks <code class="inline">TokenStore</code> for stored tokens and, if both are present, calls <code class="inline">LoadCurrentUserUseCase.run()</code> (GET /api/auth/me) to validate the token server-side before restoring the session. An expired or invalid token causes a normal re-login via the interceptor's 401 path.</p>
+      <pre><span class="tok-t">@Injectable</span>({ providedIn: <span class="tok-s">'root'</span> })
+<span class="tok-k">export class</span> <span class="tok-t">AuthSessionStore</span> {
+  <span class="tok-k">readonly</span> session            = <span class="tok-k">this</span>._session.<span class="tok-t">asReadonly</span>();
+  <span class="tok-k">readonly</span> isAuthenticated    = <span class="tok-t">computed</span>(() =&gt; <span class="tok-k">this</span>._session() !== <span class="tok-k">null</span>);
+  <span class="tok-k">readonly</span> principal          = <span class="tok-t">computed</span>(() =&gt; <span class="tok-k">this</span>._session()?.principal ?? <span class="tok-k">null</span>);
+  <span class="tok-k">readonly</span> role               = <span class="tok-t">computed</span>&lt;<span class="tok-t">UserRole</span> | <span class="tok-k">null</span>&gt;(() =&gt; <span class="tok-k">this</span>._session()?.principal.role ?? <span class="tok-k">null</span>);
+  <span class="tok-k">readonly</span> mustChangePassword = <span class="tok-t">computed</span>&lt;<span class="tok-k">boolean</span>&gt;(() =&gt; <span class="tok-k">this</span>._session()?.mustChangePassword ?? <span class="tok-k">false</span>);
+
+  <span class="tok-t">constructor</span>() { <span class="tok-k">void this</span>.<span class="tok-t">rehydrate</span>(); }
+
+  <span class="tok-k">async</span> <span class="tok-t">signIn</span>(email: <span class="tok-k">string</span>, password: <span class="tok-k">string</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">Result</span>&lt;<span class="tok-t">AuthSession</span>&gt;&gt; {
+    <span class="tok-k">const</span> r = <span class="tok-k">await this</span>.loginUseCase.<span class="tok-t">run</span>({ email, password });
+    <span class="tok-k">if</span> (r.ok) <span class="tok-k">this</span>._session.<span class="tok-t">set</span>(r.data);
+    <span class="tok-k">return</span> r;
+  }
+
+  <span class="tok-k">async</span> <span class="tok-t">signOut</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; {
+    <span class="tok-k">await this</span>.logoutUseCase.<span class="tok-t">run</span>();
+    <span class="tok-k">this</span>._session.<span class="tok-t">set</span>(<span class="tok-k">null</span>);
+  }
+
+  <span class="tok-k">async</span> <span class="tok-t">changePassword</span>(currentPassword: <span class="tok-k">string</span>, newPassword: <span class="tok-k">string</span>): <span class="tok-t">Promise</span>&lt;<span class="tok-t">Result</span>&lt;<span class="tok-t">AuthSession</span>&gt;&gt; {
+    <span class="tok-k">const</span> r = <span class="tok-k">await this</span>.changePasswordUseCase.<span class="tok-t">run</span>({ currentPassword, newPassword });
+    <span class="tok-k">if</span> (r.ok) <span class="tok-k">this</span>._session.<span class="tok-t">set</span>(r.data);
+    <span class="tok-k">return</span> r;
+  }
+
+  <span class="tok-k">private async</span> <span class="tok-t">rehydrate</span>(): <span class="tok-t">Promise</span>&lt;<span class="tok-k">void</span>&gt; {
+    <span class="tok-k">const</span> accessToken  = <span class="tok-k">await this</span>.tokens.<span class="tok-t">getAccess</span>();
+    <span class="tok-k">const</span> refreshToken = <span class="tok-k">await this</span>.tokens.<span class="tok-t">getRefresh</span>();
+    <span class="tok-k">if</span> (!accessToken || !refreshToken) <span class="tok-k">return</span>;
+    <span class="tok-k">const</span> r = <span class="tok-k">await this</span>.loadCurrentUser.<span class="tok-t">run</span>();
+    <span class="tok-k">if</span> (r.ok) <span class="tok-k">this</span>._session.<span class="tok-t">set</span>({ tokens: { accessToken, refreshToken }, principal: r.data, mustChangePassword: <span class="tok-k">false</span> });
+  }
+}</pre>
+    </div>
+
+    <h2 class="section"><code class="inline">authInterceptor</code> — Bearer + 401 retry</h2>
+    <div class="card data">
+      <div class="ch"><h3><code class="inline">authInterceptor</code></h3><span class="tag data">data</span><span class="file">src/app/features/auth/data/auth.interceptor.ts</span></div>
+      <p>Registered via <code class="inline">provideHttpClient(withInterceptors([authInterceptor]))</code>. Reads the access token from <code class="inline">TokenStore</code>, attaches a <code class="inline">Bearer</code> header to every outgoing request, and on a <code class="inline">401</code> response makes one refresh attempt via <code class="inline">RefreshTokenUseCase.run()</code> before retrying the original request. If the refresh also fails, tokens are cleared and the router navigates to <code class="inline">/login</code>.</p>
+      <p>The 401→refresh→retry path is bypassed for <code class="inline">/api/auth/refresh</code>, <code class="inline">/api/auth/login</code>, and <code class="inline">/api/auth/logout</code>: a 401 on the refresh endpoint itself must not trigger another refresh (infinite loop); login and logout 401s have no live session to refresh.</p>
+      <pre><span class="tok-k">const</span> <span class="tok-t">AUTH_NO_REFRESH</span> = [<span class="tok-s">'/api/auth/refresh'</span>, <span class="tok-s">'/api/auth/login'</span>, <span class="tok-s">'/api/auth/logout'</span>];
+<span class="tok-k">const</span> <span class="tok-t">bypassesRefresh</span> = (url: <span class="tok-k">string</span>) =&gt; <span class="tok-t">AUTH_NO_REFRESH</span>.<span class="tok-t">some</span>((path) =&gt; url.<span class="tok-t">includes</span>(path));
+
+<span class="tok-k">export const</span> <span class="tok-t">authInterceptor</span>: <span class="tok-t">HttpInterceptorFn</span> = (req, next) =&gt; {
+  <span class="tok-k">return</span> <span class="tok-t">from</span>(tokens.<span class="tok-t">getAccess</span>()).<span class="tok-t">pipe</span>(
+    <span class="tok-t">switchMap</span>((access) =&gt;
+      <span class="tok-t">next</span>(<span class="tok-t">withAuth</span>(req, access)).<span class="tok-t">pipe</span>(
+        <span class="tok-t">catchError</span>((err) =&gt; {
+          <span class="tok-k">if</span> (err?.status !== 401 || <span class="tok-t">bypassesRefresh</span>(req.url)) <span class="tok-k">return</span> <span class="tok-t">throwError</span>(() =&gt; err);
+          <span class="tok-c">// one refresh attempt, then retry original request</span>
+          <span class="tok-k">return</span> <span class="tok-t">from</span>(refresh.<span class="tok-t">run</span>()).<span class="tok-t">pipe</span>(
+            <span class="tok-t">switchMap</span>((result) =&gt; {
+              <span class="tok-k">if</span> (!result.ok) { <span class="tok-k">void</span> tokens.<span class="tok-t">clear</span>(); <span class="tok-k">void</span> router.<span class="tok-t">navigate</span>([<span class="tok-s">'/login'</span>]); <span class="tok-k">return</span> <span class="tok-t">throwError</span>(() =&gt; err); }
+              <span class="tok-k">return</span> <span class="tok-t">next</span>(<span class="tok-t">withAuth</span>(req, result.data.accessToken));
+            }),
+          );
+        }),
+      ),
+    ),
+  );
+};</pre>
+    </div>
+
+    <h2 class="section">Guards</h2>
+    <div class="card pres">
+      <div class="ch"><h3><code class="inline">authGuard</code> &amp; <code class="inline">roleGuard</code></h3><span class="tag pres">presentation</span><span class="file">src/app/features/auth/presentation/auth.guard.ts</span></div>
+      <p><code class="inline">authGuard</code> blocks anonymous access; <code class="inline">roleGuard</code> additionally checks the role. Both read signals from <code class="inline">AuthSessionStore</code> — no async work needed. Both redirect unauthenticated users to <code class="inline">/login</code>; authenticated users lacking the required role are redirected to <code class="inline">/</code>.</p>
+      <pre><span class="tok-c">// authGuard: redirect unauthenticated users to /login</span>
+<span class="tok-k">export const</span> <span class="tok-t">authGuard</span>: <span class="tok-t">CanActivateFn</span> = () =&gt; {
+  <span class="tok-k">const</span> auth   = <span class="tok-t">inject</span>(<span class="tok-t">AuthSessionStore</span>);
+  <span class="tok-k">const</span> router = <span class="tok-t">inject</span>(<span class="tok-t">Router</span>);
+  <span class="tok-k">if</span> (!auth.<span class="tok-t">isAuthenticated</span>()) { router.<span class="tok-t">navigate</span>([<span class="tok-s">'/login'</span>]); <span class="tok-k">return false</span>; }
+  <span class="tok-k">return true</span>;
+};
+
+<span class="tok-c">// roleGuard: requires one of `roles`; others are sent to '/'</span>
+<span class="tok-k">export const</span> <span class="tok-t">roleGuard</span> = (...roles: <span class="tok-t">UserRole</span>[]): <span class="tok-t">CanActivateFn</span> =&gt; () =&gt; {
+  <span class="tok-k">const</span> auth   = <span class="tok-t">inject</span>(<span class="tok-t">AuthSessionStore</span>);
+  <span class="tok-k">const</span> router = <span class="tok-t">inject</span>(<span class="tok-t">Router</span>);
+  <span class="tok-k">if</span> (!auth.<span class="tok-t">isAuthenticated</span>()) { router.<span class="tok-t">navigate</span>([<span class="tok-s">'/login'</span>]); <span class="tok-k">return false</span>; }
+  <span class="tok-k">const</span> role = auth.<span class="tok-t">role</span>();
+  <span class="tok-k">if</span> (!role || !roles.<span class="tok-t">includes</span>(role)) { router.<span class="tok-t">navigate</span>([<span class="tok-s">'/'</span>]); <span class="tok-k">return false</span>; }
+  <span class="tok-k">return true</span>;
+};</pre>
+      <p>Usage in route config (see <a href="COMPOSITION_ROOT.html">Composition Root</a> for the full route table):</p>
+      <pre>{ path: <span class="tok-s">''</span>, component: <span class="tok-t">LayoutComponent</span>, canActivate: [<span class="tok-t">authGuard</span>], children: [
+  { path: <span class="tok-s">'user-management'</span>, canActivate: [<span class="tok-t">roleGuard</span>(<span class="tok-s">'admin'</span>)], loadComponent: () =&gt; <span class="tok-c">/* ... */</span> },
+] }</pre>
+    </div>
+
+    <p style="margin-top:28px;">Read next: <a href="STYLING.html">Styling</a> — how SCSS tokens, Tailwind utilities, and the UI kit share exactly one palette.</p>
+
+    <footer class="page">
+      Base Frontend — Angular v20 base architecture. See the other pages in the nav above.
+    </footer>
+  </div>
+</body>
+</html>
