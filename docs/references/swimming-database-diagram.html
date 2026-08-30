@@ -130,16 +130,16 @@ const SCHEMA = [
   {name:"distance",note:"race distance lookup",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"code",t:"varchar",k:"",n:false,note:"25m | 50m | 100m | 200m | 400m"},
-   {c:"meters",t:"integer",k:"",n:false}]}
- ]},
- {schema:"identity",color:"--identity",tables:[
+   {c:"meters",t:"integer",k:"",n:false}]},
   {name:"club",note:"swimming club or academy",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true},
    {c:"location_en",t:"varchar",k:"",n:false},
    {c:"location_ar",t:"varchar",k:"",n:true},
-   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]}
+ ]},
+ {schema:"identity",color:"--identity",tables:[
   {name:"app_user",note:"base person + login + role (all users)",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"username",t:"varchar",k:"U",n:true},
@@ -168,8 +168,8 @@ const SCHEMA = [
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"user_id",t:"uuid",k:"FK,U",fk:"identity.app_user.id",n:false},
    {c:"uid",t:"varchar",k:"U",n:false},
-   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
-   {c:"championship_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+   {c:"club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:false},
+   {c:"championship_club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:true},
    {c:"blood_type",t:"varchar(3)",k:"",n:true},
    {c:"created_at",t:"timestamptz",k:"",n:false},
    {c:"updated_at",t:"timestamptz",k:"",n:false}]},
@@ -259,7 +259,7 @@ const SCHEMA = [
  {schema:"attendance",color:"--attendance",tables:[
   {name:"attendance_session",note:"training session for a club on a date",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+   {c:"club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:false},
    {c:"session_date",t:"date",k:"",n:false},
    {c:"stroke_id",t:"uuid",k:"FK",fk:"reference.stroke.id",n:true},
    {c:"coach_id",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
@@ -320,8 +320,8 @@ const SCHEMA = [
 const RELATIONSHIPS = [
  {from:"identity.app_user",to:"identity.captain_profile",card:"1-1",label:"is"},
  {from:"identity.app_user",to:"identity.head_coach_profile",card:"1-1",label:"is"},
- {from:"identity.club",to:"identity.swimmer_profile",card:"1-N",label:"trains"},
- {from:"identity.club",to:"identity.swimmer_profile",card:"1-N",label:"represents"},
+ {from:"reference.club",to:"identity.swimmer_profile",card:"1-N",label:"trains"},
+ {from:"reference.club",to:"identity.swimmer_profile",card:"1-N",label:"represents"},
  {from:"identity.app_user",to:"identity.swimmer_profile",card:"1-1",label:"logs in as"},
  {from:"identity.swimmer_profile",to:"athlete.guardian",card:"1-N",label:"has"},
  {from:"identity.swimmer_profile",to:"athlete.medical_exam",card:"1-N",label:"examined in"},
@@ -333,7 +333,7 @@ const RELATIONSHIPS = [
  {from:"health.medical_test",to:"health.health_reading",card:"1-N",label:"measured by"},
  {from:"identity.swimmer_profile",to:"health.observation",card:"1-N",label:"noted on"},
  {from:"identity.swimmer_profile",to:"health.feedback_entry",card:"1-N",label:"receives"},
- {from:"identity.club",to:"attendance.attendance_session",card:"1-N",label:"holds"},
+ {from:"reference.club",to:"attendance.attendance_session",card:"1-N",label:"holds"},
  {from:"reference.stroke",to:"attendance.attendance_session",card:"1-N",label:"grouped by"},
  {from:"attendance.attendance_session",to:"attendance.attendance_record",card:"1-N",label:"includes"},
  {from:"identity.swimmer_profile",to:"attendance.attendance_record",card:"1-N",label:"attends"},

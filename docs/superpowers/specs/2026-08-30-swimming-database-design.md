@@ -27,7 +27,7 @@ explicitly a later, separate effort — not part of this work.
 | Axis | Decision |
 |------|----------|
 | Deliverable | Schema design (this spec) + Mermaid `erDiagram` HTML doc; implement later |
-| Organization | By modular-monolith modules: Identity & Clubs, Athlete, Health & Records, Attendance, Championships, + shared Reference |
+| Organization | By modular-monolith modules: Identity, Athlete, Health & Records, Attendance, Championships, + shared Reference |
 | Domain source | Local Magic Patterns snapshot `v7esayw7` |
 | Normalization | **Approach C (pragmatic hybrid)** — normalize the mock's duplicated shapes into canonical tables; keep genuinely-distinct structures (InBody, medical-test catalog, free-form observations) as their own tables |
 
@@ -49,17 +49,7 @@ explicitly a later, separate effort — not part of this work.
   `distance` are **reference tables** (not enums) because they are reused across modules and carry
   bilingual labels.
 
-## 5. Module 1 — Identity & Clubs
-
-**club**
-| column | type | notes |
-|---|---|---|
-| id | uuid | PK |
-| name_en | varchar | |
-| name_ar | varchar | |
-| location_en | varchar | |
-| location_ar | varchar | |
-| created_at | timestamptz | |
+## 5. Module 1 — Identity
 
 **app_user** — generic base user (class-table inheritance); absorbs person attributes from all role subtypes.
 | column | type | notes |
@@ -307,6 +297,16 @@ explicitly a later, separate effort — not part of this work.
 | id | uuid | PK |
 | code | varchar | `25m` … `400m` |
 | meters | integer | |
+
+**club** — swimming club or academy
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| name_en | varchar | |
+| name_ar | varchar | |
+| location_en | varchar | |
+| location_ar | varchar | |
+| created_at | timestamptz | |
 
 **Enum types:** `user_role` (headCoach|captain|swimmer), `gender` (male|female),
 `captain_type` (head|assistant),
