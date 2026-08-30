@@ -39,3 +39,65 @@ erDiagram
     app_user ||--o{ captain_club : "assigned to"
     club ||--o{ captain_club : "managed by"
     club ||--o{ app_user : "active club of"
+
+    swimmer {
+        uuid id PK
+        uuid club_id FK
+        uuid championship_club_id FK
+        varchar name_en
+        varchar name_ar
+        varchar(14) national_id UK
+        varchar uid UK
+        gender gender
+        date dob
+        varchar(3) blood_type
+        varchar phone
+        varchar(4) avatar_initials
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    guardian {
+        uuid id PK
+        uuid swimmer_id FK
+        guardian_relation relation
+        varchar name
+        varchar(14) national_id
+        varchar phone
+    }
+    medical_exam {
+        uuid id PK
+        uuid swimmer_id FK
+        date exam_date
+        fitness_assessment internal_med
+        fitness_assessment heart_assess
+        fitness_assessment spine_assess
+        numeric(4,1) hemoglobin
+        numeric(5,1) height_cm
+        numeric(5,1) weight_kg
+        timestamptz created_at
+    }
+    body_measurement {
+        uuid id PK
+        uuid swimmer_id FK
+        date measured_at
+        numeric(5,1) right_arm_cm
+        numeric(5,1) left_arm_cm
+        numeric(5,1) right_leg_cm
+        numeric(5,1) left_leg_cm
+        numeric(5,1) torso_cm
+        numeric(5,1) bust_diameter_cm
+        numeric(5,1) waist_diameter_cm
+    }
+    swimmer_specialization {
+        uuid swimmer_id FK,UK
+        uuid stroke_id FK,UK
+    }
+
+    club ||--o{ swimmer : "trains"
+    club ||--o{ swimmer : "represents"
+    app_user ||--o| swimmer : "logs in as"
+    swimmer ||--o{ guardian : "has"
+    swimmer ||--o{ medical_exam : "examined in"
+    swimmer ||--o{ body_measurement : "measured in"
+    swimmer ||--o{ swimmer_specialization : "specializes"
+    stroke ||--o{ swimmer_specialization : "chosen in"
