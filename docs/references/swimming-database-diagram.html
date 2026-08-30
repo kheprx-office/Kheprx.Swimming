@@ -1,422 +1,635 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kheprx Swimming — Database ERD</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f5f7fa; color: #1a2233; min-height: 100vh; }
-
-    /* ── Header ── */
-    .page-header {
-      background: #1a2d4e;
-      color: #e8edf5;
-      padding: 28px 40px 24px;
-      border-bottom: 4px solid #2e7dbe;
-    }
-
-    .page-header h1 {
-      font-size: 1.65rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      margin-bottom: 6px;
-    }
-
-    .page-header .subtitle {
-      font-size: 0.95rem;
-      color: #a8bcd4;
-      margin-bottom: 14px;
-    }
-
-    .cluster-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .cluster-pill {
-      background: #2e7dbe;
-      color: #e8f3fc;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 20px;
-      letter-spacing: 0.03em;
-    }
-
-    /* ── Legend ── */
-    .legend-wrapper {
-      max-width: 1200px;
-      margin: 28px auto 0;
-      padding: 0 32px;
-    }
-
-    .legend {
-      background: #fff;
-      border: 1px solid #d2dae6;
-      border-left: 4px solid #2e7dbe;
-      border-radius: 6px;
-      padding: 16px 22px;
-      font-size: 0.85rem;
-      line-height: 1.7;
-    }
-
-    .legend h2 {
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #5a6a82;
-      margin-bottom: 10px;
-    }
-
-    .legend-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 4px 32px;
-    }
-
-    .legend-item {
-      display: flex;
-      gap: 8px;
-    }
-
-    .legend-item code {
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      background: #eef2f8;
-      border: 1px solid #cdd6e4;
-      border-radius: 3px;
-      padding: 1px 5px;
-      font-size: 0.82rem;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .legend-note {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #e4eaf3;
-      color: #5a6a82;
-      font-size: 0.82rem;
-      line-height: 1.6;
-    }
-
-    /* ── Diagram ── */
-    .diagram-wrapper {
-      max-width: 1400px;
-      margin: 28px auto 48px;
-      padding: 0 32px;
-    }
-
-    .diagram-container {
-      background: #fff;
-      border: 1px solid #d2dae6;
-      border-radius: 8px;
-      padding: 32px 24px;
-      overflow-x: auto;
-    }
-
-    pre.mermaid {
-      font-size: 0.78rem;
-    }
-
-    /* ── Footer ── */
-    .page-footer {
-      text-align: center;
-      padding: 16px;
-      font-size: 0.78rem;
-      color: #8a9bb5;
-      border-top: 1px solid #dce3ed;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kheprx Swimming — Database Explorer</title>
+<style>
+  :root,[data-theme="dark"]{
+    --reference:#64748b;--identity:#2563eb;--swimmers:#0891b2;--health:#059669;--attendance:#7c3aed;--championships:#d97706;
+    --bg:#0f172a;--panel:#0b1220;--card:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;
+    --codebg:#0b1220;--accent:#60a5fa;--active:#172033;--pk:#fbbf24;--fk:#60a5fa;--u:#34d399;
+  }
+  [data-theme="light"]{
+    --reference:#475569;--identity:#1d4ed8;--swimmers:#0e7490;--health:#047857;--attendance:#6d28d9;--championships:#b45309;
+    --bg:#f8fafc;--panel:#ffffff;--card:#ffffff;--line:#cbd5e1;--text:#0f172a;--muted:#475569;
+    --codebg:#f1f5f9;--accent:#1d4ed8;--active:#e2e8f0;--pk:#b45309;--fk:#1d4ed8;--u:#047857;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:inherit}
+  header{position:sticky;top:0;z-index:10;display:flex;gap:.6rem;align-items:center;
+    padding:.6rem 1rem;background:var(--panel);border-bottom:1px solid var(--line)}
+  header h1{font-size:1rem;margin:0;font-weight:600}
+  .btn{padding:.35rem .7rem;border-radius:6px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);cursor:pointer;font-size:.8rem}
+  .btn:hover{border-color:var(--accent)}
+  .layout{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 50px)}
+  .tree{border-inline-end:1px solid var(--line);background:var(--panel);position:sticky;top:50px;
+    height:calc(100vh - 50px);overflow:auto;padding:.5rem}
+  .treehead{position:sticky;top:0;background:var(--panel);padding:.1rem 0 .5rem}
+  #filter{width:100%;padding:.4rem .6rem;border-radius:6px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);font-size:.82rem}
+  .tgrp{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;margin:.7rem .4rem .2rem;font-weight:700}
+  .tnode{display:block;padding:.25rem .5rem;border-radius:5px;text-decoration:none;font-size:.84rem;color:var(--text)}
+  .tnode:hover{background:var(--card)}
+  .tnode.active{background:var(--accent);color:#fff}
+  .tglobal{font-weight:600}
+  .pane{padding:1rem 1.4rem;overflow:auto}
+  .breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:.8rem}
+  .breadcrumb b{color:var(--text)}
+  .thead{display:flex;gap:.5rem;align-items:baseline;flex-wrap:wrap;margin-bottom:.6rem}
+  .ttitle{font-size:1.15rem;font-weight:600}
+  .muted{color:var(--muted)}.small{font-size:.78rem}
+  .subtabs{display:flex;gap:.3rem;border-bottom:1px solid var(--line);margin-bottom:.9rem;
+    position:sticky;top:0;background:var(--bg);padding-top:.2rem;flex-wrap:wrap}
+  .subtab{padding:.4rem .9rem;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;
+    text-decoration:none;font-size:.85rem;color:var(--muted)}
+  .subtab:hover{color:var(--text)}
+  .subtab.on{color:var(--text);background:var(--card);border-color:var(--line)}
+  table.cols{width:100%;border-collapse:collapse;font-size:.84rem}
+  table.cols th,table.cols td{text-align:start;padding:.35rem .8rem;border-top:1px solid var(--line);vertical-align:top}
+  table.cols th{color:var(--muted);background:var(--active)}
+  .badge{font-size:.65rem;padding:.05rem .35rem;border-radius:4px;border:1px solid currentColor;
+    margin-inline-end:.25rem;white-space:nowrap}
+  .pk{color:var(--pk)}.fk{color:var(--fk)}.u{color:var(--u)}.nn{color:var(--muted)}
+  .ar{unicode-bidi:plaintext}
+  .erd-box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem;
+    margin-bottom:1rem;overflow:auto}
+  .summary{display:flex;gap:.7rem;flex-wrap:wrap}
+  .scard{display:block;background:var(--card);border:1px solid var(--line);border-inline-start-width:5px;
+    border-radius:8px;padding:.6rem .9rem;min-width:130px;text-decoration:none}
+  .scard:hover{border-color:var(--accent)}
+  .scard-h{font-weight:700;text-transform:uppercase;font-size:.72rem;letter-spacing:.05em}
+  .scard-n{font-size:.8rem;color:var(--muted);margin-top:.2rem}
+  .codewrap{position:relative}
+  .code{background:var(--codebg);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;
+    font-family:Consolas,Monaco,monospace;font-size:.8rem;white-space:pre;overflow:auto;margin:0}
+  .copy{position:absolute;top:.5rem;right:.5rem;background:var(--card);border:1px solid var(--line);
+    border-radius:5px;padding:.2rem .6rem;color:var(--text);cursor:pointer;font-size:.72rem}
+  .copy:hover{border-color:var(--accent)}
+  .relcols{display:flex;gap:1.2rem;flex-wrap:wrap}
+  .relcols>div{flex:1;min-width:240px;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:.7rem .9rem}
+  .relcols h4{margin:.1rem 0 .5rem;font-size:.8rem;color:var(--accent)}
+  .rellink{display:block;padding:.2rem 0;color:var(--fk);text-decoration:none}
+  .rellink:hover{text-decoration:underline}
+  .ixsec h4{margin:.8rem 0 .3rem;font-size:.82rem;color:var(--accent)}
+  .ixsec ul{margin:.2rem 0;padding-inline-start:1.2rem;font-size:.84rem}
+  .enumgrp{margin-bottom:1rem;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .enumtab{background:var(--active);padding:.4rem .8rem;font-weight:600}
+  .enumtab a{text-decoration:none}
+  .enumrow{display:flex;gap:.8rem;padding:.35rem .8rem;border-top:1px solid var(--line);flex-wrap:wrap}
+  .enumcol{font-weight:600;min-width:160px}
+  .enumval{display:inline-block;background:var(--active);border:1px solid var(--line);border-radius:10px;
+    padding:.05rem .5rem;margin:.1rem;font-size:.78rem}
+  .treetoggle{display:none}
+  footer{padding:1rem 0 0;color:var(--muted);font-size:.74rem;border-top:1px solid var(--line);margin-top:1.5rem}
+  @media (max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .tree{position:static;height:auto;max-height:60vh;display:none}
+    html[data-tree="open"] .tree{display:block}
+    .treetoggle{display:inline-block}
+  }
+  @media print{
+    header,.tree{display:none!important}
+    .layout{grid-template-columns:1fr}
+    .pane{overflow:visible}
+    body{background:#fff;color:#000}
+  }
+</style>
 </head>
 <body>
+<header>
+  <h1>Kheprx Swimming — Database Explorer</h1>
+  <span style="flex:1"></span>
+  <button id="treeToggle" class="btn treetoggle">☰ Tables</button>
+  <button id="themeToggle" class="btn" title="Toggle light / dark theme">◐ Theme</button>
+</header>
+<div class="layout">
+  <aside class="tree">
+    <div class="treehead"><input id="filter" type="search" placeholder="Filter tables / columns…  ( / )" /></div>
+    <div id="treelist"></div>
+  </aside>
+  <main class="pane">
+    <div id="breadcrumb" class="breadcrumb"></div>
+    <div id="view"></div>
+    <footer>Generated schema reference · <span id="footTables"></span> tables · <span id="footSchemas"></span> schemas · PostgreSQL · single self-contained offline file.</footer>
+  </main>
+</div>
 
-  <header class="page-header">
-    <h1>Kheprx Swimming — Database ERD</h1>
-    <p class="subtitle">Entity-Relationship Diagram &mdash; 23 entities / 30 relationships</p>
-    <div class="cluster-list">
-      <span class="cluster-pill">Reference</span>
-      <span class="cluster-pill">Identity &amp; Clubs</span>
-      <span class="cluster-pill">Swimmers</span>
-      <span class="cluster-pill">Health &amp; Records</span>
-      <span class="cluster-pill">Attendance</span>
-      <span class="cluster-pill">Championships</span>
+<script src="mermaid.min.js"></script>
+<script id="appdata">
+const SCHEMA = [
+ {schema:"reference",color:"--reference",tables:[
+  {name:"stroke",note:"swim stroke lookup (Freestyle…Medley)",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"freestyle | backstroke | butterfly | breaststroke | medley"},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"distance",note:"race distance lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"25m | 50m | 100m | 200m | 400m"},
+   {c:"meters",t:"integer",k:"",n:false}]}
+ ]},
+ {schema:"identity",color:"--identity",tables:[
+  {name:"club",note:"swimming club or academy",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true},
+   {c:"location_en",t:"varchar",k:"",n:false},
+   {c:"location_ar",t:"varchar",k:"",n:true},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"app_user",note:"account: headCoach, captain, or swimmer",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"username",t:"varchar",k:"U",n:false},
+   {c:"email",t:"varchar",k:"",n:false},
+   {c:"display_name",t:"varchar",k:"",n:false},
+   {c:"role",t:"user_role",k:"",n:false,note:"headCoach | captain | swimmer"},
+   {c:"avatar_initials",t:"varchar(4)",k:"",n:true},
+   {c:"is_first_login",t:"boolean",k:"",n:false,d:"true"},
+   {c:"active_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:true},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"captain_club",note:"captain to many clubs junction",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"user_id",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
+   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+   {c:"(user_id, club_id)",t:"—",k:"U",n:false,note:"one row per captain+club"}]}
+ ]},
+ {schema:"swimmers",color:"--swimmers",tables:[
+  {name:"swimmer",note:"core swimmer record",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+   {c:"championship_club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:true},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true},
+   {c:"national_id",t:"varchar(14)",k:"U",n:false},
+   {c:"uid",t:"varchar",k:"U",n:false},
+   {c:"gender",t:"gender",k:"",n:false,note:"male | female"},
+   {c:"dob",t:"date",k:"",n:false},
+   {c:"blood_type",t:"varchar(3)",k:"",n:false},
+   {c:"phone",t:"varchar",k:"",n:false},
+   {c:"avatar_initials",t:"varchar(4)",k:"",n:true},
+   {c:"created_at",t:"timestamptz",k:"",n:false},
+   {c:"updated_at",t:"timestamptz",k:"",n:false}]},
+  {name:"guardian",note:"father/mother of a swimmer",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"relation",t:"guardian_relation",k:"",n:false,note:"father | mother"},
+   {c:"name",t:"varchar",k:"",n:false},
+   {c:"national_id",t:"varchar(14)",k:"",n:false},
+   {c:"phone",t:"varchar",k:"",n:false}]},
+  {name:"medical_exam",note:"dated fitness assessment from registration",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"exam_date",t:"date",k:"",n:false},
+   {c:"internal_med",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
+   {c:"heart_assess",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
+   {c:"spine_assess",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
+   {c:"hemoglobin",t:"numeric(4,1)",k:"",n:false},
+   {c:"height_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"weight_kg",t:"numeric(5,1)",k:"",n:false},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"body_measurement",note:"dated physiological measurements (left/right split)",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"measured_at",t:"date",k:"",n:false},
+   {c:"right_arm_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"left_arm_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"right_leg_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"left_leg_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"torso_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"bust_diameter_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"waist_diameter_cm",t:"numeric(5,1)",k:"",n:false}]},
+  {name:"swimmer_specialization",note:"swimmer to stroke many-to-many (composite key)",cols:[
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"stroke_id",t:"uuid",k:"FK",fk:"reference.stroke.id",n:false},
+   {c:"(swimmer_id, stroke_id)",t:"—",k:"U",n:false,note:"one row per swimmer+stroke"}]}
+ ]},
+ {schema:"health",color:"--health",tables:[
+  {name:"inbody_reading",note:"body-composition InBody reading per session",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"reading_date",t:"date",k:"",n:false},
+   {c:"height_cm",t:"numeric(5,1)",k:"",n:false},
+   {c:"weight_kg",t:"numeric(5,1)",k:"",n:false},
+   {c:"fat_pct",t:"numeric(4,1)",k:"",n:false},
+   {c:"muscle_pct",t:"numeric(4,1)",k:"",n:false},
+   {c:"bone_density",t:"numeric(4,2)",k:"",n:false},
+   {c:"body_density",t:"numeric(4,2)",k:"",n:false},
+   {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"medical_test",note:"headCoach-managed test catalog with reference bounds",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true},
+   {c:"unit",t:"varchar",k:"",n:false},
+   {c:"lower_bound",t:"numeric(8,2)",k:"",n:false},
+   {c:"upper_bound",t:"numeric(8,2)",k:"",n:false},
+   {c:"created_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
+   {c:"created_at",t:"timestamptz",k:"",n:false}]},
+  {name:"health_reading",note:"a swimmer's test result (severity derived vs bounds)",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"medical_test_id",t:"uuid",k:"FK",fk:"health.medical_test.id",n:false},
+   {c:"value",t:"numeric(8,2)",k:"",n:false},
+   {c:"reading_date",t:"date",k:"",n:false},
+   {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
+  {name:"observation",note:"unified allergy/surgery/chronic/autoimmune/flag record",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"category",t:"observation_category",k:"",n:false,note:"allergy | surgery | chronic | autoimmune | composition | flag | other"},
+   {c:"field_label",t:"varchar",k:"",n:false},
+   {c:"value",t:"varchar",k:"",n:false},
+   {c:"status",t:"record_status",k:"",n:true,note:"normal | watch | out"},
+   {c:"observed_date",t:"date",k:"",n:false},
+   {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
+  {name:"feedback_entry",note:"coach performance evaluation for a swimmer",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"rating",t:"smallint",k:"",n:false},
+   {c:"category",t:"feedback_category",k:"",n:false,note:"Technique | Endurance | Attitude | Punctuality | Other"},
+   {c:"comment",t:"text",k:"",n:false},
+   {c:"author_id",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
+   {c:"entry_date",t:"date",k:"",n:false}]}
+ ]},
+ {schema:"attendance",color:"--attendance",tables:[
+  {name:"attendance_session",note:"training session for a club on a date",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"club_id",t:"uuid",k:"FK",fk:"identity.club.id",n:false},
+   {c:"session_date",t:"date",k:"",n:false},
+   {c:"stroke_id",t:"uuid",k:"FK",fk:"reference.stroke.id",n:true},
+   {c:"coach_id",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
+  {name:"attendance_record",note:"per-swimmer attendance status for a session",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"session_id",t:"uuid",k:"FK",fk:"attendance.attendance_session.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"status",t:"attendance_status",k:"",n:false,note:"present | late | absent | excused"},
+   {c:"coach_note_en",t:"text",k:"",n:true},
+   {c:"coach_note_ar",t:"text",k:"",n:true},
+   {c:"(session_id, swimmer_id)",t:"—",k:"U",n:false,note:"one record per swimmer per session"}]}
+ ]},
+ {schema:"championships",color:"--championships",tables:[
+  {name:"competition_event",note:"a championship event spanning multiple days",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true},
+   {c:"start_date",t:"date",k:"",n:false},
+   {c:"end_date",t:"date",k:"",n:false},
+   {c:"location_en",t:"varchar",k:"",n:false},
+   {c:"location_ar",t:"varchar",k:"",n:true},
+   {c:"status",t:"competition_status",k:"",n:false,note:"upcoming | completed"},
+   {c:"created_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
+  {name:"championship_enrollment",note:"swimmer enrolled in a competition event",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"event_id",t:"uuid",k:"FK",fk:"championships.competition_event.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"(event_id, swimmer_id)",t:"—",k:"U",n:false,note:"one enrollment per swimmer per event"}]},
+  {name:"competition_day",note:"a single day within a competition event",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"event_id",t:"uuid",k:"FK",fk:"championships.competition_event.id",n:false},
+   {c:"label_en",t:"varchar",k:"",n:false},
+   {c:"label_ar",t:"varchar",k:"",n:true},
+   {c:"day_date",t:"date",k:"",n:false}]},
+  {name:"race_session",note:"a race slot (stroke + distance) within a competition day",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"day_id",t:"uuid",k:"FK",fk:"championships.competition_day.id",n:false},
+   {c:"stroke_id",t:"uuid",k:"FK",fk:"reference.stroke.id",n:false},
+   {c:"distance_id",t:"uuid",k:"FK",fk:"reference.distance.id",n:false},
+   {c:"scheduled_time",t:"time",k:"",n:true}]},
+  {name:"race_assignment",note:"swimmer assigned to swim in a race session",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"race_session_id",t:"uuid",k:"FK",fk:"championships.race_session.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"(race_session_id, swimmer_id)",t:"—",k:"U",n:false,note:"one assignment per swimmer per race"}]},
+  {name:"race_result",note:"a swimmer's finish time in a race",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"race_session_id",t:"uuid",k:"FK",fk:"championships.race_session.id",n:false},
+   {c:"swimmer_id",t:"uuid",k:"FK",fk:"swimmers.swimmer.id",n:false},
+   {c:"time_ms",t:"integer",k:"",n:false},
+   {c:"points",t:"integer",k:"",n:false},
+   {c:"rank",t:"integer",k:"",n:false},
+   {c:"is_personal_best",t:"boolean",k:"",n:false},
+   {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
+   {c:"(race_session_id, swimmer_id)",t:"—",k:"U",n:false,note:"one result per swimmer per race"}]}
+ ]}
+];
+const RELATIONSHIPS = [
+ {from:"identity.club",to:"identity.captain_club",card:"1-N",label:"managed by"},
+ {from:"identity.app_user",to:"identity.captain_club",card:"1-N",label:"assigned"},
+ {from:"identity.club",to:"identity.app_user",card:"1-N",label:"active club of"},
+ {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"trains"},
+ {from:"identity.club",to:"swimmers.swimmer",card:"1-N",label:"represents"},
+ {from:"identity.app_user",to:"swimmers.swimmer",card:"1-1",label:"logs in as"},
+ {from:"swimmers.swimmer",to:"swimmers.guardian",card:"1-N",label:"has"},
+ {from:"swimmers.swimmer",to:"swimmers.medical_exam",card:"1-N",label:"examined in"},
+ {from:"swimmers.swimmer",to:"swimmers.body_measurement",card:"1-N",label:"measured in"},
+ {from:"swimmers.swimmer",to:"swimmers.swimmer_specialization",card:"1-N",label:"specializes"},
+ {from:"reference.stroke",to:"swimmers.swimmer_specialization",card:"1-N",label:"chosen in"},
+ {from:"swimmers.swimmer",to:"health.inbody_reading",card:"1-N",label:"records"},
+ {from:"swimmers.swimmer",to:"health.health_reading",card:"1-N",label:"records"},
+ {from:"health.medical_test",to:"health.health_reading",card:"1-N",label:"measured by"},
+ {from:"swimmers.swimmer",to:"health.observation",card:"1-N",label:"noted on"},
+ {from:"swimmers.swimmer",to:"health.feedback_entry",card:"1-N",label:"receives"},
+ {from:"identity.club",to:"attendance.attendance_session",card:"1-N",label:"holds"},
+ {from:"reference.stroke",to:"attendance.attendance_session",card:"1-N",label:"grouped by"},
+ {from:"attendance.attendance_session",to:"attendance.attendance_record",card:"1-N",label:"includes"},
+ {from:"swimmers.swimmer",to:"attendance.attendance_record",card:"1-N",label:"attends"},
+ {from:"championships.competition_event",to:"championships.championship_enrollment",card:"1-N",label:"enrolls"},
+ {from:"swimmers.swimmer",to:"championships.championship_enrollment",card:"1-N",label:"enrolled in"},
+ {from:"championships.competition_event",to:"championships.competition_day",card:"1-N",label:"spans"},
+ {from:"championships.competition_day",to:"championships.race_session",card:"1-N",label:"schedules"},
+ {from:"reference.stroke",to:"championships.race_session",card:"1-N",label:"of stroke"},
+ {from:"reference.distance",to:"championships.race_session",card:"1-N",label:"of distance"},
+ {from:"championships.race_session",to:"championships.race_assignment",card:"1-N",label:"assigns"},
+ {from:"swimmers.swimmer",to:"championships.race_assignment",card:"1-N",label:"swims in"},
+ {from:"championships.race_session",to:"championships.race_result",card:"1-N",label:"produces"},
+ {from:"swimmers.swimmer",to:"championships.race_result",card:"1-N",label:"achieves"}
+];
+</script>
+<script type="module">
+"use strict";
+// ====== HELPERS ======
+const cssVar = (v) => v.startsWith("--") ? `var(${v})` : v;
+const isArabic = (s) => /[؀-ۿ]/.test(s || "");
+function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function badges(col){
+  const map = {PK:"pk",FK:"fk",U:"u"};
+  const out = (col.k||"").split(",").filter(Boolean).map(k=>`<span class="badge ${map[k]||""}">${k}</span>`);
+  if(col.n===false) out.push(`<span class="badge nn">NN</span>`);
+  return out.join("");
+}
+function noteCell(col){
+  let txt = col.note || "";
+  if(col.d) txt = (txt?txt+" · ":"") + "default " + col.d;
+  if(col.fk) txt = (txt?txt+" · ":"") + "→ " + col.fk;
+  return `<span class="${isArabic(txt)?"ar":""}">${escapeHtml(txt)}</span>`;
+}
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){ return navigator.clipboard.writeText(text); }
+  const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand("copy"); } finally{ document.body.removeChild(ta); }
+  return Promise.resolve();
+}
+const EID = (key) => key.replace(/\./g,"_");
+const CARD = {"1-1":"||--||","1-N":"||--o{","01-N":"|o--o{","M-N":"}o--o{"};
+function buildMermaid(){
+  let out = "erDiagram\n";
+  SCHEMA.forEach(s=>s.tables.forEach(t=>{
+    const pk = t.cols.find(c=>(c.k||"").includes("PK"));
+    out += `  ${EID(s.schema+"."+t.name)} {\n`;
+    if(pk) out += `    ${pk.t.replace(/[^a-zA-Z0-9]/g,"")} ${pk.c.replace(/[^a-zA-Z0-9]/g,"")} PK\n`;
+    out += `  }\n`;
+  }));
+  RELATIONSHIPS.forEach(r=>{
+    const lbl = (r.label||"rel").replace(/[^a-zA-Z]/g,"") || "rel";
+    out += `  ${EID(r.from)} ${CARD[r.card]||"||--o{"} ${EID(r.to)} : ${lbl}\n`;
+  });
+  return out;
+}
+// ====== DERIVATIONS ======
+const tablesByKey = {};
+SCHEMA.forEach(s => s.tables.forEach(t => {
+  tablesByKey[`${s.schema}.${t.name}`] = {schema:s.schema, color:s.color, table:t};
+}));
+const TOTAL_TABLES = SCHEMA.reduce((n, s) => n + s.tables.length, 0);
+const SCHEMA_COUNT = SCHEMA.length;
+const incomingFks = {};
+SCHEMA.forEach(s => s.tables.forEach(t => {
+  const fromKey = `${s.schema}.${t.name}`;
+  t.cols.forEach(c => {
+    if(c.fk){
+      const p = c.fk.split(".");
+      const target = p[0] + "." + p[1];
+      (incomingFks[target] = incomingFks[target] || []).push({from:fromKey, column:c.c});
+    }
+  });
+}));
+const enumColumns = [];
+SCHEMA.forEach(s => s.tables.forEach(t => t.cols.forEach(c => {
+  if(c.note && c.note.includes(" | ")){
+    enumColumns.push({key:`${s.schema}.${t.name}`, schema:s.schema, color:s.color,
+      table:t.name, column:c.c, values:c.note.split("|").map(v=>v.trim())});
+  }
+})));
+// ====== DDL & INDEXES ======
+function buildDDL(key){
+  const entry = tablesByKey[key], schema = entry.schema, t = entry.table;
+  const real = t.cols.filter(c=>c.t!=="—"), pseudo = t.cols.filter(c=>c.t==="—");
+  const pkCols = real.filter(c=>(c.k||"").includes("PK")).map(c=>`"${c.c}"`);
+  const colLines = real.map(c=>{
+    let line = `  "${c.c}" ${c.t}`;
+    if(c.d) line += ` DEFAULT ${c.d}`;
+    if(c.n===false) line += ` NOT NULL`;
+    return line;
+  });
+  const cons = [];
+  if(pkCols.length) cons.push(`  PRIMARY KEY (${pkCols.join(", ")})`);
+  real.forEach(c=>{ if((c.k||"").includes("U")) cons.push(`  UNIQUE ("${c.c}")`); });
+  pseudo.forEach(c=>{ if((c.k||"").includes("U")){
+    const cols = c.c.replace(/[()]/g,"").split(",").map(x=>`"${x.trim()}"`).join(", ");
+    cons.push(`  UNIQUE (${cols})`);
+  }});
+  real.forEach(c=>{ if(c.note && c.note.includes(" | ")){
+    const vals = c.note.split("|").map(v=>`'${v.trim()}'`).join(", ");
+    cons.push(`  CONSTRAINT "${t.name}_${c.c}_chk" CHECK ("${c.c}" IN (${vals}))`);
+  }});
+  let ddl = `CREATE TABLE ${schema}."${t.name}" (\n${colLines.concat(cons).join(",\n")}\n);`;
+  const fks = real.filter(c=>c.fk).map(c=>{
+    const p = c.fk.split(".");
+    return `ALTER TABLE ${schema}."${t.name}" ADD CONSTRAINT "${t.name}_${c.c}_fk" `
+      + `FOREIGN KEY ("${c.c}") REFERENCES ${p[0]}."${p[1]}" ("${p[2]}");`;
+  });
+  if(fks.length) ddl += `\n\n-- FK constraints added via ALTER TABLE to avoid cross-schema ordering / cycles\n` + fks.join("\n");
+  return ddl;
+}
+function ddlHtml(key){
+  const ddl = buildDDL(key);
+  return `<div class="codewrap"><button class="copy" data-copy="${encodeURIComponent(ddl)}">⧉ copy</button><pre class="code">${escapeHtml(ddl)}</pre></div>`;
+}
+// ====== VIEWS ======
+let erdSvg = null;
+async function renderOverview(view){
+  view.innerHTML = `<div id="erdBox" class="erd-box">Rendering diagram…</div>
+    <p class="muted small">Entity-relationship diagram · ${TOTAL_TABLES} tables across ${SCHEMA_COUNT} schemas. Pick a schema or table to drill in.</p>
+    <div class="summary">${SCHEMA.map(s=>`
+      <a class="scard" href="#/table/${s.schema}.${s.tables[0].name}" style="border-inline-start-color:${cssVar(s.color)}">
+        <div class="scard-h" style="color:${cssVar(s.color)}">${s.schema}</div>
+        <div class="scard-n">${s.tables.length} tables</div>
+      </a>`).join("")}</div>`;
+  const box = document.getElementById("erdBox");
+  if(erdSvg){ box.innerHTML = erdSvg; return; }
+  if(window.mermaid){
+    try{
+      window.mermaid.initialize({startOnLoad:false, theme:"default"});
+      const {svg} = await window.mermaid.render("erdGraph", buildMermaid());
+      erdSvg = svg;
+      box.innerHTML = svg;
+    }catch(err){ box.textContent = "Diagram render error: " + err.message; }
+  } else {
+    box.textContent = "Mermaid library not loaded.";
+  }
+}
+const TABS = [["columns","Columns"],["ddl","DDL"],["relationships","Relationships"],["indexes","Indexes & Constraints"]];
+function renderTable(view, key, tab){
+  const entry = tablesByKey[key], t = entry.table;
+  const inc = incomingFks[key] || [];
+  const bar = TABS.map(([id,label])=>`<a class="subtab ${id===tab?'on':''}" href="#/table/${key}/${id}">${label}</a>`).join("");
+  let body;
+  if(tab==="ddl") body = ddlHtml(key);
+  else if(tab==="relationships") body = relationshipsHtml(key);
+  else if(tab==="indexes") body = indexesHtml(key);
+  else body = columnsHtml(t);
+  view.innerHTML = `<div class="thead">
+      <span class="ttitle"><span style="color:${cssVar(entry.color)}">${entry.schema}.</span>${t.name}</span>
+      ${t.note?`<span class="muted">— ${escapeHtml(t.note)}</span>`:""}
+      <span class="muted small">· ${t.cols.filter(c=>c.t!=="—").length} columns · ${inc.length} incoming refs</span>
     </div>
-  </header>
-
-  <div class="legend-wrapper">
-    <div class="legend">
-      <h2>Legend</h2>
-      <div class="legend-grid">
-        <div class="legend-item"><code>PK</code><span>Primary key</span></div>
-        <div class="legend-item"><code>FK</code><span>Foreign key</span></div>
-        <div class="legend-item"><code>UK</code><span>Unique constraint (composite UKs mark both columns <code>FK,UK</code>)</span></div>
-        <div class="legend-item"><code>||--o{</code><span>One-to-many relationship</span></div>
-        <div class="legend-item"><code>||--o|</code><span>One-to-one relationship</span></div>
-      </div>
-      <p class="legend-note">
-        <strong>Authorship columns</strong> (recorded_by / created_by / author_id / coach_id) reference
-        <code>app_user</code>; shown as FK, lines omitted for readability.
-        Cross-module references are logical (no DB-enforced FK) per the design.
-      </p>
-    </div>
-  </div>
-
-  <div class="diagram-wrapper">
-    <div class="diagram-container">
-      <pre class="mermaid">
-erDiagram
-    stroke {
-        uuid id PK
-        varchar code
-        varchar name_en
-        varchar name_ar
+    <div class="subtabs">${bar}</div>
+    <div class="subbody">${body}</div>`;
+}
+function columnsHtml(t){
+  const real = t.cols.filter(c=>c.t!=="—"), rules = t.cols.filter(c=>c.t==="—");
+  let html = `<table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Keys</th><th>Notes</th></tr></thead>
+    <tbody>${real.map(c=>`<tr><td class="${isArabic(c.c)?'ar':''}">${escapeHtml(c.c)}</td>
+      <td>${escapeHtml(c.t)}</td><td>${badges(c)}</td><td>${noteCell(c)}</td></tr>`).join("")}</tbody></table>`;
+  if(rules.length) html += `<div class="ixsec"><h4>Rules</h4>${rules.map(c=>
+    `<p class="small">${(c.k||"").includes("U")?"UNIQUE ":""}${escapeHtml(c.c)}${c.note?` <span class="muted">— ${escapeHtml(c.note)}</span>`:""}</p>`).join("")}</div>`;
+  return html;
+}
+function relationshipsHtml(key){
+  const t = tablesByKey[key].table;
+  const outgoing = t.cols.filter(c=>c.fk).map(c=>{
+    const p = c.fk.split("."); const target = p[0]+"."+p[1];
+    return `<a class="rellink" href="#/table/${target}">${escapeHtml(c.c)} → ${target}</a>`;
+  });
+  const incoming = (incomingFks[key]||[]).map(r=>`<a class="rellink" href="#/table/${r.from}">${r.from}.${escapeHtml(r.column)}</a>`);
+  return `<div class="relcols">
+    <div><h4>Outgoing (this → other)</h4>${outgoing.join("")||'<span class="muted small">none</span>'}</div>
+    <div><h4>Incoming (other → this)</h4>${incoming.join("")||'<span class="muted small">none</span>'}</div></div>`;
+}
+function buildIndexes(key){
+  const entry = tablesByKey[key], schema = entry.schema, t = entry.table;
+  const real = t.cols.filter(c=>c.t!=="—"), pseudo = t.cols.filter(c=>c.t==="—");
+  const pk = real.filter(c=>(c.k||"").includes("PK")).map(c=>c.c);
+  const uniques = [];
+  real.forEach(c=>{ if((c.k||"").includes("U")) uniques.push([c.c]); });
+  pseudo.forEach(c=>{ if((c.k||"").includes("U")) uniques.push(c.c.replace(/[()]/g,"").split(",").map(x=>x.trim())); });
+  const fkIndexes = real.filter(c=>c.fk).map(c=>`CREATE INDEX "ix_${t.name}_${c.c}" ON ${schema}."${t.name}" ("${c.c}");`);
+  return {pk, uniques, fkIndexes};
+}
+function indexesHtml(key){
+  const ix = buildIndexes(key);
+  const uniques = ix.uniques.length
+    ? ix.uniques.map(u=>`<li>UNIQUE (${u.join(", ")})</li>`).join("")
+    : '<li class="muted">none</li>';
+  const fkix = ix.fkIndexes.length
+    ? `<div class="codewrap"><button class="copy" data-copy="${encodeURIComponent(ix.fkIndexes.join("\n"))}">⧉ copy</button><pre class="code">${escapeHtml(ix.fkIndexes.join("\n"))}</pre></div>`
+    : '<span class="muted small">no FK columns</span>';
+  return `<div class="ixsec">
+    <h4>Primary key</h4><p>${ix.pk.length?ix.pk.join(", "):'<span class="muted">none</span>'}</p>
+    <h4>Unique constraints</h4><ul>${uniques}</ul>
+    <h4>Suggested indexes (on FK columns)</h4>${fkix}</div>`;
+}
+function renderEnums(view){
+  const byTable = {};
+  enumColumns.forEach(e=>{ (byTable[e.key]=byTable[e.key]||[]).push(e); });
+  const groups = Object.keys(byTable).map(key=>{
+    const color = tablesByKey[key].color;
+    const rows = byTable[key].map(e=>`<div class="enumrow"><span class="enumcol">${escapeHtml(e.column)}</span>
+      <span>${e.values.map(v=>`<span class="enumval ${isArabic(v)?'ar':''}">${escapeHtml(v)}</span>`).join("")}</span></div>`).join("");
+    return `<div class="enumgrp"><div class="enumtab"><a href="#/table/${key}/columns" style="color:${cssVar(color)}">${key}</a></div>${rows}</div>`;
+  }).join("");
+  view.innerHTML = `<div class="thead"><span class="ttitle">Enum Reference</span>
+    <span class="muted small">· ${enumColumns.length} CHECK columns across the schema</span></div>${groups}`;
+}
+// ====== TREE ======
+function renderTreeList(filter){
+  filter = (filter||"").trim().toLowerCase();
+  const globals = `<a class="tnode tglobal" data-key="overview" href="#/overview">▣ Overview</a>
+    <a class="tnode tglobal" data-key="enums" href="#/enums">≡ Enum Reference</a>`;
+  const groups = SCHEMA.map(s=>{
+    const tables = s.tables.filter(t => !filter
+      || t.name.toLowerCase().includes(filter)
+      || t.cols.some(c=>c.c.toLowerCase().includes(filter)));
+    if(!tables.length) return "";
+    return `<div class="tgrp" style="color:${cssVar(s.color)}">${s.schema}</div>` +
+      tables.map(t=>`<a class="tnode" data-key="${s.schema}.${t.name}" href="#/table/${s.schema}.${t.name}">${t.name}</a>`).join("");
+  }).join("");
+  const empty = (!groups && filter) ? `<p class="muted small" style="padding:.4rem">No matches.</p>` : "";
+  document.getElementById("treelist").innerHTML = globals + groups + empty;
+  setActiveTreeNode(parseHash());
+}
+function setActiveTreeNode(r){
+  document.querySelectorAll(".tnode.active").forEach(n=>n.classList.remove("active"));
+  const key = r.view==="table" ? r.key : r.view;
+  const esc = (window.CSS && CSS.escape) ? CSS.escape(key) : key;
+  const node = document.querySelector(`.tnode[data-key="${esc}"]`);
+  if(node) node.classList.add("active");
+}
+// ====== ROUTER ======
+function parseHash(){
+  const h = (location.hash || "").replace(/^#\/?/,"");
+  const parts = h.split("/").filter(Boolean);
+  if(parts[0]==="table" && parts[1]) return {view:"table", key:decodeURIComponent(parts[1]), tab:parts[2]||"columns"};
+  if(parts[0]==="enums") return {view:"enums"};
+  return {view:"overview"};
+}
+function router(){
+  const r = parseHash();
+  const view = document.getElementById("view");
+  const bc = document.getElementById("breadcrumb");
+  if(r.view==="overview"){ bc.innerHTML = "<b>Overview</b>"; renderOverview(view); }
+  else if(r.view==="enums"){ bc.innerHTML = "<b>Enum Reference</b>"; renderEnums(view); }
+  else {
+    const entry = tablesByKey[r.key];
+    if(!entry){ bc.innerHTML = "Not found"; view.innerHTML = `<p class="muted">Unknown table: ${escapeHtml(r.key)}</p>`; }
+    else { bc.innerHTML = `${entry.schema} / <b>${entry.table.name}</b>`; renderTable(view, r.key, r.tab); }
+  }
+  setActiveTreeNode(r);
+}
+// ====== INIT ======
+function boot(){
+  document.getElementById("footTables").textContent = TOTAL_TABLES;
+  document.getElementById("footSchemas").textContent = SCHEMA_COUNT;
+  renderTreeList("");
+  router();
+  window.addEventListener("hashchange", router);
+  const filter = document.getElementById("filter");
+  filter.addEventListener("input", e => renderTreeList(e.target.value));
+  document.addEventListener("keydown", e => {
+    if(e.key==="/" && document.activeElement !== filter){ e.preventDefault(); filter.focus(); }
+  });
+  document.getElementById("themeToggle").addEventListener("click", ()=>{
+    const html=document.documentElement;
+    const next = html.getAttribute("data-theme")==="light"?"dark":"light";
+    html.setAttribute("data-theme", next);
+    erdSvg = null;
+    if(window.mermaid) window.mermaid.initialize({startOnLoad:false, theme: "default"});
+    router();
+  });
+  document.getElementById("view").addEventListener("click", e=>{
+    const b = e.target.closest(".copy"); if(!b) return;
+    copyText(decodeURIComponent(b.dataset.copy)).then(()=>{
+      const o=b.textContent; b.textContent="copied ✓"; setTimeout(()=>b.textContent=o,1200);
+    });
+  });
+  if(window.mermaid) window.mermaid.initialize({startOnLoad:false,
+    theme: "default"});
+  const treeToggle = document.getElementById("treeToggle");
+  treeToggle.addEventListener("click", ()=>{
+    const html=document.documentElement;
+    html.setAttribute("data-tree", html.getAttribute("data-tree")==="open"?"closed":"open");
+  });
+  document.getElementById("treelist").addEventListener("click", e=>{
+    if(e.target.closest(".tnode") && window.matchMedia("(max-width:760px)").matches){
+      document.documentElement.setAttribute("data-tree","closed");
     }
-    distance {
-        uuid id PK
-        varchar code
-        integer meters
-    }
-    club {
-        uuid id PK
-        varchar name_en
-        varchar name_ar
-        varchar location_en
-        varchar location_ar
-        timestamptz created_at
-    }
-    app_user {
-        uuid id PK
-        varchar username UK
-        varchar email
-        varchar display_name
-        user_role role
-        varchar(4) avatar_initials
-        boolean is_first_login
-        uuid active_club_id FK
-        uuid swimmer_id FK
-        timestamptz created_at
-    }
-    captain_club {
-        uuid id PK
-        uuid user_id FK,UK
-        uuid club_id FK,UK
-    }
-
-    app_user ||--o{ captain_club : "assigned to"
-    club ||--o{ captain_club : "managed by"
-    club ||--o{ app_user : "active club of"
-
-    swimmer {
-        uuid id PK
-        uuid club_id FK
-        uuid championship_club_id FK
-        varchar name_en
-        varchar name_ar
-        varchar(14) national_id UK
-        varchar uid UK
-        gender gender
-        date dob
-        varchar(3) blood_type
-        varchar phone
-        varchar(4) avatar_initials
-        timestamptz created_at
-        timestamptz updated_at
-    }
-    guardian {
-        uuid id PK
-        uuid swimmer_id FK
-        guardian_relation relation
-        varchar name
-        varchar(14) national_id
-        varchar phone
-    }
-    medical_exam {
-        uuid id PK
-        uuid swimmer_id FK
-        date exam_date
-        fitness_assessment internal_med
-        fitness_assessment heart_assess
-        fitness_assessment spine_assess
-        numeric(4,1) hemoglobin
-        numeric(5,1) height_cm
-        numeric(5,1) weight_kg
-        timestamptz created_at
-    }
-    body_measurement {
-        uuid id PK
-        uuid swimmer_id FK
-        date measured_at
-        numeric(5,1) right_arm_cm
-        numeric(5,1) left_arm_cm
-        numeric(5,1) right_leg_cm
-        numeric(5,1) left_leg_cm
-        numeric(5,1) torso_cm
-        numeric(5,1) bust_diameter_cm
-        numeric(5,1) waist_diameter_cm
-    }
-    swimmer_specialization {
-        uuid swimmer_id FK,UK
-        uuid stroke_id FK,UK
-    }
-
-    club ||--o{ swimmer : "trains"
-    club ||--o{ swimmer : "represents"
-    app_user ||--o| swimmer : "logs in as"
-    swimmer ||--o{ guardian : "has"
-    swimmer ||--o{ medical_exam : "examined in"
-    swimmer ||--o{ body_measurement : "measured in"
-    swimmer ||--o{ swimmer_specialization : "specializes"
-    stroke ||--o{ swimmer_specialization : "chosen in"
-
-    inbody_reading {
-        uuid id PK
-        uuid swimmer_id FK
-        date reading_date
-        numeric(5,1) height_cm
-        numeric(5,1) weight_kg
-        numeric(4,1) fat_pct
-        numeric(4,1) muscle_pct
-        numeric(4,2) bone_density
-        numeric(4,2) body_density
-        uuid recorded_by FK
-        timestamptz created_at
-    }
-    medical_test {
-        uuid id PK
-        varchar name_en
-        varchar name_ar
-        varchar unit
-        numeric(8,2) lower_bound
-        numeric(8,2) upper_bound
-        uuid created_by FK
-        timestamptz created_at
-    }
-    health_reading {
-        uuid id PK
-        uuid swimmer_id FK
-        uuid medical_test_id FK
-        numeric(8,2) value
-        date reading_date
-        uuid recorded_by FK
-    }
-    observation {
-        uuid id PK
-        uuid swimmer_id FK
-        observation_category category
-        varchar field_label
-        varchar value
-        record_status status
-        date observed_date
-        uuid recorded_by FK
-    }
-    feedback_entry {
-        uuid id PK
-        uuid swimmer_id FK
-        smallint rating
-        feedback_category category
-        text comment
-        uuid author_id FK
-        date entry_date
-    }
-
-    swimmer ||--o{ inbody_reading : "records"
-    swimmer ||--o{ health_reading : "records"
-    medical_test ||--o{ health_reading : "measured by"
-    swimmer ||--o{ observation : "noted on"
-    swimmer ||--o{ feedback_entry : "receives"
-
-    attendance_session {
-        uuid id PK
-        uuid club_id FK
-        date session_date
-        uuid stroke_id FK
-        uuid coach_id FK
-    }
-    attendance_record {
-        uuid id PK
-        uuid session_id FK,UK
-        uuid swimmer_id FK,UK
-        attendance_status status
-        text coach_note_en
-        text coach_note_ar
-    }
-
-    club ||--o{ attendance_session : "holds"
-    stroke ||--o{ attendance_session : "grouped by"
-    attendance_session ||--o{ attendance_record : "includes"
-    swimmer ||--o{ attendance_record : "attends"
-
-    competition_event {
-        uuid id PK
-        varchar name_en
-        varchar name_ar
-        date start_date
-        date end_date
-        varchar location_en
-        varchar location_ar
-        competition_status status
-        uuid created_by FK
-    }
-    championship_enrollment {
-        uuid id PK
-        uuid event_id FK,UK
-        uuid swimmer_id FK,UK
-    }
-    competition_day {
-        uuid id PK
-        uuid event_id FK
-        varchar label_en
-        varchar label_ar
-        date day_date
-    }
-    race_session {
-        uuid id PK
-        uuid day_id FK
-        uuid stroke_id FK
-        uuid distance_id FK
-        time scheduled_time
-    }
-    race_assignment {
-        uuid id PK
-        uuid race_session_id FK,UK
-        uuid swimmer_id FK,UK
-    }
-    race_result {
-        uuid id PK
-        uuid race_session_id FK,UK
-        uuid swimmer_id FK,UK
-        integer time_ms
-        integer points
-        integer rank
-        boolean is_personal_best
-        uuid recorded_by FK
-    }
-
-    competition_event ||--o{ championship_enrollment : "enrolls"
-    swimmer ||--o{ championship_enrollment : "enrolled in"
-    competition_event ||--o{ competition_day : "spans"
-    competition_day ||--o{ race_session : "schedules"
-    stroke ||--o{ race_session : "of stroke"
-    distance ||--o{ race_session : "of distance"
-    race_session ||--o{ race_assignment : "assigns"
-    swimmer ||--o{ race_assignment : "swims in"
-    race_session ||--o{ race_result : "produces"
-    swimmer ||--o{ race_result : "achieves"
-      </pre>
-    </div>
-  </div>
-
-  <footer class="page-footer">
-    Kheprx Swimming — Database ERD &mdash; 23 entities / 30 relationships
-  </footer>
-
-  <script src="mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: true });</script>
-
+  });
+}
+boot();
+</script>
 </body>
 </html>
