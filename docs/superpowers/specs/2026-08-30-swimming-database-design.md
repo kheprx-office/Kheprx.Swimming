@@ -294,7 +294,7 @@ explicitly a later, separate effort — not part of this work.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| code | varchar | `25m` … `400m` |
+| code | varchar | `50m` … `10000m` (50, 100, 200, 400, 800, 1000, 1500, 5000, 7000, 7500, 10000) |
 | meters | integer | |
 
 **club** — swimming club or academy
