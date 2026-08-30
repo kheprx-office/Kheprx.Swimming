@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kheprx Swimming — Database ERD</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f5f7fa; color: #1a2233; min-height: 100vh; }
+
+    /* ── Header ── */
+    .page-header {
+      background: #1a2d4e;
+      color: #e8edf5;
+      padding: 28px 40px 24px;
+      border-bottom: 4px solid #2e7dbe;
+    }
+
+    .page-header h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .page-header .subtitle {
+      font-size: 0.95rem;
+      color: #a8bcd4;
+      margin-bottom: 14px;
+    }
+
+    .cluster-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .cluster-pill {
+      background: #2e7dbe;
+      color: #e8f3fc;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Legend ── */
+    .legend-wrapper {
+      max-width: 1200px;
+      margin: 28px auto 0;
+      padding: 0 32px;
+    }
+
+    .legend {
+      background: #fff;
+      border: 1px solid #d2dae6;
+      border-left: 4px solid #2e7dbe;
+      border-radius: 6px;
+      padding: 16px 22px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .legend h2 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #5a6a82;
+      margin-bottom: 10px;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 4px 32px;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 8px;
+    }
+
+    .legend-item code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: #eef2f8;
+      border: 1px solid #cdd6e4;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .legend-note {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e4eaf3;
+      color: #5a6a82;
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+
+    /* ── Diagram ── */
+    .diagram-wrapper {
+      max-width: 1400px;
+      margin: 28px auto 48px;
+      padding: 0 32px;
+    }
+
+    .diagram-container {
+      background: #fff;
+      border: 1px solid #d2dae6;
+      border-radius: 8px;
+      padding: 32px 24px;
+      overflow-x: auto;
+    }
+
+    pre.mermaid {
+      font-size: 0.78rem;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.78rem;
+      color: #8a9bb5;
+      border-top: 1px solid #dce3ed;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Kheprx Swimming — Database ERD</h1>
+    <p class="subtitle">Entity-Relationship Diagram &mdash; 23 entities / 30 relationships</p>
+    <div class="cluster-list">
+      <span class="cluster-pill">Reference</span>
+      <span class="cluster-pill">Identity &amp; Clubs</span>
+      <span class="cluster-pill">Swimmers</span>
+      <span class="cluster-pill">Health &amp; Records</span>
+      <span class="cluster-pill">Attendance</span>
+      <span class="cluster-pill">Championships</span>
+    </div>
+  </header>
+
+  <div class="legend-wrapper">
+    <div class="legend">
+      <h2>Legend</h2>
+      <div class="legend-grid">
+        <div class="legend-item"><code>PK</code><span>Primary key</span></div>
+        <div class="legend-item"><code>FK</code><span>Foreign key</span></div>
+        <div class="legend-item"><code>UK</code><span>Unique constraint (composite UKs mark both columns <code>FK,UK</code>)</span></div>
+        <div class="legend-item"><code>||--o{</code><span>One-to-many relationship</span></div>
+        <div class="legend-item"><code>||--o|</code><span>One-to-one relationship</span></div>
+      </div>
+      <p class="legend-note">
+        <strong>Authorship columns</strong> (recorded_by / created_by / author_id / coach_id) reference
+        <code>app_user</code>; shown as FK, lines omitted for readability.
+        Cross-module references are logical (no DB-enforced FK) per the design.
+      </p>
+    </div>
+  </div>
+
+  <div class="diagram-wrapper">
+    <div class="diagram-container">
+      <pre class="mermaid">
+erDiagram
+    stroke {
+        uuid id PK
+        varchar code
+        varchar name_en
+        varchar name_ar
+    }
+    distance {
+        uuid id PK
+        varchar code
+        integer meters
+    }
+    club {
+        uuid id PK
+        varchar name_en
+        varchar name_ar
+        varchar location_en
+        varchar location_ar
+        timestamptz created_at
+    }
+    app_user {
+        uuid id PK
+        varchar username UK
+        varchar email
+        varchar display_name
+        user_role role
+        varchar(4) avatar_initials
+        boolean is_first_login
+        uuid active_club_id FK
+        uuid swimmer_id FK
+        timestamptz created_at
+    }
+    captain_club {
+        uuid id PK
+        uuid user_id FK,UK
+        uuid club_id FK,UK
+    }
+
+    app_user ||--o{ captain_club : "assigned to"
+    club ||--o{ captain_club : "managed by"
+    club ||--o{ app_user : "active club of"
+
+    swimmer {
+        uuid id PK
+        uuid club_id FK
+        uuid championship_club_id FK
+        varchar name_en
+        varchar name_ar
+        varchar(14) national_id UK
+        varchar uid UK
+        gender gender
+        date dob
+        varchar(3) blood_type
+        varchar phone
+        varchar(4) avatar_initials
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    guardian {
+        uuid id PK
+        uuid swimmer_id FK
+        guardian_relation relation
+        varchar name
+        varchar(14) national_id
+        varchar phone
+    }
+    medical_exam {
+        uuid id PK
+        uuid swimmer_id FK
+        date exam_date
+        fitness_assessment internal_med
+        fitness_assessment heart_assess
+        fitness_assessment spine_assess
+        numeric(4,1) hemoglobin
+        numeric(5,1) height_cm
+        numeric(5,1) weight_kg
+        timestamptz created_at
+    }
+    body_measurement {
+        uuid id PK
+        uuid swimmer_id FK
+        date measured_at
+        numeric(5,1) right_arm_cm
+        numeric(5,1) left_arm_cm
+        numeric(5,1) right_leg_cm
+        numeric(5,1) left_leg_cm
+        numeric(5,1) torso_cm
+        numeric(5,1) bust_diameter_cm
+        numeric(5,1) waist_diameter_cm
+    }
+    swimmer_specialization {
+        uuid swimmer_id FK,UK
+        uuid stroke_id FK,UK
+    }
+
+    club ||--o{ swimmer : "trains"
+    club ||--o{ swimmer : "represents"
+    app_user ||--o| swimmer : "logs in as"
+    swimmer ||--o{ guardian : "has"
+    swimmer ||--o{ medical_exam : "examined in"
+    swimmer ||--o{ body_measurement : "measured in"
+    swimmer ||--o{ swimmer_specialization : "specializes"
+    stroke ||--o{ swimmer_specialization : "chosen in"
+
+    inbody_reading {
+        uuid id PK
+        uuid swimmer_id FK
+        date reading_date
+        numeric(5,1) height_cm
+        numeric(5,1) weight_kg
+        numeric(4,1) fat_pct
+        numeric(4,1) muscle_pct
+        numeric(4,2) bone_density
+        numeric(4,2) body_density
+        uuid recorded_by FK
+        timestamptz created_at
+    }
+    medical_test {
+        uuid id PK
+        varchar name_en
+        varchar name_ar
+        varchar unit
+        numeric(8,2) lower_bound
+        numeric(8,2) upper_bound
+        uuid created_by FK
+        timestamptz created_at
+    }
+    health_reading {
+        uuid id PK
+        uuid swimmer_id FK
+        uuid medical_test_id FK
+        numeric(8,2) value
+        date reading_date
+        uuid recorded_by FK
+    }
+    observation {
+        uuid id PK
+        uuid swimmer_id FK
+        observation_category category
+        varchar field_label
+        varchar value
+        record_status status
+        date observed_date
+        uuid recorded_by FK
+    }
+    feedback_entry {
+        uuid id PK
+        uuid swimmer_id FK
+        smallint rating
+        feedback_category category
+        text comment
+        uuid author_id FK
+        date entry_date
+    }
+
+    swimmer ||--o{ inbody_reading : "records"
+    swimmer ||--o{ health_reading : "records"
+    medical_test ||--o{ health_reading : "measured by"
+    swimmer ||--o{ observation : "noted on"
+    swimmer ||--o{ feedback_entry : "receives"
+
+    attendance_session {
+        uuid id PK
+        uuid club_id FK
+        date session_date
+        uuid stroke_id FK
+        uuid coach_id FK
+    }
+    attendance_record {
+        uuid id PK
+        uuid session_id FK,UK
+        uuid swimmer_id FK,UK
+        attendance_status status
+        text coach_note_en
+        text coach_note_ar
+    }
+
+    club ||--o{ attendance_session : "holds"
+    stroke ||--o{ attendance_session : "grouped by"
+    attendance_session ||--o{ attendance_record : "includes"
+    swimmer ||--o{ attendance_record : "attends"
+
+    competition_event {
+        uuid id PK
+        varchar name_en
+        varchar name_ar
+        date start_date
+        date end_date
+        varchar location_en
+        varchar location_ar
+        competition_status status
+        uuid created_by FK
+    }
+    championship_enrollment {
+        uuid id PK
+        uuid event_id FK,UK
+        uuid swimmer_id FK,UK
+    }
+    competition_day {
+        uuid id PK
+        uuid event_id FK
+        varchar label_en
+        varchar label_ar
+        date day_date
+    }
+    race_session {
+        uuid id PK
+        uuid day_id FK
+        uuid stroke_id FK
+        uuid distance_id FK
+        time scheduled_time
+    }
+    race_assignment {
+        uuid id PK
+        uuid race_session_id FK,UK
+        uuid swimmer_id FK,UK
+    }
+    race_result {
+        uuid id PK
+        uuid race_session_id FK,UK
+        uuid swimmer_id FK,UK
+        integer time_ms
+        integer points
+        integer rank
+        boolean is_personal_best
+        uuid recorded_by FK
+    }
+
+    competition_event ||--o{ championship_enrollment : "enrolls"
+    swimmer ||--o{ championship_enrollment : "enrolled in"
+    competition_event ||--o{ competition_day : "spans"
+    competition_day ||--o{ race_session : "schedules"
+    stroke ||--o{ race_session : "of stroke"
+    distance ||--o{ race_session : "of distance"
+    race_session ||--o{ race_assignment : "assigns"
+    swimmer ||--o{ race_assignment : "swims in"
+    race_session ||--o{ race_result : "produces"
+    swimmer ||--o{ race_result : "achieves"
+      </pre>
+    </div>
+  </div>
+
+  <footer class="page-footer">
+    Kheprx Swimming — Database ERD &mdash; 23 entities / 30 relationships
+  </footer>
+
+  <script src="mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true });</script>
+
+</body>
+</html>
