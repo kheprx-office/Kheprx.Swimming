@@ -101,3 +101,60 @@ erDiagram
     swimmer ||--o{ body_measurement : "measured in"
     swimmer ||--o{ swimmer_specialization : "specializes"
     stroke ||--o{ swimmer_specialization : "chosen in"
+
+    inbody_reading {
+        uuid id PK
+        uuid swimmer_id FK
+        date reading_date
+        numeric(5,1) height_cm
+        numeric(5,1) weight_kg
+        numeric(4,1) fat_pct
+        numeric(4,1) muscle_pct
+        numeric(4,2) bone_density
+        numeric(4,2) body_density
+        uuid recorded_by FK
+        timestamptz created_at
+    }
+    medical_test {
+        uuid id PK
+        varchar name_en
+        varchar name_ar
+        varchar unit
+        numeric(8,2) lower_bound
+        numeric(8,2) upper_bound
+        uuid created_by FK
+        timestamptz created_at
+    }
+    health_reading {
+        uuid id PK
+        uuid swimmer_id FK
+        uuid medical_test_id FK
+        numeric(8,2) value
+        date reading_date
+        uuid recorded_by FK
+    }
+    observation {
+        uuid id PK
+        uuid swimmer_id FK
+        observation_category category
+        varchar field_label
+        varchar value
+        record_status status
+        date observed_date
+        uuid recorded_by FK
+    }
+    feedback_entry {
+        uuid id PK
+        uuid swimmer_id FK
+        smallint rating
+        feedback_category category
+        text comment
+        uuid author_id FK
+        date entry_date
+    }
+
+    swimmer ||--o{ inbody_reading : "records"
+    swimmer ||--o{ health_reading : "records"
+    medical_test ||--o{ health_reading : "measured by"
+    swimmer ||--o{ observation : "noted on"
+    swimmer ||--o{ feedback_entry : "receives"
