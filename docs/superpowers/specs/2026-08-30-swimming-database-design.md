@@ -61,45 +61,52 @@ explicitly a later, separate effort — not part of this work.
 | location_ar | varchar | |
 | created_at | timestamptz | |
 
-**app_user** — backed by the existing Identity module; this design adds swimming role semantics + club linkage.
+**app_user** — generic base user (class-table inheritance); absorbs person attributes from all role subtypes.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
 | username | varchar | UK |
-| email | varchar | |
-| display_name | varchar | |
+| email | varchar | UK (nullable) |
+| password_hash | text | nullable; null when no login |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+| national_id | varchar(14) | UK |
+| gender | enum `gender` | nullable; male \| female |
+| dob | date | nullable |
+| phone | varchar | nullable |
+| avatar_initials | varchar(4) | nullable |
 | role | enum `user_role` | headCoach \| captain \| swimmer |
-| avatar_initials | varchar(4) | |
 | is_first_login | boolean | default true |
 | active_club_id | uuid | FK → club (nullable; captain's current club) |
-| swimmer_id | uuid | FK → swimmer (nullable; 1:1 when the user is a swimmer) |
+| created_at | timestamptz | |
+
+**captain** — subtype for captain role (1-1 with app_user)
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | FK,U → identity.app_user.id |
+| captain_type | enum `captain_type` | nullable; head \| assistant |
 | created_at | timestamptz | |
 
 **captain_club** — captain ↔ many clubs
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
-| user_id | uuid | FK → app_user |
-| club_id | uuid | FK → club |
-| — | | UK(user_id, club_id) |
+| captain_id | uuid | FK,U → identity.captain.id |
+| club_id | uuid | FK,U → club |
+| — | | UK(captain_id, club_id) |
 
 ## 6. Module 2 — Swimmers
 
-**swimmer**
+**swimmer** — subtype for swimmer role (1-1 with app_user); person attrs live on app_user.
 | column | type | notes |
 |---|---|---|
 | id | uuid | PK |
+| user_id | uuid | FK,U → identity.app_user.id |
+| uid | varchar | UK, e.g. `SW-2026-4KD91` |
 | club_id | uuid | FK → club (training club) |
 | championship_club_id | uuid | FK → club (nullable) |
-| name_en | varchar | |
-| name_ar | varchar | |
-| national_id | varchar(14) | UK |
-| uid | varchar | UK, e.g. `SW-2026-4KD91` |
-| gender | enum `gender` | male \| female |
-| dob | date | |
-| blood_type | varchar(3) | e.g. `O+` |
-| phone | varchar | |
-| avatar_initials | varchar(4) | |
+| blood_type | varchar(3) | nullable; e.g. `O+` |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
@@ -304,6 +311,7 @@ explicitly a later, separate effort — not part of this work.
 | meters | integer | |
 
 **Enum types:** `user_role` (headCoach|captain|swimmer), `gender` (male|female),
+`captain_type` (head|assistant),
 `guardian_relation` (father|mother), `fitness_assessment` (fit|unfit),
 `observation_category` (allergy|surgery|chronic|autoimmune|composition|flag|other),
 `record_status` (normal|watch|out), `feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
@@ -311,7 +319,11 @@ explicitly a later, separate effort — not part of this work.
 
 ## 11. Relationships (cardinalities)
 
-- club 1—* swimmer; club 1—* attendance_session; club *—* app_user (captain) via captain_club.
+**24 tables / 31 relationships.**
+
+- club 1—* swimmer; club 1—* attendance_session; club 1—* captain_club.
+- app_user 1—1 swimmer (via swimmer.user_id); app_user 1—1 captain (via captain.user_id).
+- captain 1—* captain_club (via captain_id); club 1—* captain_club.
 - swimmer 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.
 - swimmer *—* stroke (swimmer_specialization); swimmer *—* competition_event (championship_enrollment).
 - medical_test 1—* health_reading.
