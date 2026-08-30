@@ -158,3 +158,24 @@ erDiagram
     medical_test ||--o{ health_reading : "measured by"
     swimmer ||--o{ observation : "noted on"
     swimmer ||--o{ feedback_entry : "receives"
+
+    attendance_session {
+        uuid id PK
+        uuid club_id FK
+        date session_date
+        uuid stroke_id FK
+        uuid coach_id FK
+    }
+    attendance_record {
+        uuid id PK
+        uuid session_id FK,UK
+        uuid swimmer_id FK,UK
+        attendance_status status
+        text coach_note_en
+        text coach_note_ar
+    }
+
+    club ||--o{ attendance_session : "holds"
+    stroke ||--o{ attendance_session : "grouped by"
+    attendance_session ||--o{ attendance_record : "includes"
+    swimmer ||--o{ attendance_record : "attends"
