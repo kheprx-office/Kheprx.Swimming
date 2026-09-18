@@ -6,6 +6,7 @@ import { CurrentUserItemDtoRs } from '@features/auth/data/dto/shared/current-use
 import { LoginDtoRq } from '@features/auth/data/dto/login/login.dto';
 import { RefreshDtoRq } from '@features/auth/data/dto/shared/refresh.dto';
 import { ChangePasswordDtoRq } from '@features/auth/data/dto/change-password/change-password.dto';
+import { RolesListDtoRs } from '@features/auth/data/dto/roles/role.dto';
 
 export interface IAuthRepository {
   login(rq: LoginDtoRq): Promise<SessionItemDtoRs>;
@@ -13,6 +14,7 @@ export interface IAuthRepository {
   logout(): Promise<void>;
   me(): Promise<CurrentUserItemDtoRs>;
   changePassword(rq: ChangePasswordDtoRq): Promise<SessionItemDtoRs>;
+  getRoles(): Promise<RolesListDtoRs>;
 }
 
 export const AUTH_REPOSITORY = new InjectionToken<IAuthRepository>('AUTH_REPOSITORY');

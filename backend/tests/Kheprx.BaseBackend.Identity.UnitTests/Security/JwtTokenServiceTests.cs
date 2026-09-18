@@ -21,7 +21,7 @@ public class JwtTokenServiceTests
     [Fact]
     public void Access_token_carries_sub_email_role_and_future_expiry()
     {
-        var user = new User("Alice", Guid.NewGuid(), "29801014501236", email: "a@b.com", passwordHash: "h");
+        var user = new AppUser("alice", "Alice", Guid.NewGuid(), email: "a@b.com", passwordHash: "h");
 
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(NewService().CreateAccessToken(user, "admin"));
 

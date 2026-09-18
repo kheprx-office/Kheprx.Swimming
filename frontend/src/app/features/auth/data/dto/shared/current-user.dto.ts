@@ -7,11 +7,13 @@ import { ROLE_LABELS } from '@core/domain/roles';
 export interface CurrentUserDtoRs {
   userId: string;
   email: string;
-  fullName: string;
+  nameEn: string;
+  nameAr: string | null;
   role: string;
   phone: string | null;
   gender: string | null;
   age: number | null;
+  nationalId: string | null;
 }
 
 export interface CurrentUserItemDtoRs extends BaseResponseRs<CurrentUserDtoRs> {}
@@ -27,7 +29,9 @@ export function isCurrentUserDtoRsValid(dto: CurrentUserDtoRs): boolean {
   return (
     typeof dto.userId === 'string' && dto.userId.length > 0 &&
     typeof dto.email === 'string' &&
-    typeof dto.fullName === 'string' &&
+    typeof dto.nameEn === 'string' &&
+    isNullableString(dto.nameAr) &&
+    isNullableString(dto.nationalId) &&
     typeof dto.role === 'string' &&
     Object.prototype.hasOwnProperty.call(ROLE_LABELS, dto.role) &&
     isNullableString(dto.phone) &&

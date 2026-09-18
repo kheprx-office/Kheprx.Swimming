@@ -1,7 +1,7 @@
 import { SessionDtoRs, isSessionDtoRsValid } from '@features/auth/data/dto/shared/session.dto';
 
 const validSession: SessionDtoRs = {
-  accessToken: 'a', refreshToken: 'r', role: 'admin', userId: 'USR-1', mustChangePassword: false,
+  accessToken: 'a', refreshToken: 'r', role: 'head_coach', userId: 'USR-1', mustChangePassword: false,
 };
 
 describe('isSessionDtoRsValid', () => {

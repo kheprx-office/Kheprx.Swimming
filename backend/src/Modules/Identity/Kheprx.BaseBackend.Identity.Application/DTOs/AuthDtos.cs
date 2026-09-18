@@ -3,7 +3,8 @@ namespace Kheprx.BaseBackend.Identity.Application.DTOs;
 /// <summary>Credentials for POST /api/auth/login.</summary>
 /// <param name="Email">Account email address.</param>
 /// <param name="Password">Account password.</param>
-public sealed record LoginRequest(string Email, string Password);
+/// <param name="Role">Role code the user selected at login; must match the account's actual role.</param>
+public sealed record LoginRequest(string Email, string Password, string Role);
 
 /// <summary>Token exchange payload for POST /api/auth/refresh.</summary>
 /// <param name="RefreshToken">The refresh token issued with the last session.</param>
@@ -23,21 +24,30 @@ public sealed record ChangePasswordRequest(string CurrentPassword, string NewPas
 public sealed record SessionDto(string AccessToken, string RefreshToken, string Role, Guid UserId, bool MustChangePassword);
 
 /// <summary>Profile of the currently authenticated user (GET /api/auth/me).</summary>
-/// <param name="UserId">User identifier.</param>
-/// <param name="Email">Account email address.</param>
-/// <param name="FullName">Display name.</param>
-/// <param name="Role">Role code (e.g. admin).</param>
-/// <param name="Phone">Phone number; null when not set.</param>
-/// <param name="Gender">Gender code (male/female); null when not set.</param>
-/// <param name="Age">Age in years; null when not set.</param>
 public sealed record CurrentUserDto(
-    Guid UserId, string Email, string FullName, string Role,
-    string? Phone, string? Gender, int? Age);
+    Guid UserId, string Email, string NameEn, string? NameAr, string Role,
+    string? Phone, string? Gender, int? Age, string? NationalId);
 
 /// <summary>A selectable role.</summary>
-/// <param name="Id">Role identifier.</param>
-/// <param name="Code">Stable role code (e.g. admin).</param>
-/// <param name="LabelAr">Arabic display label.</param>
-/// <param name="LabelEn">English display label.</param>
-/// <param name="SortOrder">Display ordering, ascending.</param>
-public sealed record RoleDto(Guid Id, string Code, string? LabelAr, string? LabelEn, int SortOrder);
+public sealed record RoleDto(Guid Id, string Code, string NameEn, string? NameAr);
+
+/// <summary>Outcome of a login attempt.</summary>
+public enum LoginStatus
+{
+    /// <summary>Credentials verified and the selected role matched the account.</summary>
+    Success,
+    /// <summary>Unknown email, no password set, or wrong password.</summary>
+    InvalidCredentials,
+    /// <summary>Credentials were valid but the selected role does not match the account's role.</summary>
+    RoleMismatch
+}
+
+/// <summary>Result of <see cref="Services.Interfaces.IAuthService.LoginAsync"/>: a status plus the session when successful.</summary>
+/// <param name="Status">Which outcome occurred.</param>
+/// <param name="Session">The issued session when <see cref="Status"/> is <see cref="LoginStatus.Success"/>; otherwise null.</param>
+public sealed record LoginResult(LoginStatus Status, SessionDto? Session)
+{
+    public static LoginResult Success(SessionDto session) => new(LoginStatus.Success, session);
+    public static LoginResult InvalidCredentials() => new(LoginStatus.InvalidCredentials, null);
+    public static LoginResult RoleMismatch() => new(LoginStatus.RoleMismatch, null);
+}

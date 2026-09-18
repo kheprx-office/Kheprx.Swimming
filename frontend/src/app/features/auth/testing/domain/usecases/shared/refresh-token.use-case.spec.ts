@@ -5,14 +5,14 @@ import { SessionDtoRs } from '@features/auth/data/dto/shared/session.dto';
 import { TokenStore } from '@features/auth/data/token-store';
 import { KeyValueStore } from '@core/datasource/keyvalue/key-value.store';
 
-const sessionDto: SessionDtoRs = { accessToken: 'a2', refreshToken: 'r2', role: 'admin', userId: 'USR-ADMIN', mustChangePassword: false };
+const sessionDto: SessionDtoRs = { accessToken: 'a2', refreshToken: 'r2', role: 'head_coach', userId: 'USR-COACH', mustChangePassword: false };
 
 function makeRepo(overrides: Partial<IAuthRepository> = {}): IAuthRepository {
   return {
     login: async () => ({ data: sessionDto }),
     refresh: async () => ({ data: sessionDto }),
     logout: async () => undefined,
-    me: async () => ({ data: { userId: 'USR-ADMIN', email: 'a@b.c', fullName: 'A', role: 'admin' } }),
+    me: async () => ({ data: { userId: 'USR-COACH', email: 'a@b.c', nameEn: 'A', nameAr: null, role: 'head_coach', phone: null, gender: null, age: null, nationalId: null } }),
     changePassword: async () => ({ data: sessionDto }),
     ...overrides,
   } as IAuthRepository;

@@ -3,7 +3,7 @@ import { LoadCurrentUserUseCase } from '@features/auth/domain/usecases/shared/lo
 import { AUTH_REPOSITORY, IAuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CurrentUserDtoRs } from '@features/auth/data/dto/shared/current-user.dto';
 
-const userDto: CurrentUserDtoRs = { userId: 'USR-1', email: 'a@b.c', fullName: 'A', role: 'admin', phone: '0100', gender: 'female', age: 25 };
+const userDto: CurrentUserDtoRs = { userId: 'USR-1', email: 'a@b.c', nameEn: 'Ahmed', nameAr: 'أحمد', role: 'head_coach', phone: '0100', gender: 'female', age: 25, nationalId: '12345678901234' };
 
 function repo(overrides: Partial<IAuthRepository> = {}): IAuthRepository {
   return {
@@ -26,7 +26,7 @@ describe('LoadCurrentUserUseCase', () => {
     configure(repo());
     const res = await TestBed.inject(LoadCurrentUserUseCase).run();
     expect(res.ok).toBe(true);
-    if (res.ok) expect(res.data).toEqual({ userId: 'USR-1', email: 'a@b.c', fullName: 'A', role: 'admin', phone: '0100', gender: 'female', age: 25 });
+    if (res.ok) expect(res.data).toEqual({ userId: 'USR-1', email: 'a@b.c', nameEn: 'Ahmed', nameAr: 'أحمد', role: 'head_coach', phone: '0100', gender: 'female', age: 25, nationalId: '12345678901234' });
   });
 
   it('fails with a validation error on a malformed DTO', async () => {

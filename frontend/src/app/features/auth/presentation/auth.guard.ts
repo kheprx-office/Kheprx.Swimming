@@ -21,3 +21,12 @@ export const roleGuard = (...roles: UserRole[]): CanActivateFn => () => {
   if (!role || !roles.includes(role)) { router.navigate(['/']); return false; }
   return true;
 };
+
+// firstLoginGuard: an authenticated user still flagged mustChangePassword is pinned to
+// /change-password until they change it. Applied to shell children EXCEPT /change-password.
+export const firstLoginGuard: CanActivateFn = () => {
+  const auth = inject(AuthSessionStore);
+  const router = inject(Router);
+  if (auth.mustChangePassword()) { router.navigate(['/change-password']); return false; }
+  return true;
+};

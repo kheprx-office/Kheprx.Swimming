@@ -16,7 +16,7 @@ internal sealed class JwtTokenService : IJwtTokenService
 
     public JwtTokenService(IOptions<JwtOptions> options) => _options = options.Value;
 
-    public string CreateAccessToken(User user, string roleCode)
+    public string CreateAccessToken(AppUser user, string roleCode)
     {
         var now = DateTime.UtcNow;
         var claims = new[]

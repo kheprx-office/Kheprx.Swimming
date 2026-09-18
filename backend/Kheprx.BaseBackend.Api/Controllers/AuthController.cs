@@ -34,7 +34,7 @@ public sealed class AuthController : BaseApiController
     /// <summary>Authenticates a user with email and password and issues a token pair.</summary>
     /// <response code="200">Signed in; returns the session.</response>
     /// <response code="400">Validation failed; joined messages in the envelope's error field.</response>
-    /// <response code="401">Wrong email or password — error code INVALID_CREDENTIALS.</response>
+    /// <response code="401">Wrong email or password — error code INVALID_CREDENTIALS; or the selected role does not match the account — error code ROLE_MISMATCH.</response>
     [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<SessionDto>), StatusCodes.Status200OK)]
@@ -42,9 +42,16 @@ public sealed class AuthController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<SessionDto>), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<SessionDto>>> Login(LoginRequest request, CancellationToken ct)
     {
-        var session = await _service.LoginAsync(request, ct);
+        var result = await _service.LoginAsync(request, ct);
 
-        if (session is null)
+        if (result.Status == LoginStatus.RoleMismatch)
+        {
+            var message = AuthMessages.Errors.RoleMismatch(AppLanguage.Current);
+            var envelope = ApiResponse<SessionDto>.Failure(message, "ROLE_MISMATCH");
+            return Unauthorized(envelope);
+        }
+
+        if (result.Status != LoginStatus.Success)
         {
             var message = AuthMessages.Errors.InvalidCredentials(AppLanguage.Current);
             var envelope = ApiResponse<SessionDto>.Failure(message, "INVALID_CREDENTIALS");
@@ -52,7 +59,7 @@ public sealed class AuthController : BaseApiController
         }
 
         var successMessage = AuthMessages.Success.SignedIn(AppLanguage.Current);
-        var body = ApiResponse<SessionDto>.Success(successMessage, session);
+        var body = ApiResponse<SessionDto>.Success(successMessage, result.Session!);
         return Ok(body);
     }
 

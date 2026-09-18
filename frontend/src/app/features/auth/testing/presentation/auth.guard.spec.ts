@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { runInInjectionContext, Injector } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { authGuard, roleGuard } from '@features/auth/presentation/auth.guard';
+import { authGuard, roleGuard, firstLoginGuard } from '@features/auth/presentation/auth.guard';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 
 function setup(auth: Partial<AuthSessionStore>) {
@@ -31,12 +31,25 @@ describe('authGuard', () => {
 
 describe('roleGuard', () => {
   it('allows a matching role', () => {
-    const { injector } = setup({ isAuthenticated: () => true, role: () => 'admin' } as Partial<AuthSessionStore>);
-    expect(run(injector, roleGuard('admin'))).toBe(true);
+    const { injector } = setup({ isAuthenticated: () => true, role: () => 'head_coach' } as Partial<AuthSessionStore>);
+    expect(run(injector, roleGuard('head_coach'))).toBe(true);
   });
   it('redirects a non-matching role to /', () => {
-    const { injector, router } = setup({ isAuthenticated: () => true, role: () => 'worker' } as Partial<AuthSessionStore>);
-    expect(run(injector, roleGuard('admin'))).toBe(false);
+    const { injector, router } = setup({ isAuthenticated: () => true, role: () => 'captain' } as Partial<AuthSessionStore>);
+    expect(run(injector, roleGuard('head_coach'))).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/']);
+  });
+});
+
+describe('firstLoginGuard', () => {
+  it('redirects to /change-password when mustChangePassword is true', () => {
+    const { injector, router } = setup({ mustChangePassword: () => true } as Partial<AuthSessionStore>);
+    expect(run(injector, firstLoginGuard)).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/change-password']);
+  });
+  it('allows navigation when mustChangePassword is false', () => {
+    const { injector, router } = setup({ mustChangePassword: () => false } as Partial<AuthSessionStore>);
+    expect(run(injector, firstLoginGuard)).toBe(true);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

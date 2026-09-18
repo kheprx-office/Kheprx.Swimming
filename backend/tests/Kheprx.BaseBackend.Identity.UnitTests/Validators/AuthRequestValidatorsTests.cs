@@ -8,19 +8,23 @@ public class AuthRequestValidatorsTests
 {
     [Fact]
     public void Login_valid_passes()
-        => Assert.True(new LoginRequestValidator().Validate(new LoginRequest("a@b.com", "x")).IsValid);
+        => Assert.True(new LoginRequestValidator().Validate(new LoginRequest("a@b.com", "x", "captain")).IsValid);
 
     [Fact]
     public void Login_empty_email_fails()
-        => Assert.False(new LoginRequestValidator().Validate(new LoginRequest("", "x")).IsValid);
+        => Assert.False(new LoginRequestValidator().Validate(new LoginRequest("", "x", "captain")).IsValid);
 
     [Fact]
     public void Login_bad_email_fails()
-        => Assert.False(new LoginRequestValidator().Validate(new LoginRequest("nope", "x")).IsValid);
+        => Assert.False(new LoginRequestValidator().Validate(new LoginRequest("nope", "x", "captain")).IsValid);
 
     [Fact]
     public void Login_short_password_still_passes_no_length_rule() // AD-011
-        => Assert.True(new LoginRequestValidator().Validate(new LoginRequest("a@b.com", "x")).IsValid);
+        => Assert.True(new LoginRequestValidator().Validate(new LoginRequest("a@b.com", "x", "captain")).IsValid);
+
+    [Fact]
+    public void Login_empty_role_fails()
+        => Assert.False(new LoginRequestValidator().Validate(new LoginRequest("a@b.com", "x", "")).IsValid);
 
     [Fact]
     public void Refresh_empty_fails()

@@ -1,32 +1,26 @@
 import { Component, inject } from '@angular/core';
-import {
-  LucideDynamicIcon,
-  LucideZap,
-  LucideLogIn,
-  LucideMail,
-  LucideLock,
-  LucideAlertCircle,
-  LucideLoader2,
-} from '@lucide/angular';
-import { DecorBackgroundComponent } from '@core/ui/components/decor-background.component';
+import { LucideDynamicIcon, LucideWaves, LucideMail, LucideLock, LucideLoader2, LucideAlertCircle, LucideShieldAlert } from '@lucide/angular';
 import { LoginViewModel } from './login.viewmodel';
+import { LanguageStore, TranslatePipe, type Lang } from '@core/i18n';
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [LucideDynamicIcon, DecorBackgroundComponent],
+  imports: [LucideDynamicIcon, TranslatePipe],
   templateUrl: './login.page.html',
 })
 export class LoginPage {
   protected readonly vm = inject(LoginViewModel);
-  readonly ZapIcon = LucideZap;
-  readonly LogInIcon = LucideLogIn;
-  readonly MailIcon = LucideMail;
-  readonly LockIcon = LucideLock;
-  readonly AlertCircleIcon = LucideAlertCircle;
-  readonly Loader2Icon = LucideLoader2;
+  private readonly language = inject(LanguageStore);
+  protected readonly lang = this.language.lang;
 
-  onKeyDown(e: KeyboardEvent): void {
-    if (e.key === 'Enter') void this.vm.submit();
-  }
+  protected readonly WavesIcon = LucideWaves;
+  protected readonly MailIcon = LucideMail;
+  protected readonly LockIcon = LucideLock;
+  protected readonly Loader2Icon = LucideLoader2;
+  protected readonly AlertCircleIcon = LucideAlertCircle;
+  protected readonly ShieldAlertIcon = LucideShieldAlert;
+
+  setLang(lang: Lang): void { this.language.set(lang); }
+  onKeyDown(e: KeyboardEvent): void { if (e.key === 'Enter') void this.vm.submit(); }
 }

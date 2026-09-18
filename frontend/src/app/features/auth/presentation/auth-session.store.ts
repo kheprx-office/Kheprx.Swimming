@@ -11,6 +11,7 @@ import { TokenStore } from '@features/auth/data/token-store';
 import { AuthSession } from '@features/auth/domain/model/shared/auth';
 import { UserRole } from '@core/domain/roles';
 import { Result } from '@core/domain/result/result';
+import { LanguageStore } from '@core/i18n';
 
 @Injectable({ providedIn: 'root' })
 export class AuthSessionStore {
@@ -19,6 +20,7 @@ export class AuthSessionStore {
   private readonly changePasswordUseCase = inject(ChangePasswordUseCase);
   private readonly loadCurrentUser = inject(LoadCurrentUserUseCase);
   private readonly tokens = inject(TokenStore);
+  private readonly language = inject(LanguageStore);
 
   private readonly _session = signal<AuthSession | null>(null);
   readonly session = this._session.asReadonly();
@@ -27,11 +29,14 @@ export class AuthSessionStore {
   readonly role = computed<UserRole | null>(() => this._session()?.principal.role ?? null);
   readonly mustChangePassword = computed<boolean>(() => this._session()?.mustChangePassword ?? false);
 
-  private readonly _fullName = signal<string | null>(null);
-  /** The signed-in user's display name (from GET /api/auth/me), or null until loaded. */
-  readonly fullName = this._fullName.asReadonly();
-  /** Display name with graceful fallback: the full name, else the userId, else ''. */
-  readonly currentUserName = computed<string>(() => this._fullName() ?? this.principal()?.userId ?? '');
+  private readonly _nameEn = signal<string | null>(null);
+  private readonly _nameAr = signal<string | null>(null);
+  /** Language-aware display name: Arabic name when lang is 'ar' (falls back to English), English name otherwise. */
+  readonly displayName = computed<string>(() =>
+    this.language.lang() === 'ar' ? (this._nameAr() ?? this._nameEn() ?? '') : (this._nameEn() ?? '')
+  );
+  /** Display name with graceful fallback: displayName, else the userId, else ''. */
+  readonly currentUserName = computed<string>(() => this.displayName() || this.principal()?.userId || '');
 
   // Rehydration is kicked off eagerly on construction; the promise is captured so an
   // APP_INITIALIZER can await whenReady() and route guards never run before the session
@@ -45,8 +50,8 @@ export class AuthSessionStore {
     return this.rehydrated;
   }
 
-  async signIn(email: string, password: string): Promise<Result<AuthSession>> {
-    const r = await this.loginUseCase.run({ email, password });
+  async signIn(email: string, password: string, role: string): Promise<Result<AuthSession>> {
+    const r = await this.loginUseCase.run({ email, password, role });
     if (r.ok) {
       this._session.set(r.data);
       await this.refreshProfileName();
@@ -57,7 +62,8 @@ export class AuthSessionStore {
   async signOut(): Promise<void> {
     await this.logoutUseCase.run();
     this._session.set(null);
-    this._fullName.set(null);
+    this._nameEn.set(null);
+    this._nameAr.set(null);
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<Result<AuthSession>> {
@@ -76,7 +82,8 @@ export class AuthSessionStore {
     const r = await this.loadCurrentUser.run();
     if (r.ok) {
       this._session.set({ tokens: { accessToken, refreshToken }, principal: { role: r.data.role, userId: r.data.userId }, mustChangePassword: false });
-      this._fullName.set(r.data.fullName);
+      this._nameEn.set(r.data.nameEn);
+      this._nameAr.set(r.data.nameAr);
     }
     // invalid/expired → authInterceptor handles 401→refresh→retry, or the user re-logs in.
   }
@@ -86,7 +93,7 @@ export class AuthSessionStore {
   private async refreshProfileName(): Promise<void> {
     try {
       const r = await this.loadCurrentUser.run();
-      if (r.ok) this._fullName.set(r.data.fullName);
+      if (r.ok) { this._nameEn.set(r.data.nameEn); this._nameAr.set(r.data.nameAr); }
     } catch {
       // best-effort — ignore
     }

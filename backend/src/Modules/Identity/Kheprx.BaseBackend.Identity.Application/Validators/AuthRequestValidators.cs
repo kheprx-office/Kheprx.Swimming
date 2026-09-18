@@ -15,6 +15,8 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
             .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.EmailTooLong(AppLanguage.Current));
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage(_ => CommonMessages.Errors.PasswordRequired(AppLanguage.Current));
+        RuleFor(x => x.Role)
+            .NotEmpty().WithMessage(_ => AuthMessages.Errors.RoleRequired(AppLanguage.Current));
     }
 }
 

@@ -31,9 +31,9 @@ public class AuthControllerTests
     {
         var svc = new Mock<IAuthService>();
         svc.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>()))
-           .ReturnsAsync(new SessionDto("a", "r", "admin", Guid.NewGuid(), true));
+           .ReturnsAsync(LoginResult.Success(new SessionDto("a", "r", "admin", Guid.NewGuid(), true)));
 
-        var result = await WithUser(svc).Login(new LoginRequest("a@b.com", "pw"), CancellationToken.None);
+        var result = await WithUser(svc).Login(new LoginRequest("a@b.com", "pw", "admin"), CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var body = Assert.IsType<ApiResponse<SessionDto>>(ok.Value);
@@ -43,14 +43,29 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_returns_401_when_service_returns_null()
+    public async Task Login_returns_401_on_invalid_credentials()
     {
         var svc = new Mock<IAuthService>();
-        svc.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync((SessionDto?)null);
+        svc.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(LoginResult.InvalidCredentials());
 
-        var result = await WithUser(svc).Login(new LoginRequest("a@b.com", "pw"), CancellationToken.None);
+        var result = await WithUser(svc).Login(new LoginRequest("a@b.com", "pw", "captain"), CancellationToken.None);
 
-        Assert.IsType<UnauthorizedObjectResult>(result.Result);
+        var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<SessionDto>>(unauthorized.Value);
+        Assert.Equal("INVALID_CREDENTIALS", body.Error);
+    }
+
+    [Fact]
+    public async Task Login_returns_401_with_role_mismatch_code_on_role_mismatch()
+    {
+        var svc = new Mock<IAuthService>();
+        svc.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(LoginResult.RoleMismatch());
+
+        var result = await WithUser(svc).Login(new LoginRequest("a@b.com", "pw", "head_coach"), CancellationToken.None);
+
+        var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<SessionDto>>(unauthorized.Value);
+        Assert.Equal("ROLE_MISMATCH", body.Error);
     }
 
     [Fact]
@@ -71,7 +86,7 @@ public class AuthControllerTests
         var userId = Guid.NewGuid();
         var svc = new Mock<IAuthService>();
         svc.Setup(s => s.GetCurrentUserAsync(userId, It.IsAny<CancellationToken>()))
-           .ReturnsAsync(new CurrentUserDto(userId, "a@b.com", "Alice", "admin", "01000000000", "male", 30));
+           .ReturnsAsync(new CurrentUserDto(userId, "a@b.com", "Alice", null, "admin", "01000000000", "male", 30, null));
 
         var result = await WithUser(svc, userId).Me(CancellationToken.None);
 

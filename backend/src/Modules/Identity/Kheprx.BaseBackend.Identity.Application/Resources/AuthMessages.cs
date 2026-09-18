@@ -44,6 +44,18 @@ public static class AuthMessages
             _ => "Invalid email or password"
         };
 
+        public static string RoleMismatch(string lang) => lang switch
+        {
+            "ar" => "هذا الحساب غير مسجّل بالدور المحدد",
+            _ => "This account is not registered under the selected role"
+        };
+
+        public static string RoleRequired(string lang) => lang switch
+        {
+            "ar" => "الدور مطلوب",
+            _ => "Role is required"
+        };
+
         public static string InvalidRefreshToken(string lang) => lang switch
         {
             "ar" => "رمز التحديث غير صالح أو منتهي الصلاحية",

@@ -4,8 +4,8 @@ import { HttpClientService } from '@core/network/api/http-client';
 import { SessionDtoRs } from '@features/auth/data/dto/shared/session.dto';
 import { CurrentUserDtoRs } from '@features/auth/data/dto/shared/current-user.dto';
 
-const session: SessionDtoRs = { accessToken: 'a', refreshToken: 'r', role: 'admin', userId: 'USR-1', mustChangePassword: false };
-const user: CurrentUserDtoRs = { userId: 'USR-1', email: 'a@b.c', fullName: 'A', role: 'admin' };
+const session: SessionDtoRs = { accessToken: 'a', refreshToken: 'r', role: 'head_coach', userId: 'USR-1', mustChangePassword: false };
+const user: CurrentUserDtoRs = { userId: 'USR-1', email: 'a@b.c', nameEn: 'A', nameAr: null, role: 'head_coach', phone: null, gender: null, age: null, nationalId: null };
 
 describe('AuthRepositoryImpl', () => {
   const http = { get: jest.fn(), post: jest.fn() } as unknown as HttpClientService;
@@ -50,5 +50,12 @@ describe('AuthRepositoryImpl', () => {
     const rq = { currentPassword: 'old', newPassword: 'new12345' };
     await expect(repo.changePassword(rq)).resolves.toEqual({ data: session });
     expect(http.post).toHaveBeenCalledWith('/api/auth/change-password', { body: rq });
+  });
+
+  it('getRoles GETs the roles list envelope', async () => {
+    const roles = [{ id: '1', code: 'head_coach', nameEn: 'Head Coach', nameAr: 'المدرب العام' }];
+    (http.get as jest.Mock).mockResolvedValue({ data: roles });
+    await expect(repo.getRoles()).resolves.toEqual({ data: roles });
+    expect(http.get).toHaveBeenCalledWith('/api/roles');
   });
 });

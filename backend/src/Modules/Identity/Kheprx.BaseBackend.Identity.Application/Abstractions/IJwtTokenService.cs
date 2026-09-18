@@ -4,7 +4,7 @@ namespace Kheprx.BaseBackend.Identity.Application.Abstractions;
 
 public interface IJwtTokenService
 {
-    string CreateAccessToken(User user, string roleCode);
+    string CreateAccessToken(AppUser user, string roleCode);
     (string token, string hash) CreateRefreshToken();
     string HashRefreshToken(string token);
 }

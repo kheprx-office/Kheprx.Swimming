@@ -12,8 +12,8 @@ export class LoginUseCase extends UseCase<LoginInput, AuthSession> {
   private readonly repo = inject(AUTH_REPOSITORY);
   private readonly tokens = inject(TokenStore);
   constructor() { super('Login'); }
-  protected async execute({ email, password }: LoginInput): Promise<AuthSession> {
-    const res = await this.repo.login({ email, password });
+  protected async execute({ email, password, role }: LoginInput): Promise<AuthSession> {
+    const res = await this.repo.login({ email, password, role });
     if (!isSessionDtoRsValid(res.data)) throw new AppError('Invalid session data received', 'validation');
     const session = toAuthSession(res.data);
     await this.tokens.save(session.tokens);

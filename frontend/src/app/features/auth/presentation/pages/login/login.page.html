@@ -1,112 +1,111 @@
-<main class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#0B1F4D] p-4">
-  <app-decor-background variant="auth" />
+<main class="relative flex min-h-screen w-full bg-canvas text-ink">
+  <!-- Brand side -->
+  <section class="ocean-panel relative hidden w-1/2 flex-col justify-between p-12 lg:flex">
+    <div class="flex items-center gap-3">
+      <div class="flex h-11 w-11 items-center justify-center rounded-[16px] border border-white/15 bg-white/10 shadow-inner-line">
+        <svg [lucideIcon]="WavesIcon" [size]="20" />
+      </div>
+      <div>
+        <p class="font-heading text-base leading-tight">{{ 'login.brandName' | translate }}</p>
+        <p class="text-[11px] text-white/65">{{ 'login.brandSubtitle' | translate }}</p>
+      </div>
+    </div>
 
-  <!-- Outer card wrapper -->
-  <div class="relative z-10 w-full max-w-md animate-slide-up">
+    <div>
+      <h1 class="font-heading max-w-md text-4xl leading-[1.15]">{{ 'login.heroTitle' | translate }}</h1>
+      <p class="mt-5 max-w-sm text-sm leading-relaxed text-white/75">{{ 'login.heroSubtitle' | translate }}</p>
+      <div class="mt-10 border-t border-white/10 pt-8">
+        <p class="tabular text-2xl font-semibold">{{ vm.swimmerCount() ?? 0 }}</p>
+        <p class="mt-1 text-[11px] text-white/65">{{ 'login.statLabel' | translate }}</p>
+      </div>
+    </div>
 
-    <!-- Inner card — shake class toggled on auth failure -->
-    <div
-      class="rounded-3xl border border-white/15 bg-ink/60 p-8 shadow-2xl shadow-black/40 backdrop-blur-2xl sm:p-10"
-      [class.animate-shake]="vm.shakeKey() % 2 === 1">
+    <p class="text-[11px] text-white/55">© 2026 {{ 'login.brandName' | translate }}</p>
+  </section>
 
-      <!-- Logo -->
-      <div class="mb-8 flex flex-col items-center text-center">
-        <div class="shine animate-scale-in mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-accent shadow-lg shadow-accent/40">
-          <svg [lucideIcon]="ZapIcon" [size]="38" class="text-white" />
+  <!-- Form side -->
+  <section class="grain relative flex w-full flex-col items-center justify-center p-6 lg:w-1/2 lg:p-12">
+    <div class="w-full max-w-sm">
+      <div class="mb-8 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 lg:hidden">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
+            <svg [lucideIcon]="WavesIcon" [size]="18" />
+          </div>
+          <span class="text-sm font-semibold">{{ 'login.brandName' | translate }}</span>
         </div>
-        <h1 class="text-3xl font-extrabold text-white">النور كهرباء</h1>
-        <p class="mt-2 text-sm text-white/70">
-          نظام إدارة مقاولات الكهرباء
-        </p>
+
+        <!-- Segmented language switcher -->
+        <div class="ms-auto inline-flex rounded-[10px] border border-border bg-canvas p-0.5 text-xs font-medium">
+          <button type="button" (click)="setLang('en')" [attr.aria-pressed]="lang() === 'en'"
+            class="h-7 rounded-[4px] px-2.5 transition-colors"
+            [class.bg-surface]="lang() === 'en'" [class.text-ink]="lang() === 'en'" [class.shadow-sm]="lang() === 'en'"
+            [class.text-text-secondary]="lang() !== 'en'">EN</button>
+          <button type="button" (click)="setLang('ar')" [attr.aria-pressed]="lang() === 'ar'"
+            class="h-7 rounded-[4px] px-2.5 transition-colors"
+            [class.bg-surface]="lang() === 'ar'" [class.text-ink]="lang() === 'ar'" [class.shadow-sm]="lang() === 'ar'"
+            [class.text-text-secondary]="lang() !== 'ar'">عربي</button>
+        </div>
       </div>
 
-      <div class="space-y-5">
-        <!-- Email -->
-        <div class="animate-slide-up stagger-1 space-y-1.5">
-          <label for="email" class="block text-sm font-semibold text-white/90">
-            البريد الإلكتروني
-          </label>
-          <div class="relative">
-            <svg
-              [lucideIcon]="MailIcon"
-              [size]="18"
-              class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50" />
-            <input
-              id="email"
-              type="email"
-              [value]="vm.email()"
-              (input)="vm.email.set($any($event.target).value)"
-              (keydown)="onKeyDown($event)"
-              dir="ltr"
-              class="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pr-11 pl-4 text-base text-white placeholder:text-white/40 outline-none transition-all focus:border-accent focus:bg-white/15 focus:ring-2 focus:ring-accent/40"
-              placeholder="you&#64;example.com" />
-          </div>
-        </div>
+      <div class="card-gradient rounded-[20px] border border-border p-7 shadow-warm-lg" [class.animate-shake]="vm.shakeKey() % 2 === 1">
+        <h1 class="font-heading text-2xl text-ink">{{ 'login.welcome' | translate }}</h1>
+        <p class="mt-1.5 text-sm text-text-secondary">{{ 'login.subtitle' | translate }}</p>
 
-        <!-- Password -->
-        <div class="animate-slide-up stagger-2 space-y-1.5">
-          <label for="password" class="block text-sm font-semibold text-white/90">
-            كلمة المرور
-          </label>
-          <div class="relative">
-            <svg
-              [lucideIcon]="LockIcon"
-              [size]="18"
-              class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50" />
-            <input
-              id="password"
-              type="password"
-              [value]="vm.password()"
-              (input)="vm.password.set($any($event.target).value)"
-              (keydown)="onKeyDown($event)"
-              dir="ltr"
-              class="w-full rounded-xl border border-white/25 bg-white/10 py-3.5 pr-11 pl-4 text-base text-white placeholder:text-white/40 outline-none transition-all focus:border-accent focus:bg-white/15 focus:ring-2 focus:ring-accent/40"
-              placeholder="••••••••" />
+        <div class="mt-6 space-y-4">
+          <!-- Role selector — options loaded from the database; the picked role is validated at sign-in -->
+          <div class="rounded-[12px] border border-border bg-canvas p-3">
+            <label for="role" class="mb-2 flex items-center gap-1.5 text-xs font-medium text-text-secondary">
+              <svg [lucideIcon]="ShieldAlertIcon" [size]="14" /> {{ 'login.roleLabel' | translate }}
+            </label>
+            <select id="role" (change)="vm.setRole($any($event.target).value)"
+              class="h-9 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
+              @if (vm.roles().length === 0) {
+                <option value="" disabled selected>{{ 'login.roleLoading' | translate }}</option>
+              }
+              @for (r of vm.roles(); track r.code) {
+                <option [value]="r.code" [selected]="vm.selectedRole() === r.code">{{ lang() === 'ar' ? (r.nameAr ?? r.nameEn) : r.nameEn }}</option>
+              }
+            </select>
           </div>
-        </div>
 
-        <!-- Error -->
-        @if (vm.error()) {
-          <div
-            class="overflow-hidden animate-slide-up"
-            role="alert">
-            <div class="flex items-center gap-2 rounded-xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm font-medium text-red-200">
+          <div>
+            <label for="email" class="mb-1.5 block text-sm font-medium text-ink">{{ 'login.email' | translate }}</label>
+            <div class="relative">
+              <svg [lucideIcon]="MailIcon" [size]="16" class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-text-muted" />
+              <input id="email" type="email" dir="ltr"
+                [value]="vm.email()" (input)="vm.email.set($any($event.target).value)" (keydown)="onKeyDown($event)"
+                class="h-10 w-full rounded-[10px] border border-border bg-surface ps-10 pe-3 text-sm text-ink outline-none placeholder:text-text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                placeholder="you@example.com" />
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium text-ink">{{ 'login.password' | translate }}</label>
+            <div class="relative">
+              <svg [lucideIcon]="LockIcon" [size]="16" class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-text-muted" />
+              <input id="password" type="password" dir="ltr"
+                [value]="vm.password()" (input)="vm.password.set($any($event.target).value)" (keydown)="onKeyDown($event)"
+                class="h-10 w-full rounded-[10px] border border-border bg-surface ps-10 pe-3 text-sm text-ink outline-none placeholder:text-text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                placeholder="••••••••" />
+            </div>
+          </div>
+
+          @if (vm.error()) {
+            <div role="alert" class="flex items-center gap-2 rounded-[10px] border border-danger/40 bg-danger-bg px-4 py-3 text-sm font-medium text-danger">
               <svg [lucideIcon]="AlertCircleIcon" [size]="16" class="shrink-0" />
               {{ vm.error() }}
             </div>
-          </div>
-        }
-      </div>
+          }
 
-      <!-- Login button -->
-      <button
-        (click)="vm.submit()"
-        [disabled]="vm.loading()"
-        class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-accent/30 transition-all hover:brightness-110 disabled:opacity-70 animate-slide-up stagger-3 active:scale-[0.97]">
-        @if (vm.loading()) {
-          <svg [lucideIcon]="Loader2Icon" [size]="20" class="animate-spin" />
-        } @else {
-          <svg [lucideIcon]="LogInIcon" [size]="20" />
-        }
-        {{ vm.loading() ? 'جارٍ التحقق...' : 'تسجيل الدخول' }}
-      </button>
-
-      <!-- Demo credentials hint -->
-      <div class="mt-6 rounded-xl border border-white/10 bg-white/5 p-3 text-center animate-fade-in stagger-4">
-        <p class="mb-1.5 text-[11px] font-semibold text-white/60">
-          حسابات تجريبية
-        </p>
-        <div class="space-y-0.5 text-[11px] text-white/45" dir="ltr">
-          <p>admin&#64;kheprx.local / gvxWlsofL2b1OSQm9UE5</p>
-          <p>manager&#64;kheprx.local / ruV3G5SFnldqj6QIDx0E</p>
-          <p>moqawel&#64;kheprx.local / ruV3G5SFnldqj6QIDx0E</p>
-          <p>worker&#64;kheprx.local / ruV3G5SFnldqj6QIDx0E</p>
+          <button (click)="vm.submit()" [disabled]="vm.loading()"
+            class="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-primary bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-40">
+            @if (vm.loading()) { <svg [lucideIcon]="Loader2Icon" [size]="18" class="animate-spin" /> }
+            {{ vm.loading() ? ('login.signingIn' | translate) : ('login.signIn' | translate) }}
+          </button>
         </div>
       </div>
 
-      <p class="mt-6 text-center text-xs text-white/50">
-        © 2026 النور كهرباء — جميع الحقوق محفوظة
-      </p>
+      <p class="mt-8 text-center text-[11px] text-text-muted lg:hidden">© 2026 {{ 'login.brandName' | translate }}</p>
     </div>
-  </div>
+  </section>
 </main>

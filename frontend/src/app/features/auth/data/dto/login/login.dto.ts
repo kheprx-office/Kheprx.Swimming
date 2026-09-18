@@ -2,4 +2,5 @@
 export interface LoginDtoRq {
   email: string;
   password: string;
+  role: string;
 }

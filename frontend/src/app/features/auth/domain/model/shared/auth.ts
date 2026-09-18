@@ -10,7 +10,7 @@ export interface AuthPrincipal { role: UserRole; userId: string; }
 // surfaced by login/refresh/change-password; not part of the identity principal.
 export interface AuthSession { tokens: AuthTokens; principal: AuthPrincipal; mustChangePassword: boolean; }
 
-export interface CurrentUser { userId: string; email: string; fullName: string; role: UserRole; phone: string | null; gender: Gender | null; age: number | null; }
+export interface CurrentUser { userId: string; email: string; nameEn: string; nameAr: string | null; role: UserRole; phone: string | null; gender: Gender | null; age: number | null; nationalId: string | null; }
 
 export function toAuthSession(dto: SessionDtoRs): AuthSession {
   return {
@@ -29,5 +29,5 @@ export function toAuthPrincipal(dto: CurrentUserDtoRs): AuthPrincipal {
 }
 
 export function toCurrentUser(dto: CurrentUserDtoRs): CurrentUser {
-  return { userId: dto.userId, email: dto.email, fullName: dto.fullName, role: dto.role as UserRole, phone: dto.phone, gender: dto.gender as Gender | null, age: dto.age };
+  return { userId: dto.userId, email: dto.email, nameEn: dto.nameEn, nameAr: dto.nameAr, role: dto.role as UserRole, phone: dto.phone, gender: dto.gender as Gender | null, age: dto.age, nationalId: dto.nationalId };
 }

@@ -10,6 +10,7 @@ import { CurrentUserItemDtoRs } from '@features/auth/data/dto/shared/current-use
 import { LoginDtoRq } from '@features/auth/data/dto/login/login.dto';
 import { RefreshDtoRq } from '@features/auth/data/dto/shared/refresh.dto';
 import { ChangePasswordDtoRq } from '@features/auth/data/dto/change-password/change-password.dto';
+import { RolesListDtoRs } from '@features/auth/data/dto/roles/role.dto';
 
 @Injectable({ providedIn: 'root' })
 export class AuthRepositoryImpl implements IAuthRepository {
@@ -33,5 +34,9 @@ export class AuthRepositoryImpl implements IAuthRepository {
 
   changePassword(rq: ChangePasswordDtoRq): Promise<SessionItemDtoRs> {
     return this.http.post<SessionItemDtoRs>('/api/auth/change-password', { body: rq });
+  }
+
+  getRoles(): Promise<RolesListDtoRs> {
+    return this.http.get<RolesListDtoRs>('/api/roles');
   }
 }
