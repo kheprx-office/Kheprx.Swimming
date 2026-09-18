@@ -1,0 +1,67 @@
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+  <header class="mb-6">
+    <h1 class="font-heading text-3xl text-ink">{{ 'swimmers.title' | translate }}</h1>
+    <p class="mt-1 text-text-secondary">{{ 'swimmers.subtitle' | translate }}</p>
+  </header>
+
+  <div class="rounded-2xl border border-border bg-surface shadow-sm">
+    <!-- Controls -->
+    <div class="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center">
+      <input
+        type="search"
+        [ngModel]="search()"
+        (ngModelChange)="onSearchInput($event)"
+        [attr.placeholder]="'swimmers.searchPlaceholder' | translate"
+        [attr.aria-label]="'swimmers.searchPlaceholder' | translate"
+        class="h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm text-ink sm:max-w-xs" />
+
+      <select
+        [ngModel]="genderFilter()"
+        (ngModelChange)="setGenderFilter($event)"
+        [attr.aria-label]="'swimmers.filterGender' | translate"
+        class="h-9 rounded-lg border border-border bg-surface px-3 text-sm text-ink">
+        <option value="all">{{ 'swimmers.all' | translate }}</option>
+        <option value="male">{{ 'gender.male' | translate }}</option>
+        <option value="female">{{ 'gender.female' | translate }}</option>
+      </select>
+
+      @if (!loading()) {
+        <span class="text-xs text-text-secondary sm:ms-auto">
+          {{ visible().length }} {{ 'swimmers.count' | translate }}
+        </span>
+      }
+    </div>
+
+    <!-- States -->
+    @if (loading()) {
+      <div class="px-5 py-10 text-center text-sm text-text-secondary">{{ 'swimmers.loading' | translate }}</div>
+    } @else if (error()) {
+      <div class="px-5 py-10 text-center text-sm text-danger">{{ 'swimmers.error' | translate }}</div>
+    } @else if (visible().length === 0) {
+      <div class="px-5 py-12 text-center">
+        <p class="text-sm font-medium text-ink">{{ 'swimmers.empty.title' | translate }}</p>
+        <p class="mt-1 text-xs text-text-secondary">{{ 'swimmers.empty.desc' | translate }}</p>
+      </div>
+    } @else {
+      <ul class="divide-y divide-border">
+        @for (s of visible(); track s.id) {
+          <li class="flex items-center gap-4 px-5 py-4">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+              {{ initials(s) }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium text-ink">{{ displayName(s) }}</p>
+              <p class="mt-0.5 truncate text-xs text-text-secondary">{{ s.uid }}</p>
+            </div>
+            <div class="hidden w-32 shrink-0 truncate text-sm text-text-secondary md:block">{{ clubName(s) }}</div>
+            <div class="hidden w-24 shrink-0 text-xs text-text-secondary sm:block">
+              @if (s.gender) { <span>{{ genderLabelKey(s) | translate }}</span> }
+              @if (s.gender && s.age !== null) { <span> · </span> }
+              @if (s.age !== null) { <span>{{ s.age }}</span> }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
