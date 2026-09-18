@@ -1,0 +1,49 @@
+<div>
+  <header class="mb-8">
+    <h1 class="font-heading text-3xl text-ink">{{ 'healthMonitoring.title' | translate }}</h1>
+    <p class="mt-2 text-muted">{{ 'healthMonitoring.description' | translate }}</p>
+  </header>
+
+  @if (vm.loading()) {
+    <p class="text-muted">{{ 'healthMonitoring.states.loading' | translate }}</p>
+  } @else if (vm.error()) {
+    <p class="text-danger">{{ 'healthMonitoring.states.error' | translate }}</p>
+  } @else {
+    <section class="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <h2 class="font-heading text-xl text-ink">{{ 'healthMonitoring.log.title' | translate }}</h2>
+      <form class="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+            (submit)="$event.preventDefault(); vm.submit()">
+        <app-select-field
+          [label]="'healthMonitoring.fields.swimmer' | translate"
+          [placeholder]="'healthMonitoring.placeholders.swimmer' | translate"
+          [options]="vm.swimmerOptions()"
+          [value]="vm.swimmerId()" (valueChange)="vm.swimmerId.set($event)"></app-select-field>
+
+        <app-select-field
+          [label]="'healthMonitoring.fields.test' | translate"
+          [placeholder]="'healthMonitoring.placeholders.test' | translate"
+          [options]="vm.testOptions()"
+          [value]="vm.testId()" (valueChange)="vm.testId.set($event)"></app-select-field>
+
+        <app-text-field
+          [label]="'healthMonitoring.fields.value' | translate"
+          [value]="vm.value()" (valueChange)="vm.value.set($event)"></app-text-field>
+
+        @if (vm.selectedTest(); as t) {
+          <p class="md:col-span-2 lg:col-span-3 text-xs text-muted">
+            {{ 'healthMonitoring.normalRange' | translate }}: {{ t.lowerBound }}–{{ t.upperBound }} {{ t.unit }}
+          </p>
+        }
+
+        <div class="flex items-end">
+          <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            [disabled]="!vm.canSubmit() || vm.submitting()">
+            {{ 'healthMonitoring.log.submit' | translate }}
+          </button>
+        </div>
+
+        <p class="md:col-span-2 lg:col-span-3 text-xs text-muted">{{ 'healthMonitoring.log.helper' | translate }}</p>
+      </form>
+    </section>
+  }
+</div>

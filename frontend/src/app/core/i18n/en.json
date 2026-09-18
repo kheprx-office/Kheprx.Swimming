@@ -108,5 +108,33 @@
       "alreadyGone": "That test was already removed",
       "deleteFailed": "Couldn't delete the medical test"
     }
+  },
+  "healthMonitoring": {
+    "title": "Health Monitoring",
+    "description": "Log a swimmer's medical test result against that test's normal bounds.",
+    "log": {
+      "title": "Log a test reading",
+      "helper": "Logged readings are stamped with the current date and time and compared against the test's bounds.",
+      "submit": "Log"
+    },
+    "fields": {
+      "swimmer": "Select Swimmer",
+      "test": "Test",
+      "value": "Value"
+    },
+    "placeholders": {
+      "swimmer": "Choose a swimmer",
+      "test": "Choose a test"
+    },
+    "normalRange": "Normal range",
+    "states": {
+      "loading": "Loading…",
+      "error": "Couldn't load swimmers or tests. Please try again."
+    },
+    "toasts": {
+      "loggedNormal": "Reading logged — within the normal range",
+      "loggedOut": "Reading logged — outside the normal range",
+      "createFailed": "Couldn't log the reading"
+    }
   }
 }

@@ -32,7 +32,7 @@ export class CaptainPanelPage {
       { key: 'accountCreation', icon: LucideUserPlus, route: '/captain-panel/account-creation' },
       { key: 'swimmerRecords', icon: LucideDatabase },
       { key: 'medicalTests', icon: LucideFlaskConical, route: '/captain-panel/medical-tests' },
-      { key: 'healthMonitoring', icon: LucideHeartPulse },
+      { key: 'healthMonitoring', icon: LucideHeartPulse, route: '/captain-panel/health-monitoring' },
     ];
     return this.auth.role() === 'head_coach' ? all : all.filter((c) => c.key !== 'medicalTests');
   });

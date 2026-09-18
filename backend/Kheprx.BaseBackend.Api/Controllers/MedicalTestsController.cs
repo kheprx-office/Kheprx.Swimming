@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kheprx.BaseBackend.Api.Controllers;
 
 [Route("api/medical-tests")]
-[Authorize(Roles = "head_coach")]
 public sealed class MedicalTestsController : BaseApiController
 {
     private readonly IMedicalTestService _service;
     public MedicalTestsController(IMedicalTestService service) => _service = service;
 
     /// <summary>Lists the medical-test catalog.</summary>
+    [Authorize(Roles = "head_coach,captain")]
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<MedicalTestDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<MedicalTestDto>>>> List(CancellationToken ct)
@@ -28,6 +28,7 @@ public sealed class MedicalTestsController : BaseApiController
     }
 
     /// <summary>Adds a medical test. Head Coach only.</summary>
+    [Authorize(Roles = "head_coach")]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<MedicalTestDto>), StatusCodes.Status201Created)]
     public async Task<ActionResult<ApiResponse<MedicalTestDto>>> Create(CreateMedicalTestRequest request, CancellationToken ct)
@@ -39,6 +40,7 @@ public sealed class MedicalTestsController : BaseApiController
     }
 
     /// <summary>Deletes a medical test by id. Head Coach only.</summary>
+    [Authorize(Roles = "head_coach")]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status404NotFound)]

@@ -4,3 +4,5 @@ export { RegisterSwimmerViewModel } from './presentation/pages/account-creation/
 export { RegisterCoachViewModel } from './presentation/pages/account-creation/register-coach.viewmodel';
 export { MedicalTestsPage } from './presentation/pages/medical-tests/medical-tests.page';
 export { MedicalTestsViewModel } from './presentation/pages/medical-tests/medical-tests.viewmodel';
+export { HealthMonitoringPage } from './presentation/pages/health-monitoring/health-monitoring.page';
+export { HealthMonitoringViewModel } from './presentation/pages/health-monitoring/health-monitoring.viewmodel';

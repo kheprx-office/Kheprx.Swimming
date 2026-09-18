@@ -8,6 +8,7 @@ public sealed class HealthDbContext : DbContext
     public HealthDbContext(DbContextOptions<HealthDbContext> options) : base(options) { }
 
     public DbSet<MedicalTest> MedicalTests => Set<MedicalTest>();
+    public DbSet<HealthReading> HealthReadings => Set<HealthReading>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
