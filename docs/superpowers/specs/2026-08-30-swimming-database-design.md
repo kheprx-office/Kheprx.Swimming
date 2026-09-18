@@ -183,10 +183,9 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | swimmer_id | uuid | FK → identity.swimmer_profile (cross-module) |
-| category | enum `observation_category` | allergy \| surgery \| chronic \| autoimmune \| composition \| flag \| other |
+| category_id | uuid | FK → reference.observation_category |
 | field_label | varchar | e.g. "Penicillin" |
 | value | varchar | e.g. "Severe" |
-| status | enum `record_status` | normal \| watch \| out (nullable) |
 | observed_date | date | |
 | recorded_by | uuid | FK → app_user (cross-module) |
 
@@ -371,16 +370,23 @@ _Seed rows — fixed Egyptian clubs (~70). English `name_en` transliterations ar
 | name_en | varchar | |
 | name_ar | varchar | nullable |
 
+**observation_category** — health observation category lookup
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar | e.g. `allergy`, `surgery`, `chronic`, `autoimmune`, `composition`, `flag`, `other` |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+
 **Enum types:** `guardian_relation` (father|mother), `fitness_assessment` (fit|unfit),
-`observation_category` (allergy|surgery|chronic|autoimmune|composition|flag|other),
-`record_status` (normal|watch|out), `feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
+`feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
 `attendance_status` (present|late|absent|excused), `competition_status` (upcoming|completed).
 
 ## 11. Relationships (cardinalities)
 
-**27 tables / 32 relationships.**
+**28 tables / 33 relationships.**
 
-- gender 1—* app_user; role 1—* app_user; blood_type 1—* swimmer_profile.
+- gender 1—* app_user; role 1—* app_user; blood_type 1—* swimmer_profile; observation_category 1—* observation.
 - club 1—* swimmer_profile; club 1—* attendance_session.
 - app_user 1—1 swimmer_profile (via swimmer_profile.user_id); app_user 1—1 captain_profile (via captain_profile.user_id); app_user 1—1 head_coach_profile (via head_coach_profile.user_id).
 - swimmer_profile 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.

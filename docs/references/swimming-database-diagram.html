@@ -34,6 +34,13 @@
   .tnode{display:block;padding:.25rem .5rem;border-radius:5px;text-decoration:none;font-size:.84rem;color:var(--text)}
   .tnode:hover{background:var(--card)}
   .tnode.active{background:var(--accent);color:#fff}
+  .sdot{display:inline-block;width:.6rem;height:.6rem;border-radius:50%;margin-inline-end:.45rem;vertical-align:baseline;border:1px solid rgba(0,0,0,.18)}
+  .sdot-yes{background:#22c55e}
+  .sdot-no{background:#f59e0b}
+  .tlegend{display:flex;gap:1rem;flex-wrap:wrap;margin:.55rem .5rem .1rem;font-size:.72rem;color:var(--muted)}
+  .tlegend span{display:inline-flex;align-items:center;gap:.3rem}
+  .scard-impl{font-size:.72rem;margin-top:.15rem;opacity:.85}
+  .thead .sdot{width:.72rem;height:.72rem;margin-inline-end:.5rem}
   .tglobal{font-weight:600}
   .pane{padding:1rem 1.4rem;overflow:auto}
   .breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:.8rem}
@@ -109,6 +116,7 @@
 <div class="layout">
   <aside class="tree">
     <div class="treehead"><input id="filter" type="search" placeholder="Filter tables / columns…  ( / )" /></div>
+    <div class="tlegend"><span><span class="sdot sdot-yes"></span>Implemented</span><span><span class="sdot sdot-no"></span>Planned</span></div>
     <div id="treelist"></div>
   </aside>
   <main class="pane">
@@ -151,6 +159,11 @@ const SCHEMA = [
   {name:"blood_type",note:"lookup",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"code",t:"varchar",k:"",n:false,note:"A+ | A- | B+ | B- | AB+ | AB- | O+ | O-"},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"observation_category",note:"health observation category lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"allergy | surgery | chronic | autoimmune | composition | flag | other"},
    {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true}]}
  ]},
@@ -250,15 +263,14 @@ const SCHEMA = [
    {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"medical_test_id",t:"uuid",k:"FK",fk:"health.medical_test.id",n:false},
    {c:"value",t:"numeric(8,2)",k:"",n:false},
-   {c:"reading_date",t:"date",k:"",n:false},
+   {c:"reading_date",t:"timestamptz",k:"",n:false},
    {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
   {name:"observation",note:"unified allergy/surgery/chronic/autoimmune/flag record",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
-   {c:"category",t:"observation_category",k:"",n:false,note:"allergy | surgery | chronic | autoimmune | composition | flag | other"},
+   {c:"category_id",t:"uuid",k:"FK",fk:"reference.observation_category.id",n:false},
    {c:"field_label",t:"varchar",k:"",n:false},
    {c:"value",t:"varchar",k:"",n:false},
-   {c:"status",t:"record_status",k:"",n:true,note:"normal | watch | out"},
    {c:"observed_date",t:"date",k:"",n:false},
    {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
   {name:"feedback_entry",note:"coach performance evaluation for a swimmer",cols:[
@@ -346,6 +358,7 @@ const RELATIONSHIPS = [
  {from:"identity.swimmer_profile",to:"health.health_reading",card:"1-N",label:"records"},
  {from:"health.medical_test",to:"health.health_reading",card:"1-N",label:"measured by"},
  {from:"identity.swimmer_profile",to:"health.observation",card:"1-N",label:"noted on"},
+ {from:"reference.observation_category",to:"health.observation",card:"1-N",label:"categorizes"},
  {from:"identity.swimmer_profile",to:"health.feedback_entry",card:"1-N",label:"receives"},
  {from:"reference.club",to:"attendance.attendance_session",card:"1-N",label:"holds"},
  {from:"reference.stroke",to:"attendance.attendance_session",card:"1-N",label:"grouped by"},
@@ -414,6 +427,21 @@ SCHEMA.forEach(s => s.tables.forEach(t => {
 }));
 const TOTAL_TABLES = SCHEMA.reduce((n, s) => n + s.tables.length, 0);
 const SCHEMA_COUNT = SCHEMA.length;
+// ====== IMPLEMENTATION STATUS ======
+// Tables that exist in the backend as EF-mapped entities WITH a migration
+// (the physical table is created). Update this set as more tables ship.
+const IMPLEMENTED = new Set([
+  "reference.stroke","reference.club","reference.gender","reference.role","reference.blood_type",
+  "identity.app_user","identity.captain_profile","identity.head_coach_profile","identity.swimmer_profile",
+  "athlete.swimmer_specialization",
+  "health.medical_test","health.health_reading"
+]);
+const isImplemented = key => IMPLEMENTED.has(key);
+function statusDot(key){
+  const yes = isImplemented(key);
+  return `<span class="sdot ${yes?'sdot-yes':'sdot-no'}" title="${yes?'Implemented — table exists in the backend (EF entity + migration)':'Not implemented yet — declared in the schema, no backend table'}"></span>`;
+}
+const schemaImplCount = s => `${s.tables.filter(t=>isImplemented(`${s.schema}.${t.name}`)).length}/${s.tables.length}`;
 const incomingFks = {};
 SCHEMA.forEach(s => s.tables.forEach(t => {
   const fromKey = `${s.schema}.${t.name}`;
@@ -476,6 +504,7 @@ async function renderOverview(view){
       <a class="scard" href="#/table/${s.schema}.${s.tables[0].name}" style="border-inline-start-color:${cssVar(s.color)}">
         <div class="scard-h" style="color:${cssVar(s.color)}">${s.schema}</div>
         <div class="scard-n">${s.tables.length} tables</div>
+        <div class="scard-impl"><span class="sdot sdot-yes"></span>${schemaImplCount(s)} implemented</div>
       </a>`).join("")}</div>`;
   const box = document.getElementById("erdBox");
   if(erdSvg){ box.innerHTML = erdSvg; return; }
@@ -501,9 +530,9 @@ function renderTable(view, key, tab){
   else if(tab==="indexes") body = indexesHtml(key);
   else body = columnsHtml(t);
   view.innerHTML = `<div class="thead">
-      <span class="ttitle"><span style="color:${cssVar(entry.color)}">${entry.schema}.</span>${t.name}</span>
+      <span class="ttitle">${statusDot(key)}<span style="color:${cssVar(entry.color)}">${entry.schema}.</span>${t.name}</span>
       ${t.note?`<span class="muted">— ${escapeHtml(t.note)}</span>`:""}
-      <span class="muted small">· ${t.cols.filter(c=>c.t!=="—").length} columns · ${inc.length} incoming refs</span>
+      <span class="muted small">· ${t.cols.filter(c=>c.t!=="—").length} columns · ${inc.length} incoming refs · ${isImplemented(key)?'implemented':'not implemented yet'}</span>
     </div>
     <div class="subtabs">${bar}</div>
     <div class="subbody">${body}</div>`;
@@ -574,7 +603,7 @@ function renderTreeList(filter){
       || t.cols.some(c=>c.c.toLowerCase().includes(filter)));
     if(!tables.length) return "";
     return `<div class="tgrp" style="color:${cssVar(s.color)}">${s.schema}</div>` +
-      tables.map(t=>`<a class="tnode" data-key="${s.schema}.${t.name}" href="#/table/${s.schema}.${t.name}">${t.name}</a>`).join("");
+      tables.map(t=>`<a class="tnode" data-key="${s.schema}.${t.name}" href="#/table/${s.schema}.${t.name}">${statusDot(`${s.schema}.${t.name}`)}${t.name}</a>`).join("");
   }).join("");
   const empty = (!groups && filter) ? `<p class="muted small" style="padding:.4rem">No matches.</p>` : "";
   document.getElementById("treelist").innerHTML = globals + groups + empty;
