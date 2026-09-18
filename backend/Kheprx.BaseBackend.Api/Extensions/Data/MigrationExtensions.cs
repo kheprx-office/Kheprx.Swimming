@@ -1,3 +1,4 @@
+using Kheprx.BaseBackend.Identity.Application.Abstractions;
 using Kheprx.BaseBackend.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,5 +11,7 @@ public static class MigrationExtensions
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
         await db.Database.MigrateAsync();
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        await IdentitySeeder.SeedAsync(db, hasher);
     }
 }

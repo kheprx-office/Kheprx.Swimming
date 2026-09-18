@@ -12,7 +12,7 @@ public class BoundaryTests
     // Domain → no Application, Infrastructure → no Api) are anchored to the Identity module as the
     // only remaining Domain/Application/Infrastructure triad after the business-module strip.
     private static readonly Assembly Domain =
-        typeof(Kheprx.BaseBackend.Identity.Domain.Entities.User).Assembly;
+        typeof(Kheprx.BaseBackend.Identity.Domain.Entities.AppUser).Assembly;
     private static readonly Assembly Application =
         typeof(Kheprx.BaseBackend.Identity.Application.Services.Interfaces.IAuthService).Assembly;
     private static readonly Assembly Infrastructure =

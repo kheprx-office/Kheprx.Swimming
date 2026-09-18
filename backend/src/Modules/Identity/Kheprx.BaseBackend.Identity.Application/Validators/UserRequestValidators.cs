@@ -7,10 +7,6 @@ namespace Kheprx.BaseBackend.Identity.Application.Validators;
 
 internal static class UserValidationRules
 {
-    public static readonly string[] Roles = { "admin", "manager", "moqawel", "worker" };
-    public static readonly string[] Statuses = { "active", "disabled" };
-    public static readonly string[] Genders = { "male", "female" };
-    public const string NidPattern = @"^\d{14}$";
     public const string PhonePattern = @"^01[0125]\d{8}$";
 }
 
@@ -18,48 +14,24 @@ public sealed class CreateUserRequestValidator : AbstractValidator<CreateUserReq
 {
     public CreateUserRequestValidator()
     {
-        RuleFor(x => x.FullName)
+        RuleFor(x => x.NameEn)
             .NotEmpty().WithMessage(_ => CommonMessages.Errors.FullNameRequired(AppLanguage.Current))
             .MaximumLength(200).WithMessage(_ => CommonMessages.Errors.FullNameTooLong(AppLanguage.Current));
         RuleFor(x => x.Role)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.RoleRequired(AppLanguage.Current))
-            .Must(r => UserValidationRules.Roles.Contains(r)).WithMessage(_ => UserMessages.Errors.UnknownRole(AppLanguage.Current));
-        RuleFor(x => x.Nid)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.NidRequired(AppLanguage.Current))
-            .Matches(UserValidationRules.NidPattern).WithMessage(_ => UserMessages.Errors.NidInvalid(AppLanguage.Current));
+            .NotEmpty().WithMessage(_ => UserMessages.Errors.RoleRequired(AppLanguage.Current));
 
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage(_ => CommonMessages.Errors.EmailRequired(AppLanguage.Current));
         RuleFor(x => x.Email)
             .EmailAddress().WithMessage(_ => CommonMessages.Errors.EmailInvalid(AppLanguage.Current))
             .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.EmailTooLong(AppLanguage.Current))
             .When(x => !string.IsNullOrEmpty(x.Email));
-        RuleFor(x => x.Password)
-            .NotEmpty().WithMessage(_ => CommonMessages.Errors.PasswordRequired(AppLanguage.Current));
         RuleFor(x => x.Password)
             .MinimumLength(8).WithMessage(_ => CommonMessages.Errors.PasswordMinLength(AppLanguage.Current))
             .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.PasswordTooLong(AppLanguage.Current))
             .When(x => !string.IsNullOrEmpty(x.Password));
 
         RuleFor(x => x.Phone)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.PhoneRequired(AppLanguage.Current));
-        RuleFor(x => x.Phone)
             .Matches(UserValidationRules.PhonePattern).WithMessage(_ => UserMessages.Errors.PhoneInvalid(AppLanguage.Current))
             .When(x => !string.IsNullOrEmpty(x.Phone));
-
-        RuleFor(x => x.Gender)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.GenderRequired(AppLanguage.Current));
-        RuleFor(x => x.Gender)
-            .Must(g => UserValidationRules.Genders.Contains(g)).WithMessage(_ => UserMessages.Errors.InvalidGender(AppLanguage.Current))
-            .When(x => !string.IsNullOrEmpty(x.Gender));
-
-        RuleFor(x => x.Age)
-            .NotNull().WithMessage(_ => UserMessages.Errors.AgeRequired(AppLanguage.Current));
-        RuleFor(x => x.Age)
-            .InclusiveBetween(14, 90).WithMessage(_ => UserMessages.Errors.InvalidAge(AppLanguage.Current))
-            .When(x => x.Age.HasValue);
-
-        this.AddProfileFieldRules(x => x.Role, x => x.MonthlySalary, x => x.DailyWage, x => x.HireDate);
     }
 }
 
@@ -67,18 +39,12 @@ public sealed class UpdateUserRequestValidator : AbstractValidator<UpdateUserReq
 {
     public UpdateUserRequestValidator()
     {
-        RuleFor(x => x.FullName)
+        RuleFor(x => x.NameEn)
             .NotEmpty().WithMessage(_ => CommonMessages.Errors.FullNameRequired(AppLanguage.Current))
             .MaximumLength(200).WithMessage(_ => CommonMessages.Errors.FullNameTooLong(AppLanguage.Current));
         RuleFor(x => x.Role)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.RoleRequired(AppLanguage.Current))
-            .Must(r => UserValidationRules.Roles.Contains(r)).WithMessage(_ => UserMessages.Errors.UnknownRole(AppLanguage.Current));
-        RuleFor(x => x.Nid)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.NidRequired(AppLanguage.Current))
-            .Matches(UserValidationRules.NidPattern).WithMessage(_ => UserMessages.Errors.NidInvalid(AppLanguage.Current));
-        RuleFor(x => x.Status)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.StatusRequired(AppLanguage.Current))
-            .Must(s => UserValidationRules.Statuses.Contains(s)).WithMessage(_ => UserMessages.Errors.InvalidStatus(AppLanguage.Current));
+            .NotEmpty().WithMessage(_ => UserMessages.Errors.RoleRequired(AppLanguage.Current));
+
         RuleFor(x => x.Email)
             .EmailAddress().WithMessage(_ => CommonMessages.Errors.EmailInvalid(AppLanguage.Current))
             .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.EmailTooLong(AppLanguage.Current))
@@ -87,60 +53,75 @@ public sealed class UpdateUserRequestValidator : AbstractValidator<UpdateUserReq
             .MinimumLength(8).WithMessage(_ => CommonMessages.Errors.PasswordMinLength(AppLanguage.Current))
             .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.PasswordTooLong(AppLanguage.Current))
             .When(x => !string.IsNullOrEmpty(x.Password));
+
         RuleFor(x => x.Phone)
             .Matches(UserValidationRules.PhonePattern).WithMessage(_ => UserMessages.Errors.PhoneInvalid(AppLanguage.Current))
             .When(x => !string.IsNullOrEmpty(x.Phone));
-        RuleFor(x => x.Gender)
-            .Must(g => UserValidationRules.Genders.Contains(g)).WithMessage(_ => UserMessages.Errors.InvalidGender(AppLanguage.Current))
-            .When(x => !string.IsNullOrEmpty(x.Gender));
-        RuleFor(x => x.Age)
-            .InclusiveBetween(14, 90).WithMessage(_ => UserMessages.Errors.InvalidAge(AppLanguage.Current))
-            .When(x => x.Age.HasValue);
-
-        this.AddProfileFieldRules(x => x.Role, x => x.MonthlySalary, x => x.DailyWage, x => x.HireDate);
     }
 }
 
-public sealed class SetUserStatusRequestValidator : AbstractValidator<SetUserStatusRequest>
+public sealed class CreateSwimmerRequestValidator : AbstractValidator<CreateSwimmerRequest>
 {
-    public SetUserStatusRequestValidator()
+    public CreateSwimmerRequestValidator()
     {
-        RuleFor(x => x.Status)
-            .NotEmpty().WithMessage(_ => UserMessages.Errors.StatusRequired(AppLanguage.Current))
-            .Must(s => UserValidationRules.Statuses.Contains(s)).WithMessage(_ => UserMessages.Errors.InvalidStatus(AppLanguage.Current));
+        RuleFor(x => x.NameEn)
+            .NotEmpty().WithMessage(_ => CommonMessages.Errors.FullNameRequired(AppLanguage.Current))
+            .MaximumLength(200).WithMessage(_ => CommonMessages.Errors.FullNameTooLong(AppLanguage.Current));
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage(_ => SwimmerMessages.Errors.UsernameRequired(AppLanguage.Current))
+            .MaximumLength(100)
+            .Matches(@"^[A-Za-z0-9._-]+$").WithMessage(_ => SwimmerMessages.Errors.UsernameRequired(AppLanguage.Current));
+        RuleFor(x => x.TrainingClubId)
+            .NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.TrainingClubRequired(AppLanguage.Current));
+        RuleFor(x => x.GenderId)
+            .NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.GenderRequired(AppLanguage.Current));
+        RuleFor(x => x.BloodTypeId)
+            .NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.BloodTypeRequired(AppLanguage.Current));
+        RuleFor(x => x.Dob)
+            .NotEqual(default(DateOnly)).WithMessage(_ => SwimmerMessages.Errors.DobRequired(AppLanguage.Current))
+            .LessThan(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => SwimmerMessages.Errors.DobInPast(AppLanguage.Current));
+        RuleFor(x => x.StrokeIds)
+            .NotEmpty().WithMessage(_ => SwimmerMessages.Errors.SpecializationRequired(AppLanguage.Current))
+            .Must(ids => ids is null || ids.Distinct().Count() == ids.Count)
+            .WithMessage(_ => SwimmerMessages.Errors.UnknownReference(AppLanguage.Current));
+        RuleFor(x => x.NameAr).MaximumLength(200).When(x => !string.IsNullOrEmpty(x.NameAr));
+        RuleFor(x => x.Email)
+            .EmailAddress().WithMessage(_ => CommonMessages.Errors.EmailInvalid(AppLanguage.Current))
+            .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.EmailTooLong(AppLanguage.Current))
+            .When(x => !string.IsNullOrEmpty(x.Email));
+        RuleFor(x => x.Phone)
+            .Matches(UserValidationRules.PhonePattern).WithMessage(_ => UserMessages.Errors.PhoneInvalid(AppLanguage.Current))
+            .When(x => !string.IsNullOrEmpty(x.Phone));
     }
 }
 
-internal static class ProfileFieldRuleExtensions
+public sealed class CreateCoachRequestValidator : AbstractValidator<CreateCoachRequest>
 {
-    /// <summary>Role-conditional profile rules shared by create/update:
-    /// manager → MonthlySalary required ≥0; moqawel/worker → DailyWage required (≥0);
-    /// worker → HireDate optional. Fields belonging to a DIFFERENT role are rejected, not ignored.</summary>
-    public static void AddProfileFieldRules<T>(
-        this AbstractValidator<T> validator,
-        Func<T, string> role,
-        System.Linq.Expressions.Expression<Func<T, decimal?>> monthlySalary,
-        System.Linq.Expressions.Expression<Func<T, decimal?>> dailyWage,
-        System.Linq.Expressions.Expression<Func<T, DateOnly?>> hireDate) where T : class
+    public CreateCoachRequestValidator()
     {
-        validator.RuleFor(monthlySalary)
-            .NotNull().WithMessage(_ => UserMessages.Errors.MonthlySalaryRequired(AppLanguage.Current))
-            .GreaterThanOrEqualTo(0).WithMessage(_ => UserMessages.Errors.MonthlySalaryInvalid(AppLanguage.Current))
-            .When(x => role(x) == "manager");
-        validator.RuleFor(monthlySalary)
-            .Null().WithMessage(_ => UserMessages.Errors.FieldNotAllowedForRole(AppLanguage.Current))
-            .When(x => role(x) != "manager");
-
-        validator.RuleFor(dailyWage)
-            .NotNull().WithMessage(_ => UserMessages.Errors.DailyWageRequired(AppLanguage.Current))
-            .GreaterThanOrEqualTo(0).WithMessage(_ => UserMessages.Errors.DailyWageInvalid(AppLanguage.Current))
-            .When(x => role(x) is "moqawel" or "worker");
-        validator.RuleFor(dailyWage)
-            .Null().WithMessage(_ => UserMessages.Errors.FieldNotAllowedForRole(AppLanguage.Current))
-            .When(x => role(x) is not ("moqawel" or "worker"));
-
-        validator.RuleFor(hireDate)
-            .Null().WithMessage(_ => UserMessages.Errors.FieldNotAllowedForRole(AppLanguage.Current))
-            .When(x => role(x) != "worker");
+        RuleFor(x => x.Role)
+            .NotEmpty().Must(r => r is "captain" or "head_coach")
+            .WithMessage(_ => CoachMessages.Errors.InvalidRole(AppLanguage.Current));
+        RuleFor(x => x.NameEn)
+            .NotEmpty().WithMessage(_ => CommonMessages.Errors.FullNameRequired(AppLanguage.Current))
+            .MaximumLength(200).WithMessage(_ => CommonMessages.Errors.FullNameTooLong(AppLanguage.Current));
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage(_ => CoachMessages.Errors.UsernameRequired(AppLanguage.Current))
+            .MaximumLength(100).Matches(@"^[A-Za-z0-9._-]+$").WithMessage(_ => CoachMessages.Errors.UsernameRequired(AppLanguage.Current));
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage(_ => CommonMessages.Errors.EmailInvalid(AppLanguage.Current))
+            .EmailAddress().WithMessage(_ => CommonMessages.Errors.EmailInvalid(AppLanguage.Current))
+            .MaximumLength(256).WithMessage(_ => CommonMessages.Errors.EmailTooLong(AppLanguage.Current));
+        RuleFor(x => x.NationalId)
+            .NotEmpty().Matches(@"^\d{14}$").WithMessage(_ => CoachMessages.Errors.NationalIdInvalid(AppLanguage.Current));
+        RuleFor(x => x.GenderId)
+            .NotEqual(Guid.Empty).WithMessage(_ => CoachMessages.Errors.GenderRequired(AppLanguage.Current));
+        RuleFor(x => x.Dob)
+            .NotEqual(default(DateOnly)).WithMessage(_ => CoachMessages.Errors.DobRequired(AppLanguage.Current))
+            .LessThan(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => CoachMessages.Errors.DobInPast(AppLanguage.Current));
+        RuleFor(x => x.Phone)
+            .NotEmpty().WithMessage(_ => CoachMessages.Errors.PhoneRequired(AppLanguage.Current))
+            .Matches(UserValidationRules.PhonePattern).WithMessage(_ => UserMessages.Errors.PhoneInvalid(AppLanguage.Current));
+        RuleFor(x => x.NameAr).MaximumLength(200).When(x => !string.IsNullOrEmpty(x.NameAr));
     }
 }

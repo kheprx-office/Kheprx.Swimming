@@ -1,5 +1,36 @@
 @use './app/core/ui/theme/theme';
 
+:root {
+  --c-canvas: 244 239 230;      /* #F4EFE6 warm sand */
+  --c-surface: 252 250 246;     /* #FCFAF6 */
+  --c-ink: 27 23 18;            /* #1B1712 */
+  --c-ink-hover: 10 101 119;    /* #0A6577 */
+  --c-border: 226 214 194;      /* #E2D6C2 */
+  --c-primary: 10 101 119;      /* #0A6577 deep ocean */
+  --c-primary-hover: 11 74 88;  /* #0B4A58 turquoise-800 */
+  --c-accent: 195 63 22;        /* #C33F16 coral */
+  --c-accent-light: 220 123 78; /* #DC7B4E coral-400 */
+  --c-text-secondary: 87 81 71; /* #575147 */
+  --c-text-muted: 145 140 130;  /* #918C82 */
+  --c-sidebar: 11 74 88;         /* #0B4A58 deep ocean teal */
+  --c-sidebar-ink: 236 244 244;  /* #ECF4F4 light text on teal */
+}
+.dark {
+  --c-canvas: 23 20 15;         /* #17140F */
+  --c-surface: 34 30 23;        /* #221E17 */
+  --c-ink: 245 239 228;         /* #F5EFE4 */
+  --c-ink-hover: 51 176 196;    /* #33B0C4 */
+  --c-border: 54 47 37;         /* #362F25 */
+  --c-primary: 51 176 196;      /* #33B0C4 turquoise-400 */
+  --c-primary-hover: 107 206 219; /* #6BCEDB turquoise-300 */
+  --c-accent: 251 122 75;       /* #FB7A4B coral */
+  --c-accent-light: 233 164 126;/* #E9A47E coral-300 */
+  --c-text-secondary: 167 158 142; /* #A79E8E */
+  --c-text-muted: 107 102 92;   /* #6B665C */
+  --c-sidebar: 10 58 68;         /* #0A3A44 darker teal for dark mode */
+  --c-sidebar-ink: 236 244 244;  /* #ECF4F4 */
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,6 +74,11 @@ html, body { margin: 0; padding: 0; background: theme('colors.canvas'); color: t
   from { opacity: 0; transform: translateX(-12px); }
   to { opacity: 1; transform: translateX(0); }
 }
+@keyframes loadingBar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+.animate-loading-bar { animation: loadingBar 1.1s ease-in-out infinite; }
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
@@ -117,7 +153,7 @@ html, body { margin: 0; padding: 0; background: theme('colors.canvas'); color: t
 .animate-count { animation: countPop 0.4s ease-out both; }
 /* ===== Gradient text ===== */
 .gradient-text {
-  background: linear-gradient(135deg, #1E3A8A, #0EA5E9);
+  background: linear-gradient(135deg, #0A6577, #33B0C4);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -222,6 +258,75 @@ button, a {
   100% { transform: translateX(0); }
 }
 .animate-shake { animation: shake 0.45s ease-out both; }
+
+/* ===== Surface treatments (login / brand panels) ===== */
+/* Deep ocean band — brand hero panel. All layers live in one declaration
+ * (faint diagonal tide lines over a gradient) on a solid fallback colour,
+ * so light text is never stranded on a light background. Fixed dark brand
+ * gradient in both light and dark themes. */
+.ocean-panel {
+  background-color: #0A4250;
+  background-image:
+    repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.045) 0px,
+      rgba(255, 255, 255, 0.045) 1px,
+      transparent 1px,
+      transparent 14px
+    ),
+    radial-gradient(120% 120% at 100% 0%, rgba(45, 212, 191, 0.28) 0%, transparent 55%),
+    linear-gradient(135deg, #0F766E 0%, #0A4250 55%, #08333E 100%);
+  color: #F2FAFB;
+}
+/* Ocean sidebar panel — a cleaner variant of .ocean-panel (no tide lines) used by
+ * the app-shell navigation rail. Fixed dark teal gradient in both themes so the
+ * light sidebar text is never stranded on a light background. Mirrors the
+ * reference design's ocean-panel-plain. */
+.ocean-panel-plain {
+  background-color: #0A4250;
+  background-image:
+    radial-gradient(120% 120% at 100% 0%, rgba(51, 176, 196, 0.28) 0%, transparent 55%),
+    linear-gradient(135deg, #0A5060 0%, #0A4250 55%, #08333E 100%);
+  color: #F2FAFB;
+}
+/* Hide scrollbar chrome while keeping the element scrollable (sidebar nav). */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Sand grain dotted overlay for the form canvas */
+.grain {
+  background-image: radial-gradient(rgba(107, 91, 65, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.dark .grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+/* Soft warm lift for the auth card */
+.card-gradient {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(253, 251, 247, 0.75) 100%),
+    theme('colors.surface');
+}
+.dark .card-gradient {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%),
+    theme('colors.surface');
+}
+/* Arabic has no Fraunces — keep serif headings on Cairo in RTL */
+[dir='rtl'] .font-heading {
+  font-family: 'Cairo', sans-serif;
+  letter-spacing: 0;
+}
+/* Monospaced tabular figures — stat numbers (e.g. login "452") */
+.tabular {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
 
 /* Reduced motion respect */
 @media (prefers-reduced-motion: reduce) {

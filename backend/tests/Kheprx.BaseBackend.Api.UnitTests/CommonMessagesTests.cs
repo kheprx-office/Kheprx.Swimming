@@ -5,9 +5,7 @@ namespace Kheprx.BaseBackend.Api.UnitTests;
 
 public class CommonMessagesTests
 {
-    [Fact]
-    public void AppLanguage_current_is_arabic()
-        => Assert.Equal("ar", AppLanguage.Current);
+    // AppLanguage.Current resolution (from the request culture) is covered by AppLanguageTests.
 
     [Fact]
     public void ValidationFailed_switches_on_language()

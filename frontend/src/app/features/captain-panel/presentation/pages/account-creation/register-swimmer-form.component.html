@@ -1,0 +1,35 @@
+@if (vm.created(); as c) {
+  <div class="rounded-xl border border-success/30 bg-success-bg p-5">
+    <h3 class="font-heading text-lg text-ink">{{ 'accountCreation.created.title' | translate }}</h3>
+    <p class="mt-2 text-sm"><span class="font-semibold">{{ 'accountCreation.created.username' | translate }}:</span> {{ c.username }}</p>
+    <p class="text-sm"><span class="font-semibold">{{ 'accountCreation.created.password' | translate }}:</span> {{ c.temporaryPassword }}</p>
+    <button type="button" class="mt-4 rounded-md border border-input px-4 py-2 text-sm font-semibold" (click)="vm.reset()">
+      {{ 'accountCreation.created.another' | translate }}
+    </button>
+  </div>
+} @else {
+  <form class="grid grid-cols-1 gap-5 md:grid-cols-2" (submit)="$event.preventDefault(); vm.submit()">
+    <app-text-field [label]="'accountCreation.fields.nameEn' | translate" [value]="vm.nameEn()" (valueChange)="vm.nameEn.set($event)"></app-text-field>
+    <app-text-field [label]="'accountCreation.fields.nameAr' | translate" [value]="vm.nameAr()" (valueChange)="vm.nameAr.set($event)"></app-text-field>
+    <app-text-field [label]="'accountCreation.fields.username' | translate" [placeholder]="'accountCreation.placeholders.username' | translate" [value]="vm.username()" (valueChange)="vm.username.set($event)"></app-text-field>
+    <app-text-field [label]="'accountCreation.fields.email' | translate" [value]="vm.email()" (valueChange)="vm.email.set($event)"></app-text-field>
+    <app-text-field [label]="'accountCreation.fields.phone' | translate" [value]="vm.phone()" (valueChange)="vm.phone.set($event)"></app-text-field>
+    <app-select-field [label]="'accountCreation.fields.gender' | translate" [placeholder]="'accountCreation.placeholders.selectOne' | translate" [options]="vm.genders()" [value]="vm.genderId()" (valueChange)="vm.genderId.set($event)"></app-select-field>
+    <app-date-field [label]="'accountCreation.fields.dob' | translate" [value]="vm.dob()" (valueChange)="vm.dob.set($event)"></app-date-field>
+    <app-select-field [label]="'accountCreation.fields.bloodType' | translate" [placeholder]="'accountCreation.placeholders.selectOne' | translate" [options]="vm.bloodTypes()" [value]="vm.bloodTypeId()" (valueChange)="vm.bloodTypeId.set($event)"></app-select-field>
+    <app-select-field [label]="'accountCreation.fields.trainingClub' | translate" [placeholder]="'accountCreation.placeholders.selectOne' | translate" [options]="vm.clubs()" [value]="vm.trainingClubId()" (valueChange)="vm.trainingClubId.set($event)"></app-select-field>
+    <app-select-field [label]="'accountCreation.fields.championshipClub' | translate" [placeholder]="'accountCreation.placeholders.none' | translate" [options]="vm.clubs()" [value]="vm.championshipClubId()" (valueChange)="vm.championshipClubId.set($event)"></app-select-field>
+    <div class="md:col-span-2">
+      <app-chip-group [label]="'accountCreation.fields.specialization' | translate" [options]="vm.strokes()" [selected]="vm.strokeIds()" (selectedChange)="vm.strokeIds.set($event)"></app-chip-group>
+    </div>
+    <div class="md:col-span-2 rounded-xl border border-warning/30 bg-warning-bg p-4">
+      <h4 class="font-heading text-ink">{{ 'accountCreation.genericPassword.title' | translate }}</h4>
+      <p class="mt-1 text-sm text-muted">{{ 'accountCreation.genericPassword.note' | translate }}</p>
+    </div>
+    <div class="md:col-span-2">
+      <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSubmit() || vm.loading()">
+        {{ 'accountCreation.submit' | translate }}
+      </button>
+    </div>
+  </form>
+}

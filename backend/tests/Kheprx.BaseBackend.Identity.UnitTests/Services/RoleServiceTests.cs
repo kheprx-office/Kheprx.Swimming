@@ -11,7 +11,7 @@ public class RoleServiceTests
     [Fact]
     public async Task GetAll_maps_roles_to_dtos()
     {
-        var roles = new Role[] { new("admin", labelEn: "Administrator", sortOrder: 1), new("worker", labelEn: "Worker", sortOrder: 4) };
+        var roles = new Role[] { new("admin", "Administrator"), new("captain", "Captain") };
         var repo = new Mock<IRoleRepository>();
         repo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(roles);
 
@@ -19,7 +19,7 @@ public class RoleServiceTests
 
         Assert.Equal(2, result.Count);
         Assert.Equal("admin", result[0].Code);
-        Assert.Equal("Administrator", result[0].LabelEn);
-        Assert.Equal(1, result[0].SortOrder);
+        Assert.Equal("Administrator", result[0].NameEn);
+        Assert.Null(result[0].NameAr);
     }
 }

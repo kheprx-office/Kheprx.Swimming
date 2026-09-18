@@ -1,2 +1,3 @@
-// UserRole is the Kheprx role set (AD-008). Shared kernel: used by auth, users, and layout.
-export type UserRole = 'admin' | 'manager' | 'moqawel' | 'worker';
+// UserRole is the swimming role set. Head coach has broader access than captain.
+// Shared kernel: used by auth, users, and layout.
+export type UserRole = 'head_coach' | 'captain';

@@ -14,7 +14,19 @@ public static class ApplicationBuilderExtensions
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         // ========================================
-        // 2. Swagger (Development only)
+        // 2. Request Localization (Accept-Language -> en/ar)
+        // ========================================
+        // Sets CurrentUICulture per request from the Accept-Language header (the frontend sends
+        // "en" or "ar"). AppLanguage.Current reads it, so every localized message resolves here.
+        // Anything unsupported or missing falls back to the default culture (en).
+        var supportedCultures = new[] { "en", "ar" };
+        app.UseRequestLocalization(new RequestLocalizationOptions()
+            .SetDefaultCulture(supportedCultures[0])
+            .AddSupportedCultures(supportedCultures)
+            .AddSupportedUICultures(supportedCultures));
+
+        // ========================================
+        // 3. Swagger (Development only)
         // ========================================
         if (environment.IsDevelopment())
         {
@@ -23,22 +35,22 @@ public static class ApplicationBuilderExtensions
         }
 
         // ========================================
-        // 3. Request Logging
+        // 4. Request Logging
         // ========================================
         app.UseSerilogRequestLogging();
 
         // ========================================
-        // 4. CORS
+        // 5. CORS
         // ========================================
         app.UseCors(CorsExtensions.CorsPolicyName);
 
         // ========================================
-        // 5. Authentication
+        // 6. Authentication
         // ========================================
         app.UseAuthentication();
 
         // ========================================
-        // 6. Authorization
+        // 7. Authorization
         // ========================================
         app.UseAuthorization();
 

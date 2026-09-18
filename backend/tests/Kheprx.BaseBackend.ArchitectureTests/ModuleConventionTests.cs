@@ -1,5 +1,4 @@
 using Kheprx.BaseBackend.Identity.Application.Services.Interfaces;
-using Kheprx.BaseBackend.Identity.Contracts;
 using Kheprx.BaseBackend.Identity.Infrastructure.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +24,5 @@ public class ModuleConventionTests
         Assert.Contains(services, d => d.ServiceType == typeof(IAuthService));
         Assert.Contains(services, d => d.ServiceType == typeof(IRoleService));
         Assert.Contains(services, d => d.ServiceType == typeof(IUserService));
-        Assert.Contains(services, d => d.ServiceType == typeof(IIdentityModule));
     }
 }

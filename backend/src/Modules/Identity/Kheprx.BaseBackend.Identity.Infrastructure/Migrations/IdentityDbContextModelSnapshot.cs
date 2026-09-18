@@ -23,46 +23,201 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Manager", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("MonthlySalary")
-                        .HasPrecision(14, 2)
-                        .HasColumnType("numeric(14,2)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<DateOnly?>("Dob")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("GenderId")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("IsFirstLogin")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("managers", "identity");
+                    b.HasIndex("GenderId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("app_user", "identity");
                 });
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Moqawel", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.BloodType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("DailyWage")
-                        .HasPrecision(14, 2)
-                        .HasColumnType("numeric(14,2)");
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("blood_type", "reference");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.CaptainProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NationalId")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("NationalId")
+                        .IsUnique();
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("moqaweleen", "identity");
+                    b.ToTable("captain_profile", "identity");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Club", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("club", "reference");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Gender", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("gender", "reference");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.HeadCoachProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NationalId")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NationalId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("head_coach_profile", "identity");
                 });
 
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.RefreshToken", b =>
@@ -99,7 +254,7 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("refresh_tokens", "identity");
+                    b.ToTable("refresh_token", "identity");
                 });
 
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Role", b =>
@@ -113,157 +268,119 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LabelAr")
+                    b.Property<string>("NameAr")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("LabelEn")
+                    b.Property<string>("NameEn")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("roles", "identity");
+                    b.ToTable("role", "reference");
                 });
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.User", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Stroke", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<int?>("Age")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Code")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("FullName")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<string>("Gender")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("MustChangePassword")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Nid")
+                    b.Property<string>("NameEn")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("Nid")
-                        .IsUnique();
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("users", "identity");
+                    b.ToTable("stroke", "reference");
                 });
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Worker", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("DailyWage")
-                        .HasPrecision(14, 2)
-                        .HasColumnType("numeric(14,2)");
+                    b.Property<Guid?>("BloodTypeId")
+                        .HasColumnType("uuid");
 
-                    b.Property<DateOnly?>("HireDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RepresentChampionshipClubId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TrainingClubId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Uid")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BloodTypeId");
+
+                    b.HasIndex("RepresentChampionshipClubId");
+
+                    b.HasIndex("TrainingClubId");
+
+                    b.HasIndex("Uid")
+                        .IsUnique();
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("workers", "identity");
+                    b.ToTable("swimmer_profile", "identity");
                 });
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Manager", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerSpecialization", b =>
                 {
-                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.User", null)
-                        .WithOne()
-                        .HasForeignKey("Kheprx.BaseBackend.Identity.Domain.Entities.Manager", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Property<Guid>("SwimmerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StrokeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("SwimmerProfileId", "StrokeId");
+
+                    b.HasIndex("StrokeId");
+
+                    b.ToTable("swimmer_specialization", "athlete");
                 });
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Moqawel", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", b =>
                 {
-                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.User", null)
-                        .WithOne()
-                        .HasForeignKey("Kheprx.BaseBackend.Identity.Domain.Entities.Moqawel", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.User", null)
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.Gender", null)
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                        .HasForeignKey("GenderId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.User", b =>
-                {
                     b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
@@ -271,12 +388,70 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Worker", b =>
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.CaptainProfile", b =>
                 {
-                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.User", null)
-                        .WithOne()
-                        .HasForeignKey("Kheprx.BaseBackend.Identity.Domain.Entities.Worker", "UserId")
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.HeadCoachProfile", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerProfile", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.BloodType", null)
+                        .WithMany()
+                        .HasForeignKey("BloodTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.Club", null)
+                        .WithMany()
+                        .HasForeignKey("RepresentChampionshipClubId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.Club", null)
+                        .WithMany()
+                        .HasForeignKey("TrainingClubId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerSpecialization", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.Stroke", null)
+                        .WithMany()
+                        .HasForeignKey("StrokeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerProfile", null)
+                        .WithMany()
+                        .HasForeignKey("SwimmerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

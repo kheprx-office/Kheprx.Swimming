@@ -42,3 +42,39 @@ is required to run the API.
 ## Verify the whole scaffold
 - Backend: `dotnet build backend/Kheprx.BaseBackend.sln` and `dotnet test backend/Kheprx.BaseBackend.sln`
 - Frontend: `cd frontend && npm run build`
+
+## Swimming — auth + coach/captain profile (run against Aiven)
+
+The `Identity` module targets the swimming schema (`identity.app_user` + `head_coach_profile`/
+`captain_profile`, `reference.role`/`gender`). Login is email + password; `is_first_login` forces a
+password change on first sign-in. The frontend is bilingual EN/AR (live toggle + LTR↔RTL) with a
+light/dark theme.
+
+### Point the API at `Swimming_Production`
+Use `dotnet user-secrets` (never commit the password):
+```
+dotnet user-secrets init --project backend/Kheprx.BaseBackend.Api
+dotnet user-secrets set "ConnectionStrings:Postgres" "Host=kheprx-service-kheprx.b.aivencloud.com;Port=14647;Database=Swimming_Production;Username=avnadmin;Password=<AIVEN_PASSWORD>;SSL Mode=Require;Trust Server Certificate=true" --project backend/Kheprx.BaseBackend.Api
+dotnet user-secrets set "Jwt:SigningKey" "<random-48+char-string>" --project backend/Kheprx.BaseBackend.Api
+```
+Then `dotnet ef database update --project backend/src/Modules/Identity/Kheprx.BaseBackend.Identity.Infrastructure --startup-project backend/Kheprx.BaseBackend.Api --context IdentityDbContext`, and run the API (`dotnet run --project backend/Kheprx.BaseBackend.Api`) — startup applies the migration and runs the idempotent seeder.
+
+### Seeded demo logins (dev credentials — not production secrets)
+- `headcoach@kheprx.local` / `Passw0rd!` — role `head_coach`, `is_first_login = true` (forced change-password on first login)
+- `captain@kheprx.local` / `Passw0rd!` — role `captain`, `is_first_login = false`
+
+### Frontend end-to-end checklist (with the API running against `Swimming_Production`)
+1. `cd frontend && npm start`; open the app → login is English LTR, teal/cream, no demo box.
+2. Log in as the captain → lands on `/home`; the shell shows **Settings** enabled, other nav disabled.
+3. Open Settings → profile shows name/email/role/phone/age/national_id; toggle **language** → the whole
+   shell + Settings flip to Arabic RTL live; toggle **theme** → dark palette; both persist across reload.
+4. Change the password inline → success message.
+5. Log out; log in as the head-coach (`is_first_login`) → forced to `/change-password`; navigating to
+   `/account` bounces back until the password is changed; after changing → reaches Settings (role badge "Head Coach").
+
+### Notes
+- The API layer is hand-written (see **Contracts** above) — the auth DTOs live under
+  `frontend/src/app/features/auth/data/dto/`; there is nothing to regenerate.
+- Production `ng build` inlines Google Fonts, which needs network access at build time. For fully
+  offline builds, self-host the fonts or set `optimization.fonts.inline: false` in `angular.json`.
+  `ng build --configuration development` and `npm test` do not need network.

@@ -42,9 +42,9 @@ internal sealed class RoleRepository : IRoleRepository
 
     #region GetAllAsync — all roles, ordered for display
 
-    // Read-only list of all roles, sorted by SortOrder.
+    // Read-only list of all roles, sorted by NameEn.
     public async Task<IReadOnlyList<Role>> GetAllAsync(CancellationToken ct = default)
-        => await _db.Roles.AsNoTracking().OrderBy(r => r.SortOrder).ToListAsync(ct);
+        => await _db.Roles.AsNoTracking().OrderBy(r => r.NameEn).ToListAsync(ct);
 
     #endregion
 

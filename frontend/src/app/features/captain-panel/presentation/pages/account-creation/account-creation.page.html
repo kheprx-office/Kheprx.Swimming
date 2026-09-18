@@ -1,0 +1,21 @@
+<div class="mx-auto max-w-4xl">
+  <header class="mb-6">
+    <h1 class="font-heading text-3xl text-ink">{{ 'accountCreation.title' | translate }}</h1>
+    <p class="mt-1 text-muted">{{ 'accountCreation.subtitle' | translate }}</p>
+  </header>
+  <div class="mb-6 flex gap-3">
+    <button type="button" class="rounded-md px-4 py-2 text-sm font-semibold"
+      [class]="tab() === 'swimmer' ? 'bg-primary text-white' : 'bg-card text-ink border border-input'"
+      (click)="tab.set('swimmer')">{{ 'accountCreation.tabs.swimmer' | translate }}</button>
+    @if (canRegisterCaptain()) {
+      <button type="button" class="rounded-md px-4 py-2 text-sm font-semibold"
+        [class]="tab() === 'captain' ? 'bg-primary text-white' : 'bg-card text-ink border border-input'"
+        (click)="tab.set('captain')">{{ 'accountCreation.tabs.captain' | translate }}</button>
+    }
+  </div>
+  @if (tab() === 'captain' && canRegisterCaptain()) {
+    <app-register-coach-form></app-register-coach-form>
+  } @else {
+    <app-register-swimmer-form></app-register-swimmer-form>
+  }
+</div>

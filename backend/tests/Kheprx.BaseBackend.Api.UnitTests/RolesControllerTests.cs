@@ -15,7 +15,7 @@ public class RolesControllerTests
     {
         var svc = new Mock<IRoleService>();
         svc.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>()))
-           .ReturnsAsync(new List<RoleDto> { new(Guid.NewGuid(), "admin", null, "Administrator", 1) });
+           .ReturnsAsync(new List<RoleDto> { new(Guid.NewGuid(), "admin", "Administrator", null) });
 
         var result = await new RolesController(svc.Object).Get(CancellationToken.None);
 

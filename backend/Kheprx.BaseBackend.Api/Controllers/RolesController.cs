@@ -29,11 +29,13 @@ public sealed class RolesController : BaseApiController
 
     #region Get — GET api/roles — list all selectable roles
 
-    // غير مستخدم في أي صفحة/تبويب
+    // مستخدم في:
+    // 1. صفحة تسجيل الدخول (/login) — قائمة الأدوار في محدد الدور
     /// <summary>Lists all selectable roles, ordered for display.</summary>
+    /// <remarks>Anonymous: the login screen loads this before authentication to populate the role selector. Role names are not sensitive.</remarks>
     /// <response code="200">All roles.</response>
     [HttpGet]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<RoleDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<RoleDto>>>> Get(CancellationToken ct)
     {

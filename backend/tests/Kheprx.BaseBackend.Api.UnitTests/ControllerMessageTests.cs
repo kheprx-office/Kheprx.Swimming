@@ -17,14 +17,30 @@ public class ControllerMessageTests
     {
         var service = new Mock<IAuthService>();
         service.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SessionDto?)null);
+            .ReturnsAsync(LoginResult.InvalidCredentials());
         var controller = new AuthController(service.Object);
 
-        var result = await controller.Login(new LoginRequest("a@b.c", "x"), CancellationToken.None);
+        var result = await controller.Login(new LoginRequest("a@b.c", "x", "captain"), CancellationToken.None);
 
         var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result.Result);
         var body = Assert.IsType<ApiResponse<SessionDto>>(unauthorized.Value);
         Assert.Equal(AuthMessages.Errors.InvalidCredentials(AppLanguage.Current), body.Message);
         Assert.Equal("INVALID_CREDENTIALS", body.Error);
+    }
+
+    [Fact]
+    public async Task Login_role_mismatch_returns_localized_role_mismatch_message()
+    {
+        var service = new Mock<IAuthService>();
+        service.Setup(s => s.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(LoginResult.RoleMismatch());
+        var controller = new AuthController(service.Object);
+
+        var result = await controller.Login(new LoginRequest("a@b.c", "x", "head_coach"), CancellationToken.None);
+
+        var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<SessionDto>>(unauthorized.Value);
+        Assert.Equal(AuthMessages.Errors.RoleMismatch(AppLanguage.Current), body.Message);
+        Assert.Equal("ROLE_MISMATCH", body.Error);
     }
 }

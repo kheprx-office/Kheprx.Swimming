@@ -1,0 +1,40 @@
+<div>
+  <header class="mb-8">
+    <h1 class="font-heading text-3xl text-ink">{{ 'shell.nav.captainPanel' | translate }}</h1>
+    <p class="mt-2 text-muted">{{ 'captainPanel.subtitle' | translate }}</p>
+  </header>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    @for (card of cards; track card.key) {
+      @if (card.route) {
+        <a
+          [routerLink]="card.route"
+          class="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors hover:border-primary">
+          <ng-container *ngTemplateOutlet="body; context: { $implicit: card }"></ng-container>
+        </a>
+      } @else {
+        <div
+          class="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-sm"
+          aria-disabled="true"
+          [title]="'common.comingSoon' | translate">
+          <ng-container *ngTemplateOutlet="body; context: { $implicit: card }"></ng-container>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<ng-template #body let-card>
+  <div class="flex items-start justify-between">
+    <span class="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-canvas text-primary">
+      <svg [lucideIcon]="card.icon" [size]="20" />
+    </span>
+    <span class="font-mono text-xs text-muted">{{ 'captainPanel.cards.' + card.key + '.meta' | translate }}</span>
+  </div>
+  <h2 class="mt-6 font-heading text-xl text-ink">{{ 'captainPanel.cards.' + card.key + '.title' | translate }}</h2>
+  <p class="mt-2 text-sm text-muted">{{ 'captainPanel.cards.' + card.key + '.desc' | translate }}</p>
+  <span class="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-primary">
+    {{ 'captainPanel.open' | translate }}
+    <svg [lucideIcon]="ArrowRightIcon" [size]="16" class="rtl:rotate-180" />
+  </span>
+</ng-template>

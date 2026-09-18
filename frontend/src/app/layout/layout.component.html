@@ -1,4 +1,4 @@
-<div class="flex h-screen w-full overflow-hidden bg-canvas text-ink" dir="rtl">
+<div class="flex h-screen w-full overflow-hidden bg-canvas text-ink">
 
   <!-- Mobile overlay -->
   @if (isMobileMenuOpen()) {
@@ -11,78 +11,130 @@
   <!-- Sidebar -->
   <aside
     [class]="
-      'fixed lg:static inset-y-0 right-0 z-50 ' +
-      'bg-ink text-surface transition-all duration-200 ease-in-out ' +
+      'fixed lg:static inset-y-0 end-0 z-50 ' +
+      'ocean-panel-plain transition-all duration-200 ease-in-out ' +
       (isMobileMenuOpen() ? 'translate-x-0' : 'translate-x-full lg:translate-x-0') + ' ' +
       (isSidebarOpen() ? 'w-64' : 'lg:w-20') + ' ' +
-      'flex flex-col border-l border-white/10'
+      'flex flex-col'
     ">
 
-    <!-- Sidebar header -->
-    <div class="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
-      <div [class]="'font-bold text-lg flex items-center gap-2 ' + (!isSidebarOpen() ? 'lg:hidden' : '')">
-        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white text-base shrink-0">
-          ⚡
+    <!-- Brand header -->
+    <div class="h-20 flex items-center justify-between px-5 border-b border-white/10 shrink-0">
+      <div [class]="'flex items-center gap-3 min-w-0 ' + (!isSidebarOpen() ? 'lg:hidden' : '')">
+        <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/15 shadow-inner-line flex items-center justify-center shrink-0">
+          <svg [lucideIcon]="WavesIcon" [size]="20" />
         </div>
-        <span class="truncate">النور كهرباء</span>
+        <div class="min-w-0">
+          <p class="font-heading text-base leading-tight truncate">{{ 'shell.brand' | translate }}</p>
+          <p class="text-[11px] text-white/65 leading-tight truncate">{{ 'shell.brandSubtitle' | translate }}</p>
+        </div>
       </div>
       @if (!isSidebarOpen()) {
-        <div class="hidden lg:flex w-8 h-8 bg-accent rounded-lg items-center justify-center text-white mx-auto">
-          ⚡
+        <div class="hidden lg:flex w-10 h-10 rounded-xl bg-white/10 border border-white/15 shadow-inner-line items-center justify-center mx-auto shrink-0">
+          <svg [lucideIcon]="WavesIcon" [size]="20" />
         </div>
       }
       <button
         (click)="isMobileMenuOpen.set(false)"
-        class="lg:hidden text-white/60 hover:text-surface">
+        class="lg:hidden text-white/60 hover:text-white shrink-0">
         <svg [lucideIcon]="XIcon" [size]="20" />
       </button>
     </div>
 
-    <!-- Nav items -->
-    <nav class="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-      @for (item of navItems(); track item.label; let idx = $index) {
-        @if (item.route) {
-          <button
-            [routerLink]="item.route"
-            [style.animation-delay]="idx * 30 + 'ms'"
-            [class]="
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-right animate-slide-in-right ' +
-              (isActive(item.route)
-                ? 'bg-primary text-surface font-medium shadow-sm'
-                : 'text-white/60 hover:bg-white/10 hover:text-surface hover:translate-x-0.5')
-            "
-            [title]="!isSidebarOpen() ? item.label : ''">
-            <svg [lucideIcon]="item.icon" [size]="20" class="shrink-0" />
-            <span [class]="!isSidebarOpen() ? 'lg:hidden' : ''">{{ item.label }}</span>
-          </button>
-        } @else {
-          <button
-            disabled
-            title="قريباً"
-            [style.animation-delay]="idx * 30 + 'ms'"
-            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-right animate-slide-in-right text-white/30 cursor-not-allowed">
-            <svg [lucideIcon]="item.icon" [size]="20" class="shrink-0" />
-            <span [class]="!isSidebarOpen() ? 'lg:hidden' : ''">{{ item.label }}</span>
-          </button>
-        }
+    <!-- Active-club inset card -->
+    @if (isSidebarOpen()) {
+      <div class="mx-4 mt-4 rounded-xl bg-white/[0.07] border border-white/10 px-3.5 py-3 shrink-0">
+        <p class="text-[11px] text-white/65">{{ 'shell.activeClub.label' | translate }}</p>
+        <p class="text-sm font-semibold mt-1 truncate flex items-center gap-1.5">
+          <svg [lucideIcon]="MapPinIcon" [size]="14" class="text-turquoise-200 shrink-0" />
+          {{ 'shell.activeClub.value' | translate }}
+        </p>
+      </div>
+    }
+
+    <!-- Grouped nav -->
+    <nav class="flex-1 px-3 py-5 overflow-y-auto hide-scrollbar space-y-5">
+      @if (mustChangePassword() && isSidebarOpen()) {
+        <div class="flex items-start gap-2 rounded-xl bg-white/[0.06] border border-white/10 px-3 py-2 text-[11px] text-white/70">
+          <svg [lucideIcon]="LockIcon" [size]="14" class="text-turquoise-200 shrink-0 mt-0.5" />
+          <span>{{ 'shell.lockedHint' | translate }}</span>
+        </div>
+      }
+      @for (group of navGroups(); track group.header) {
+        <div>
+          @if (isSidebarOpen()) {
+            <p class="px-3 mb-2 text-[11px] font-semibold text-white/60">{{ group.header | translate }}</p>
+          }
+          <div class="space-y-1">
+            @for (item of group.items; track item.label) {
+              <button
+                [routerLink]="item.route"
+                [disabled]="mustChangePassword()"
+                [attr.aria-current]="isActive(item.route) ? 'page' : null"
+                [class]="
+                  'w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm text-left transition-colors ' +
+                  (mustChangePassword() ? 'opacity-40 cursor-not-allowed ' : '') +
+                  (isActive(item.route)
+                    ? 'bg-white text-turquoise-900 font-semibold shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/[0.08]')
+                "
+                [title]="!isSidebarOpen() ? (item.label | translate) : ''">
+                <span
+                  [class]="
+                    'w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ' +
+                    (isActive(item.route) ? 'bg-turquoise-700 text-white' : 'bg-white/[0.08] text-white/70')
+                  ">
+                  <svg [lucideIcon]="item.icon" [size]="16" />
+                </span>
+                <span [class]="'truncate ' + (!isSidebarOpen() ? 'lg:hidden' : '')">{{ item.label | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
       }
     </nav>
 
-    <!-- Sidebar footer -->
-    <div class="p-3 border-t border-white/10 space-y-1">
-      <button
-        (click)="signOut()"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-white/60 hover:bg-white/10 hover:text-surface text-sm transition-all"
-        [title]="!isSidebarOpen() ? 'تسجيل الخروج' : ''">
-        <svg [lucideIcon]="LogOutIcon" [size]="18" class="shrink-0" />
-        <span [class]="!isSidebarOpen() ? 'lg:hidden' : ''">تسجيل الخروج</span>
-      </button>
-      <button
-        (click)="isSidebarOpen.set(!isSidebarOpen())"
-        class="hidden lg:flex w-full items-center justify-center gap-2 px-2 py-2 rounded text-white/60 hover:bg-white/10 hover:text-surface text-xs">
-        <svg [lucideIcon]="MenuIcon" [size]="16" />
-        <span [class]="!isSidebarOpen() ? 'hidden' : ''">طي القائمة</span>
-      </button>
+    <!-- Bottom account card -->
+    <div class="p-3 border-t border-white/10 shrink-0">
+      @if (isSidebarOpen()) {
+        <div class="flex items-center gap-2.5 rounded-xl bg-white/[0.06] border border-white/10 px-3 py-2.5">
+          <!-- Initials avatar -->
+          <span
+            data-testid="user-avatar"
+            class="w-9 h-9 rounded-lg bg-white/12 border border-white/20 text-white flex items-center justify-center text-xs font-semibold shrink-0">
+            {{ userInitials() }}
+          </span>
+          <!-- Name + role -->
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold truncate">{{ currentUserName() }}</p>
+            <p class="text-[11px] text-white/65 capitalize truncate">{{ roleLabel() | translate }}</p>
+          </div>
+          <!-- Logout icon button -->
+          <button
+            (click)="signOut()"
+            [title]="'shell.signOut' | translate"
+            [attr.aria-label]="'shell.signOut' | translate"
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0">
+            <svg [lucideIcon]="LogOutIcon" [size]="16" />
+          </button>
+        </div>
+      } @else {
+        <!-- Collapsed: avatar + logout, centred -->
+        <div class="hidden lg:flex flex-col items-center gap-2">
+          <span
+            data-testid="user-avatar"
+            class="w-9 h-9 rounded-lg bg-white/12 border border-white/20 text-white flex items-center justify-center text-xs font-semibold">
+            {{ userInitials() }}
+          </span>
+          <button
+            (click)="signOut()"
+            [title]="'shell.signOut' | translate"
+            [attr.aria-label]="'shell.signOut' | translate"
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+            <svg [lucideIcon]="LogOutIcon" [size]="16" />
+          </button>
+        </div>
+      }
     </div>
   </aside>
 
@@ -92,35 +144,68 @@
     <!-- Header -->
     <header class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 lg:px-6 z-30 shrink-0 gap-3">
       <div class="flex items-center gap-4 flex-1 min-w-0">
+        <!-- Mobile hamburger -->
         <button
           (click)="isMobileMenuOpen.set(true)"
           class="text-text-secondary hover:text-primary lg:hidden">
           <svg [lucideIcon]="MenuIcon" [size]="24" />
         </button>
 
-        <!-- Search (disabled placeholder — search not yet implemented) -->
-        <div class="hidden md:block relative max-w-md flex-1">
-          <div class="flex items-center bg-canvas rounded-md px-3 py-1.5 border border-border transition-all">
-            <svg [lucideIcon]="SearchIcon" [size]="16" class="text-text-muted ml-2 shrink-0" />
+        <!-- Desktop sidebar collapse toggle -->
+        <button
+          (click)="isSidebarOpen.set(!isSidebarOpen())"
+          class="hidden lg:inline-flex text-text-secondary hover:text-primary"
+          [title]="'shell.toggleSidebar' | translate"
+          [attr.aria-label]="'shell.toggleSidebar' | translate">
+          <svg [lucideIcon]="CollapseIcon" [size]="20" />
+        </button>
+
+        <!-- Breadcrumb -->
+        <div class="hidden md:flex flex-col justify-center leading-tight min-w-0">
+          <p class="text-xs text-text-secondary truncate">
+            {{ 'shell.activeClub.value' | translate }}
+            &rsaquo;
+            {{ breadcrumb().group | translate }}
+          </p>
+          <p class="text-sm font-semibold text-ink truncate">{{ breadcrumb().label | translate }}</p>
+        </div>
+
+        <!-- Search (styled but inert — no binding/handler) -->
+        <div class="hidden lg:block relative max-w-xs flex-1">
+          <div class="flex items-center bg-canvas rounded-md px-3 py-1.5 border border-border">
+            <svg [lucideIcon]="SearchIcon" [size]="16" class="text-text-muted me-2 shrink-0" />
             <input
               type="text"
-              disabled
-              placeholder="بحث (قريباً)"
-              class="bg-transparent border-none outline-none text-sm w-full placeholder:text-text-muted cursor-not-allowed" />
+              [placeholder]="'shell.searchPlaceholder' | translate"
+              class="bg-transparent border-none outline-none text-sm w-full placeholder:text-text-muted" />
           </div>
         </div>
       </div>
 
-      <!-- Profile button -->
-      <button
-        [routerLink]="'/account'"
-        class="flex items-center gap-2 rounded-full transition-transform hover:scale-105"
-        [title]="roleLabel()"
-        aria-label="الملف الشخصي">
-        <div class="w-9 h-9 rounded-full bg-primary text-surface flex items-center justify-center font-semibold text-sm shrink-0">
-          {{ userInitial() }}
+      <!-- Top-bar controls -->
+      <div class="flex items-center gap-1">
+        <!-- Segmented EN | عربي language switcher (reused from login.page.html) -->
+        <div class="inline-flex rounded-[10px] border border-border bg-canvas p-0.5 text-xs font-medium">
+          <button type="button" (click)="setLang('en')" [attr.aria-pressed]="lang() === 'en'"
+            class="h-7 rounded-[4px] px-2.5 transition-colors"
+            [class.bg-surface]="lang() === 'en'" [class.text-ink]="lang() === 'en'" [class.shadow-sm]="lang() === 'en'"
+            [class.text-text-secondary]="lang() !== 'en'">EN</button>
+          <button type="button" (click)="setLang('ar')" [attr.aria-pressed]="lang() === 'ar'"
+            class="h-7 rounded-[4px] px-2.5 transition-colors"
+            [class.bg-surface]="lang() === 'ar'" [class.text-ink]="lang() === 'ar'" [class.shadow-sm]="lang() === 'ar'"
+            [class.text-text-secondary]="lang() !== 'ar'">عربي</button>
         </div>
-      </button>
+
+        <!-- Theme toggle -->
+        <button
+          (click)="toggleTheme()"
+          class="text-text-secondary hover:text-primary px-2"
+          [attr.aria-label]="'theme'">
+          <svg [lucideIcon]="mode() === 'dark' ? SunIcon : MoonIcon" [size]="18" />
+        </button>
+
+        <!-- Avatar profile button REMOVED per Task 8 -->
+      </div>
     </header>
 
     <!-- Page content -->

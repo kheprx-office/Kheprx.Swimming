@@ -9,15 +9,27 @@ describe('routes', () => {
     expect(childPaths).toEqual(expect.arrayContaining(['home', 'account', 'change-password']));
   });
 
+  it('registers blank feature routes under the shell for the sidebar nav items', () => {
+    const shell = routes.find((r) => r.path === '' && !!r.children)!;
+    const childPaths = (shell.children ?? []).map((c) => c.path);
+    expect(childPaths).toEqual(
+      expect.arrayContaining(['swimmers', 'attendance', 'championships', 'captain-panel']),
+    );
+  });
+
   it('keeps /login outside the shell', () => {
     expect(routes.some((r) => r.path === 'login' && !r.children)).toBe(true);
   });
 
-  it('adds a guarded /user-management child', () => {
+  it('does not contain a /user-management child (feature parked)', () => {
     const shell = routes.find((r) => r.path === '' && !!r.children)!;
     const um = (shell.children ?? []).find((c) => c.path === 'user-management');
-    expect(um).toBeTruthy();
-    expect(um!.canActivate).toBeTruthy();
-    expect(um!.providers).toBeTruthy();
+    expect(um).toBeUndefined();
+  });
+
+  it('registers the account-creation route', () => {
+    const layout = routes.find((r) => r.path === '');
+    const paths = layout?.children?.map((c) => c.path) ?? [];
+    expect(paths).toContain('captain-panel/account-creation');
   });
 });

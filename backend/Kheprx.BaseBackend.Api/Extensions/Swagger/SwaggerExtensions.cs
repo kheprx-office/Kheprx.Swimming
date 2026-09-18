@@ -17,9 +17,9 @@ public static class SwaggerExtensions
 
             options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = "Kheprx Electric API",
+                Title = "Kheprx Swimming API",
                 Version = "v1",
-                Description = "Backend API for the Kheprx Electric platform. Every endpoint wraps its payload in the "
+                Description = "Backend API for the Kheprx swimming academy platform. Every endpoint wraps its payload in the "
                     + "ApiResponse envelope: { successStatus, message, error, data }. Failure responses carry a "
                     + "machine-readable code in 'error' (e.g. EMAIL_IN_USE)."
             });

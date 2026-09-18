@@ -30,7 +30,7 @@ internal sealed class RoleService : IRoleService
         var roles = await _roles.GetAllAsync(ct);
 
         var dtos = roles
-            .Select(r => new RoleDto(r.Id, r.Code, r.LabelAr, r.LabelEn, r.SortOrder))
+            .Select(r => new RoleDto(r.Id, r.Code, r.NameEn, r.NameAr))
             .ToList();
 
         return dtos;

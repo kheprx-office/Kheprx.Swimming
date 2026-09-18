@@ -2,7 +2,6 @@ import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   LucideDynamicIcon,
-  LucideShieldCheck,
   LucideSettings,
 } from '@lucide/angular';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -37,8 +36,7 @@ export class HomePage {
   // (role-gated like the sidebar's navItems); business feature cards were removed
   // since those routes do not exist in this starter.
   private readonly allCards: HomeCard[] = [
-    { label: 'إدارة المستخدمين', desc: 'المستخدمون والصلاحيات', icon: LucideShieldCheck, color: 'from-danger to-rose-400',     route: '/user-management', roles: ['admin'] },
-    { label: 'الإعدادات',        desc: 'الملف الشخصي والتفضيلات', icon: LucideSettings,    color: 'from-slate-600 to-slate-400', route: '/account' },
+    { label: 'الإعدادات', desc: 'الملف الشخصي والتفضيلات', icon: LucideSettings, color: 'from-slate-600 to-slate-400', route: '/account' },
   ];
 
   readonly cards = computed<HomeCard[]>(() => {
