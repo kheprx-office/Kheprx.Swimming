@@ -1,0 +1,49 @@
+<div>
+  <header class="mb-8">
+    <h1 class="font-heading text-3xl text-ink">{{ 'swimmerData.title' | translate }}</h1>
+    <p class="mt-2 text-muted">{{ 'swimmerData.description' | translate }}</p>
+  </header>
+
+  @if (vm.loading()) {
+    <p class="text-muted">{{ 'swimmerData.states.loading' | translate }}</p>
+  } @else if (vm.error()) {
+    <p class="text-danger">{{ 'swimmerData.states.error' | translate }}</p>
+  } @else {
+    <section class="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <h2 class="font-heading text-xl text-ink">{{ 'swimmerData.add.title' | translate }}</h2>
+      <form class="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4"
+            (submit)="$event.preventDefault(); vm.submit()">
+        <app-select-field
+          [label]="'swimmerData.fields.swimmer' | translate"
+          [placeholder]="'swimmerData.placeholders.swimmer' | translate"
+          [options]="vm.swimmerOptions()"
+          [value]="vm.swimmerId()" (valueChange)="vm.swimmerId.set($event)"></app-select-field>
+
+        <app-select-field
+          [label]="'swimmerData.fields.category' | translate"
+          [placeholder]="'swimmerData.placeholders.category' | translate"
+          [options]="vm.categoryOptions()"
+          [value]="vm.categoryId()" (valueChange)="vm.categoryId.set($event)"></app-select-field>
+
+        <app-text-field
+          [label]="'swimmerData.fields.fieldName' | translate"
+          [placeholder]="'swimmerData.placeholders.fieldName' | translate"
+          [value]="vm.fieldLabel()" (valueChange)="vm.fieldLabel.set($event)"></app-text-field>
+
+        <app-text-field
+          [label]="'swimmerData.fields.value' | translate"
+          [placeholder]="'swimmerData.placeholders.value' | translate"
+          [value]="vm.value()" (valueChange)="vm.value.set($event)"></app-text-field>
+
+        <div class="flex items-end">
+          <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            [disabled]="!vm.canSubmit() || vm.submitting()">
+            {{ 'swimmerData.add.submit' | translate }}
+          </button>
+        </div>
+
+        <p class="md:col-span-2 lg:col-span-4 text-xs text-muted">{{ 'swimmerData.add.helper' | translate }}</p>
+      </form>
+    </section>
+  }
+</div>

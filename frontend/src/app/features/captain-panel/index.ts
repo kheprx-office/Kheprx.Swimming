@@ -6,3 +6,5 @@ export { MedicalTestsPage } from './presentation/pages/medical-tests/medical-tes
 export { MedicalTestsViewModel } from './presentation/pages/medical-tests/medical-tests.viewmodel';
 export { HealthMonitoringPage } from './presentation/pages/health-monitoring/health-monitoring.page';
 export { HealthMonitoringViewModel } from './presentation/pages/health-monitoring/health-monitoring.viewmodel';
+export { SwimmerDataPage } from './presentation/pages/swimmer-data/swimmer-data.page';
+export { SwimmerDataViewModel } from './presentation/pages/swimmer-data/swimmer-data.viewmodel';

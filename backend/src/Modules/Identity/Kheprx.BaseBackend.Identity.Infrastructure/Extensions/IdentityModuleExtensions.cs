@@ -36,6 +36,7 @@ public static class IdentityModuleExtensions
         services.AddScoped<ICoachService, CoachService>();
         services.AddScoped<IClubRepository, ClubRepository>();
         services.AddScoped<IBloodTypeRepository, BloodTypeRepository>();
+        services.AddScoped<IObservationCategoryRepository, ObservationCategoryRepository>();
         services.AddScoped<IStrokeRepository, StrokeRepository>();
         services.AddScoped<IGenderRepository, GenderRepository>();
         services.AddScoped<IReferenceService, ReferenceService>();

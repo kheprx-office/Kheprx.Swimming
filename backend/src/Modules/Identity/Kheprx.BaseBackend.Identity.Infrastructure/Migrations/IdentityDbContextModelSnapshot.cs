@@ -220,6 +220,34 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                     b.ToTable("head_coach_profile", "identity");
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.ObservationCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("observation_category", "reference");
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")

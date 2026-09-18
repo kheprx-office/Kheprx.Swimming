@@ -10,9 +10,11 @@ public class ReferenceServiceTests
 {
     private static ReferenceService NewService(
         IClubRepository? clubs = null, IBloodTypeRepository? blood = null,
-        IStrokeRepository? strokes = null, IGenderRepository? genders = null)
+        IStrokeRepository? strokes = null, IGenderRepository? genders = null,
+        IObservationCategoryRepository? categories = null)
         => new(clubs ?? Mock.Of<IClubRepository>(), blood ?? Mock.Of<IBloodTypeRepository>(),
-               strokes ?? Mock.Of<IStrokeRepository>(), genders ?? Mock.Of<IGenderRepository>());
+               strokes ?? Mock.Of<IStrokeRepository>(), genders ?? Mock.Of<IGenderRepository>(),
+               categories ?? Mock.Of<IObservationCategoryRepository>());
 
     [Fact]
     public async Task GetStrokes_maps_entities_to_coded_dtos()
@@ -41,5 +43,19 @@ public class ReferenceServiceTests
         Assert.Single(result);
         Assert.Equal("Al Ahly", result[0].NameEn);
         Assert.Equal("الأهلي", result[0].NameAr);
+    }
+
+    [Fact]
+    public async Task GetObservationCategories_maps_entities_to_coded_dtos()
+    {
+        var categories = new Mock<IObservationCategoryRepository>();
+        categories.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(new[] { new ObservationCategory("allergy", "Allergy", "حساسية") });
+
+        var result = await NewService(categories: categories.Object).GetObservationCategoriesAsync();
+
+        Assert.Single(result);
+        Assert.Equal("allergy", result[0].Code);
+        Assert.Equal("Allergy", result[0].NameEn);
     }
 }

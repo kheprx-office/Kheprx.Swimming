@@ -19,6 +19,8 @@ public static class HealthModuleExtensions
         services.AddScoped<IMedicalTestRepository, MedicalTestRepository>();
         services.AddScoped<IMedicalTestService, MedicalTestService>();
         services.AddScoped<IHealthReadingRepository, HealthReadingRepository>();
+        services.AddScoped<IObservationRepository, ObservationRepository>();
+        services.AddScoped<IObservationService, ObservationService>();
         services.AddScoped<IHealthReadingService, HealthReadingService>();
         return services;
     }

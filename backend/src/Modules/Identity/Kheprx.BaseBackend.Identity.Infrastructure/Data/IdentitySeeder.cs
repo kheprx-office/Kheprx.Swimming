@@ -20,6 +20,7 @@ public static class IdentitySeeder
 
         await EnsureStrokes(db, ct);
         await EnsureBloodTypes(db, ct);
+        await EnsureObservationCategories(db, ct);
         await EnsureClubs(db, ct);
         await db.SaveChangesAsync(ct);
 
@@ -112,6 +113,23 @@ public static class IdentitySeeder
         foreach (var code in new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" })
             if (!await db.BloodTypes.AnyAsync(b => b.Code == code, ct))
                 await db.BloodTypes.AddAsync(new BloodType(code, code, code), ct);
+    }
+
+    private static async Task EnsureObservationCategories(IdentityDbContext db, CancellationToken ct)
+    {
+        var rows = new (string Code, string En, string Ar)[]
+        {
+            ("allergy", "Allergy", "حساسية"),
+            ("surgery", "Surgery", "جراحة"),
+            ("chronic", "Chronic", "مرض مزمن"),
+            ("autoimmune", "Autoimmune", "مناعي ذاتي"),
+            ("composition", "Composition", "تركيب الجسم"),
+            ("flag", "Flag", "ملاحظة"),
+            ("other", "Other", "أخرى"),
+        };
+        foreach (var (code, en, ar) in rows)
+            if (!await db.ObservationCategories.AnyAsync(c => c.Code == code, ct))
+                await db.ObservationCategories.AddAsync(new ObservationCategory(code, en, ar), ct);
     }
 
     private static async Task EnsureClubs(IdentityDbContext db, CancellationToken ct)

@@ -271,7 +271,7 @@ const SCHEMA = [
    {c:"category_id",t:"uuid",k:"FK",fk:"reference.observation_category.id",n:false},
    {c:"field_label",t:"varchar",k:"",n:false},
    {c:"value",t:"varchar",k:"",n:false},
-   {c:"observed_date",t:"date",k:"",n:false},
+   {c:"observed_date",t:"timestamptz",k:"",n:false},
    {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
   {name:"feedback_entry",note:"coach performance evaluation for a swimmer",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
@@ -434,7 +434,8 @@ const IMPLEMENTED = new Set([
   "reference.stroke","reference.club","reference.gender","reference.role","reference.blood_type",
   "identity.app_user","identity.captain_profile","identity.head_coach_profile","identity.swimmer_profile",
   "athlete.swimmer_specialization",
-  "health.medical_test","health.health_reading"
+  "health.medical_test","health.health_reading",
+  "reference.observation_category","health.observation"
 ]);
 const isImplemented = key => IMPLEMENTED.has(key);
 function statusDot(key){

@@ -19,6 +19,7 @@ import { REFERENCE_PROVIDERS } from '@features/reference/data/reference.provider
 import { COACH_PROVIDERS } from '@features/coaches/data/coach.providers';
 import { MEDICAL_TEST_PROVIDERS } from '@features/medical-tests/data/medical-test.providers';
 import { HEALTH_READING_PROVIDERS } from '@features/health-readings/data/health-reading.providers';
+import { OBSERVATION_PROVIDERS } from '@features/observations/data/observation.providers';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 
 export const appConfig: ApplicationConfig = {
@@ -34,6 +35,7 @@ export const appConfig: ApplicationConfig = {
     ...COACH_PROVIDERS,
     ...MEDICAL_TEST_PROVIDERS,
     ...HEALTH_READING_PROVIDERS,
+    ...OBSERVATION_PROVIDERS,
     // Restore the persisted session (GET /api/auth/me) BEFORE the router activates, so
     // guards don't see a not-yet-rehydrated store and bounce a logged-in user to /login
     // on page reload.

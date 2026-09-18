@@ -109,6 +109,35 @@
       "deleteFailed": "Couldn't delete the medical test"
     }
   },
+  "swimmerData": {
+    "title": "Swimmer Data Fields",
+    "description": "Record any extra swimmer data as a name and a value — allergies, surgeries, measurements. Medical test results live in their own section.",
+    "add": {
+      "title": "Add a data field",
+      "helper": "Records are stamped with the current date and time and appear on the swimmer's detail page.",
+      "submit": "Add Data"
+    },
+    "fields": {
+      "swimmer": "Select Swimmer",
+      "category": "Select Category",
+      "fieldName": "Field Name (Key)",
+      "value": "Value"
+    },
+    "placeholders": {
+      "swimmer": "Choose a swimmer",
+      "category": "Choose a category",
+      "fieldName": "e.g. Penicillin",
+      "value": "e.g. Severe"
+    },
+    "states": {
+      "loading": "Loading…",
+      "error": "Couldn't load swimmers or categories. Please try again."
+    },
+    "toasts": {
+      "added": "Data field added",
+      "addFailed": "Couldn't add the data field"
+    }
+  },
   "healthMonitoring": {
     "title": "Health Monitoring",
     "description": "Log a swimmer's medical test result against that test's normal bounds.",

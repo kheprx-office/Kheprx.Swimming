@@ -61,4 +61,15 @@ public sealed class ReferenceController : BaseApiController
             ReferenceMessages.Success.GendersListed(AppLanguage.Current), data);
         return Ok(body);
     }
+
+    /// <summary>Lists all observation categories (Swimmer Data Fields).</summary>
+    [HttpGet("observation-categories")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CodedLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CodedLookupDto>>>> ObservationCategories(CancellationToken ct)
+    {
+        var data = await _service.GetObservationCategoriesAsync(ct);
+        var body = ApiResponse<IReadOnlyList<CodedLookupDto>>.Success(
+            ReferenceMessages.Success.ObservationCategoriesListed(AppLanguage.Current), data);
+        return Ok(body);
+    }
 }

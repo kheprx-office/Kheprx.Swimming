@@ -7,6 +7,7 @@ export interface IReferenceRepository {
   getBloodTypes(): Promise<CodedLookupListDtoRs>;
   getStrokes(): Promise<CodedLookupListDtoRs>;
   getGenders(): Promise<CodedLookupListDtoRs>;
+  getObservationCategories(): Promise<CodedLookupListDtoRs>;
 }
 
 export const REFERENCE_REPOSITORY = new InjectionToken<IReferenceRepository>('REFERENCE_REPOSITORY');

@@ -63,4 +63,19 @@ public class ReferenceRepositoryTests
         Assert.Equal(2, result.Count);
         Assert.Equal("Female", result[0].NameEn);
     }
+
+    [Fact]
+    public async Task ObservationCategoryRepository_returns_all_ordered_by_code()
+    {
+        await using var db = NewDb();
+        db.ObservationCategories.AddRange(
+            new ObservationCategory("surgery", "Surgery", "جراحة"),
+            new ObservationCategory("allergy", "Allergy", "حساسية"));
+        await db.SaveChangesAsync();
+
+        var result = await new ObservationCategoryRepository(db).GetAllAsync();
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal("allergy", result[0].Code);
+    }
 }

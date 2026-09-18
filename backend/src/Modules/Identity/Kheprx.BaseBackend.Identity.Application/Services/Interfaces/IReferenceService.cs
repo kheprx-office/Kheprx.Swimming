@@ -8,4 +8,5 @@ public interface IReferenceService
     Task<IReadOnlyList<CodedLookupDto>> GetBloodTypesAsync(CancellationToken ct = default);
     Task<IReadOnlyList<CodedLookupDto>> GetStrokesAsync(CancellationToken ct = default);
     Task<IReadOnlyList<CodedLookupDto>> GetGendersAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<CodedLookupDto>> GetObservationCategoriesAsync(CancellationToken ct = default);
 }

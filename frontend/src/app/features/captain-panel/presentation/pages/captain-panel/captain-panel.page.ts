@@ -30,7 +30,7 @@ export class CaptainPanelPage {
   protected readonly cards = computed<PanelCard[]>(() => {
     const all: PanelCard[] = [
       { key: 'accountCreation', icon: LucideUserPlus, route: '/captain-panel/account-creation' },
-      { key: 'swimmerRecords', icon: LucideDatabase },
+      { key: 'swimmerRecords', icon: LucideDatabase, route: '/captain-panel/swimmer-data' },
       { key: 'medicalTests', icon: LucideFlaskConical, route: '/captain-panel/medical-tests' },
       { key: 'healthMonitoring', icon: LucideHeartPulse, route: '/captain-panel/health-monitoring' },
     ];

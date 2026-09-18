@@ -38,4 +38,18 @@ public class ReferenceControllerTests
         var body = Assert.IsType<ApiResponse<IReadOnlyList<CodedLookupDto>>>(ok.Value);
         Assert.Equal("medley", body.Data![0].Code);
     }
+
+    [Fact]
+    public async Task ObservationCategories_returns_200_with_coded_lookups()
+    {
+        var svc = new Mock<IReferenceService>();
+        svc.Setup(s => s.GetObservationCategoriesAsync(It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new List<CodedLookupDto> { new(Guid.NewGuid(), "allergy", "Allergy", "حساسية") });
+
+        var result = await new ReferenceController(svc.Object).ObservationCategories(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<IReadOnlyList<CodedLookupDto>>>(ok.Value);
+        Assert.Equal("allergy", body.Data![0].Code);
+    }
 }

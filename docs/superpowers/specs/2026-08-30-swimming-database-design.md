@@ -186,7 +186,7 @@ explicitly a later, separate effort — not part of this work.
 | category_id | uuid | FK → reference.observation_category |
 | field_label | varchar | e.g. "Penicillin" |
 | value | varchar | e.g. "Severe" |
-| observed_date | date | |
+| observed_date | timestamptz | |
 | recorded_by | uuid | FK → app_user (cross-module) |
 
 **feedback_entry** — coach performance evaluations

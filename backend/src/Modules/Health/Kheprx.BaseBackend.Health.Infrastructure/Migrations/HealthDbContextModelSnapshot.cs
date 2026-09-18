@@ -89,6 +89,39 @@ namespace Kheprx.BaseBackend.Health.Infrastructure.Migrations
                     b.ToTable("medical_test", "health");
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Health.Domain.Entities.Observation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FieldLabel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("ObservedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecordedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SwimmerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("observation", "health");
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Health.Domain.Entities.HealthReading", b =>
                 {
                     b.HasOne("Kheprx.BaseBackend.Health.Domain.Entities.MedicalTest", null)

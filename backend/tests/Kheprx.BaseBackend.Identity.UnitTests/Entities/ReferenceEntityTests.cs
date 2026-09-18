@@ -32,4 +32,14 @@ public class ReferenceEntityTests
         Assert.Equal("الأهلي", c.NameAr);
         Assert.NotEqual(default, c.CreatedAt);
     }
+
+    [Fact]
+    public void ObservationCategory_ctor_trims_and_assigns()
+    {
+        var c = new ObservationCategory(" allergy ", " Allergy ", " حساسية ");
+        Assert.NotEqual(Guid.Empty, c.Id);
+        Assert.Equal("allergy", c.Code);
+        Assert.Equal("Allergy", c.NameEn);
+        Assert.Equal("حساسية", c.NameAr);
+    }
 }
