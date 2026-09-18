@@ -12,5 +12,6 @@
     <ProjectReference Include="..\..\Kheprx.BaseBackend.Api\Kheprx.BaseBackend.Api.csproj" />
     <ProjectReference Include="..\..\src\SharedKernel\Kheprx.BaseBackend.SharedKernel\Kheprx.BaseBackend.SharedKernel.csproj" />
     <ProjectReference Include="..\..\src\Modules\Identity\Kheprx.BaseBackend.Identity.Infrastructure\Kheprx.BaseBackend.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Health\Kheprx.BaseBackend.Health.Infrastructure\Kheprx.BaseBackend.Health.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard, firstLoginGuard, roleGuard } from '@features/auth/presentation/auth.guard';
 import { LayoutComponent } from './layout/layout.component';
 import { LoginViewModel, AccountViewModel } from '@features/auth';
-import { RegisterSwimmerViewModel, RegisterCoachViewModel } from '@features/captain-panel';
+import { RegisterSwimmerViewModel, RegisterCoachViewModel, MedicalTestsViewModel } from '@features/captain-panel';
 
 export const routes: Routes = [
   {
@@ -27,6 +27,12 @@ export const routes: Routes = [
         canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')],
         loadComponent: () => import('@features/captain-panel').then((m) => m.AccountCreationPage),
         providers: [RegisterSwimmerViewModel, RegisterCoachViewModel],
+      },
+      {
+        path: 'captain-panel/medical-tests',
+        canActivate: [firstLoginGuard, roleGuard('head_coach')],
+        loadComponent: () => import('@features/captain-panel').then((m) => m.MedicalTestsPage),
+        providers: [MedicalTestsViewModel],
       },
       {
         path: 'account',

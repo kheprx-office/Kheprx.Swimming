@@ -1,30 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
-  LucideDynamicIcon,
-  LucideUserPlus,
-  LucideDatabase,
-  LucideFlaskConical,
-  LucideHeartPulse,
-  LucideArrowRight,
+  LucideDynamicIcon, LucideUserPlus, LucideDatabase, LucideFlaskConical, LucideHeartPulse, LucideArrowRight,
 } from '@lucide/angular';
 import { TranslatePipe } from '@core/i18n';
+import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LucideIconType = any;
 
 interface PanelCard {
-  // i18n key stem under captainPanel.cards.<key>.{title,meta,desc}
   key: string;
   icon: LucideIconType;
-  // Only cards whose feature exists get a route; others are safe non-navigating placeholders.
   route?: string;
 }
 
-// Captain Panel dashboard: an overview of the administration tools. Account Creation is live
-// (route exists); the other cards are placeholders until their features are built. Reachable by
-// head_coach + captain (roleGuard) — the cards themselves carry no privileged action.
 @Component({
   selector: 'app-captain-panel-page',
   standalone: true,
@@ -32,12 +23,17 @@ interface PanelCard {
   templateUrl: './captain-panel.page.html',
 })
 export class CaptainPanelPage {
+  private readonly auth = inject(AuthSessionStore);
   protected readonly ArrowRightIcon = LucideArrowRight;
 
-  protected readonly cards: PanelCard[] = [
-    { key: 'accountCreation', icon: LucideUserPlus, route: '/captain-panel/account-creation' },
-    { key: 'swimmerRecords', icon: LucideDatabase },
-    { key: 'medicalTests', icon: LucideFlaskConical },
-    { key: 'healthMonitoring', icon: LucideHeartPulse },
-  ];
+  // Medical Tests is head-coach-managed: the card is only shown to head coaches.
+  protected readonly cards = computed<PanelCard[]>(() => {
+    const all: PanelCard[] = [
+      { key: 'accountCreation', icon: LucideUserPlus, route: '/captain-panel/account-creation' },
+      { key: 'swimmerRecords', icon: LucideDatabase },
+      { key: 'medicalTests', icon: LucideFlaskConical, route: '/captain-panel/medical-tests' },
+      { key: 'healthMonitoring', icon: LucideHeartPulse },
+    ];
+    return this.auth.role() === 'head_coach' ? all : all.filter((c) => c.key !== 'medicalTests');
+  });
 }

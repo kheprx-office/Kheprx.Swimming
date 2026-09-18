@@ -5,7 +5,7 @@
     "cards": {
       "accountCreation": { "title": "Account Creation", "meta": "2 types", "desc": "Create swimmer and captain accounts, set their club, specializations and access." },
       "swimmerRecords": { "title": "Swimmer Records", "meta": "Add a record", "desc": "Add allergies, surgeries, medical flags and body composition to a swimmer." },
-      "medicalTests": { "title": "Medical Tests", "meta": "7 tests", "desc": "Define tests and their normal bounds — these drive how health readings are judged." },
+      "medicalTests": { "title": "Medical Tests", "meta": "Manage", "desc": "Define tests and their normal bounds — these drive how health readings are judged." },
       "healthMonitoring": { "title": "Health Monitoring", "meta": "Log a reading", "desc": "Log medical test results for a swimmer against each test's normal bounds." }
     }
   },
@@ -91,5 +91,22 @@
     "created": { "title": "Swimmer registered", "username": "Username", "password": "Temporary password", "another": "Register another" },
     "errors": { "required": "Please fill in all required fields.", "usernameTaken": "Username is already taken.", "taken": "That username, email, or national ID is already in use.", "failed": "Failed to register swimmer." },
     "success": "Swimmer registered"
+  },
+  "medicalTests": {
+    "title": "Medical Tests",
+    "description": "Define each test and its normal range. Any reading outside those bounds is flagged automatically via Health Monitoring.",
+    "add": { "title": "Add a test", "helper": "Names and bounds are required; upper must exceed lower.", "submit": "Add Test" },
+    "fields": { "nameEn": "Test Name (EN)", "nameAr": "Test Name (AR)", "unit": "Unit", "lowerBound": "Lower Bound", "upperBound": "Upper Bound" },
+    "placeholders": { "nameEn": "e.g. Vitamin B12", "nameAr": "e.g. فيتامين ب12", "unit": "mg/dL" },
+    "table": { "test": "Test", "unit": "Unit", "lower": "Lower", "upper": "Upper" },
+    "states": { "loading": "Loading tests…", "empty": "No medical tests yet. Add your first test above.", "error": "Couldn't load medical tests. Please try again." },
+    "delete": "Delete",
+    "toasts": {
+      "created": "Medical test added",
+      "createFailed": "Couldn't add the medical test",
+      "deleted": "Medical test deleted",
+      "alreadyGone": "That test was already removed",
+      "deleteFailed": "Couldn't delete the medical test"
+    }
   }
 }

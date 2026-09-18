@@ -1,3 +1,4 @@
+using Kheprx.BaseBackend.Health.Infrastructure.Data;
 using Kheprx.BaseBackend.Identity.Application.Abstractions;
 using Kheprx.BaseBackend.Identity.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -13,5 +14,13 @@ public static class MigrationExtensions
         await db.Database.MigrateAsync();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         await IdentitySeeder.SeedAsync(db, hasher);
+    }
+
+    public static async Task ApplyHealthMigrationsAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<HealthDbContext>();
+        await db.Database.MigrateAsync();
+        await HealthSeeder.SeedAsync(db);
     }
 }

@@ -1,0 +1,18 @@
+using Kheprx.BaseBackend.Health.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace Kheprx.BaseBackend.Health.Infrastructure.Data;
+
+public sealed class HealthDbContext : DbContext
+{
+    public HealthDbContext(DbContextOptions<HealthDbContext> options) : base(options) { }
+
+    public DbSet<MedicalTest> MedicalTests => Set<MedicalTest>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("health");
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(HealthDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+}

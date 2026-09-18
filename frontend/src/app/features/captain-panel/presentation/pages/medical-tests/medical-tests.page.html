@@ -1,0 +1,67 @@
+<div>
+  <header class="mb-8">
+    <h1 class="font-heading text-3xl text-ink">{{ 'medicalTests.title' | translate }}</h1>
+    <p class="mt-2 text-muted">{{ 'medicalTests.description' | translate }}</p>
+  </header>
+
+  <section class="mb-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <h2 class="font-heading text-xl text-ink">{{ 'medicalTests.add.title' | translate }}</h2>
+    <form class="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+          (submit)="$event.preventDefault(); vm.submit()">
+      <app-text-field [label]="'medicalTests.fields.nameEn' | translate" [placeholder]="'medicalTests.placeholders.nameEn' | translate"
+        [value]="vm.nameEn()" (valueChange)="vm.nameEn.set($event)"></app-text-field>
+      <app-text-field [label]="'medicalTests.fields.nameAr' | translate" [placeholder]="'medicalTests.placeholders.nameAr' | translate"
+        [value]="vm.nameAr()" (valueChange)="vm.nameAr.set($event)"></app-text-field>
+      <app-text-field [label]="'medicalTests.fields.unit' | translate" [placeholder]="'medicalTests.placeholders.unit' | translate"
+        [value]="vm.unit()" (valueChange)="vm.unit.set($event)"></app-text-field>
+      <app-text-field [label]="'medicalTests.fields.lowerBound' | translate"
+        [value]="vm.lowerBound()" (valueChange)="vm.lowerBound.set($event)"></app-text-field>
+      <app-text-field [label]="'medicalTests.fields.upperBound' | translate"
+        [value]="vm.upperBound()" (valueChange)="vm.upperBound.set($event)"></app-text-field>
+      <div class="flex items-end">
+        <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          [disabled]="!vm.canSubmit() || vm.submitting()">
+          {{ 'medicalTests.add.submit' | translate }}
+        </button>
+      </div>
+      <p class="md:col-span-2 lg:col-span-3 text-xs text-muted">{{ 'medicalTests.add.helper' | translate }}</p>
+    </form>
+  </section>
+
+  @if (vm.loading()) {
+    <p class="text-muted">{{ 'medicalTests.states.loading' | translate }}</p>
+  } @else if (vm.error()) {
+    <p class="text-danger">{{ 'medicalTests.states.error' | translate }}</p>
+  } @else if (vm.tests().length === 0) {
+    <p class="text-muted">{{ 'medicalTests.states.empty' | translate }}</p>
+  } @else {
+    <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <table class="w-full text-sm">
+        <thead class="border-b border-border text-start text-muted">
+          <tr>
+            <th class="px-4 py-3 text-start font-medium">{{ 'medicalTests.table.test' | translate }}</th>
+            <th class="px-4 py-3 text-start font-medium">{{ 'medicalTests.table.unit' | translate }}</th>
+            <th class="px-4 py-3 text-start font-medium">{{ 'medicalTests.table.lower' | translate }}</th>
+            <th class="px-4 py-3 text-start font-medium">{{ 'medicalTests.table.upper' | translate }}</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of vm.tests(); track t.id) {
+            <tr class="border-b border-border/60 last:border-0">
+              <td class="px-4 py-3 text-ink">{{ displayName(t) }}</td>
+              <td class="px-4 py-3 text-muted">{{ t.unit }}</td>
+              <td class="px-4 py-3 text-muted">{{ t.lowerBound }}</td>
+              <td class="px-4 py-3 text-muted">{{ t.upperBound }}</td>
+              <td class="px-4 py-3 text-end">
+                <button type="button" class="text-danger hover:underline" (click)="vm.remove(t.id)">
+                  {{ 'medicalTests.delete' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

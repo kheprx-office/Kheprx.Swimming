@@ -18,6 +18,12 @@ public class BoundaryTests
     private static readonly Assembly Infrastructure =
         typeof(Kheprx.BaseBackend.Identity.Infrastructure.Data.IdentityDbContext).Assembly;
     private static readonly Assembly Api = typeof(BaseApiController).Assembly;
+    private static readonly Assembly HealthDomain =
+        typeof(Kheprx.BaseBackend.Health.Domain.Entities.MedicalTest).Assembly;
+    private static readonly Assembly HealthApplication =
+        typeof(Kheprx.BaseBackend.Health.Application.Services.Interfaces.IMedicalTestService).Assembly;
+    private static readonly Assembly HealthInfrastructure =
+        typeof(Kheprx.BaseBackend.Health.Infrastructure.Data.HealthDbContext).Assembly;
 
     [Fact]
     public void Domain_should_not_depend_on_Infrastructure()
@@ -143,6 +149,75 @@ public class BoundaryTests
             .ShouldNot().HaveDependencyOn("Kheprx.BaseBackend.Identity.Infrastructure")
             .GetResult();
         Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Health_Domain_should_not_depend_on_Infrastructure()
+    {
+        var result = Types.InAssembly(HealthDomain)
+            .ShouldNot().HaveDependencyOn("Kheprx.BaseBackend.Health.Infrastructure")
+            .GetResult();
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Health_Domain_should_not_depend_on_EntityFrameworkCore()
+    {
+        var result = Types.InAssembly(HealthDomain)
+            .ShouldNot().HaveDependencyOn("Microsoft.EntityFrameworkCore")
+            .GetResult();
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Health_Application_should_not_depend_on_Infrastructure()
+    {
+        var result = Types.InAssembly(HealthApplication)
+            .ShouldNot().HaveDependencyOn("Kheprx.BaseBackend.Health.Infrastructure")
+            .GetResult();
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Health_Application_should_not_depend_on_EntityFrameworkCore()
+    {
+        var result = Types.InAssembly(HealthApplication)
+            .ShouldNot().HaveDependencyOn("Microsoft.EntityFrameworkCore")
+            .GetResult();
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Health_Domain_should_not_depend_on_Application()
+    {
+        var result = Types.InAssembly(HealthDomain)
+            .ShouldNot().HaveDependencyOn("Kheprx.BaseBackend.Health.Application")
+            .GetResult();
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Health_Infrastructure_should_not_depend_on_Api()
+    {
+        var result = Types.InAssembly(HealthInfrastructure)
+            .ShouldNot().HaveDependencyOn("Kheprx.BaseBackend.Api")
+            .GetResult();
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    // Module decoupling: the Health module must not reference the Identity module.
+    // medical_test.created_by is a loose Guid (no cross-module FK), so no Health assembly
+    // should take a compile-time dependency on any Identity assembly.
+    [Fact]
+    public void Health_should_not_depend_on_Identity()
+    {
+        foreach (var asm in new[] { HealthDomain, HealthApplication, HealthInfrastructure })
+        {
+            var result = Types.InAssembly(asm)
+                .ShouldNot().HaveDependencyOn("Kheprx.BaseBackend.Identity")
+                .GetResult();
+            Assert.True(result.IsSuccessful, Describe(result));
+        }
     }
 
     private static string Describe(TestResult result)
