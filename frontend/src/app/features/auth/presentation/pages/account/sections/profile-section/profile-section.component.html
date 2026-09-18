@@ -1,0 +1,47 @@
+<section class="rounded-2xl border border-border bg-surface p-6 shadow-warm">
+  <h2 class="mb-4 font-heading text-lg text-ink">{{ 'profile.sections.profile' | translate }}</h2>
+  <div class="mb-6 flex items-center gap-4">
+    <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
+      {{ initial }}
+    </div>
+    <div>
+      <p class="text-lg font-bold text-ink">{{ displayName || ('profile.fields.notSet' | translate) }}</p>
+      <p class="text-sm text-text-secondary" dir="ltr">{{ email }}</p>
+      @if (role; as r) {
+        <span class="mt-1 inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-semibold text-primary">
+          <svg [lucideIcon]="ShieldIcon" [size]="12"></svg>
+          {{ ROLE_LABELS[r] | translate }}
+        </span>
+      }
+    </div>
+  </div>
+  @if (loaded) {
+    <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <dt class="text-xs font-semibold text-text-secondary">{{ 'profile.fields.phone' | translate }}</dt>
+        <dd class="mt-1 text-sm text-ink" dir="ltr">{{ phone || ('profile.fields.notSet' | translate) }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold text-text-secondary">{{ 'profile.fields.age' | translate }}</dt>
+        <dd class="mt-1 text-sm text-ink">{{ age ?? ('profile.fields.notSet' | translate) }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold text-text-secondary">{{ 'profile.fields.gender' | translate }}</dt>
+        <dd class="mt-1 text-sm text-ink">{{ genderKey ? (genderKey | translate) : ('profile.fields.notSet' | translate) }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold text-text-secondary">{{ 'profile.fields.nationalId' | translate }}</dt>
+        <dd class="mt-1 text-sm text-ink" dir="ltr">{{ nationalId || ('profile.fields.notSet' | translate) }}</dd>
+      </div>
+    </dl>
+  } @else {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-hidden="true">
+      @for (row of [1, 2, 3, 4]; track row) {
+        <div>
+          <app-skeleton width="4rem" height="0.75rem" />
+          <div class="mt-2"><app-skeleton width="8rem" height="0.875rem" /></div>
+        </div>
+      }
+    </div>
+  }
+</section>

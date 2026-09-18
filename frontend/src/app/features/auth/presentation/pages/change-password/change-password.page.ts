@@ -1,14 +1,19 @@
 import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { DecorBackgroundComponent } from '@core/ui/components/decor-background.component';
-import { ChangePasswordViewModel } from './change-password.viewmodel';
+import { Router } from '@angular/router';
+import { ChangePasswordForm } from '@features/auth/presentation/components/change-password-form/change-password-form.component';
+import { LanguageStore, TranslatePipe } from '@core/i18n';
 
 @Component({
   selector: 'app-change-password-page',
   standalone: true,
-  imports: [FormsModule, DecorBackgroundComponent],
+  imports: [ChangePasswordForm, TranslatePipe],
   templateUrl: './change-password.page.html',
 })
 export class ChangePasswordPage {
-  protected readonly vm = inject(ChangePasswordViewModel);
+  private readonly router = inject(Router);
+  private readonly language = inject(LanguageStore);
+  protected readonly lang = this.language.lang;
+
+  toggleLanguage(): void { this.language.toggle(); }
+  onDone(): void { void this.router.navigate(['/account']); }
 }

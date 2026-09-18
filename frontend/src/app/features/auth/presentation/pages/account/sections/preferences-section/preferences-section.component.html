@@ -1,0 +1,43 @@
+<section class="rounded-2xl border border-border bg-surface p-6 shadow-warm">
+  <h2 class="mb-4 font-heading text-lg text-ink">{{ 'profile.sections.preferences' | translate }}</h2>
+  <div class="flex items-center justify-between border-b border-border/60 py-3">
+    <div>
+      <span class="flex items-center gap-2 text-sm font-medium text-ink">
+        <svg [lucideIcon]="LangIcon" [size]="16"></svg>
+        {{ 'profile.preferences.language' | translate }}
+      </span>
+      <p class="mt-0.5 text-xs text-text-secondary">{{ 'profile.preferences.chooseLanguage' | translate }}</p>
+    </div>
+    <div class="inline-flex rounded-[10px] border border-border bg-canvas p-0.5 text-xs font-medium">
+      <button type="button" (click)="toggleLanguage()" [attr.aria-pressed]="lang() === 'en'"
+        [disabled]="disabled"
+        class="h-7 rounded-[4px] px-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.bg-surface]="lang() === 'en'" [class.text-ink]="lang() === 'en'" [class.shadow-sm]="lang() === 'en'"
+        [class.text-text-secondary]="lang() !== 'en'">EN</button>
+      <button type="button" (click)="toggleLanguage()" [attr.aria-pressed]="lang() === 'ar'"
+        [disabled]="disabled"
+        class="h-7 rounded-[4px] px-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.bg-surface]="lang() === 'ar'" [class.text-ink]="lang() === 'ar'" [class.shadow-sm]="lang() === 'ar'"
+        [class.text-text-secondary]="lang() !== 'ar'">عربي</button>
+    </div>
+  </div>
+  <div class="flex items-center justify-between py-3">
+    <div>
+      <span class="flex items-center gap-2 text-sm font-medium text-ink">
+        <svg [lucideIcon]="mode() === 'dark' ? MoonIcon : SunIcon" [size]="16"></svg>
+        {{ 'profile.preferences.theme' | translate }}
+      </span>
+      <p class="mt-0.5 text-xs text-text-secondary">{{ 'profile.preferences.themeSubtext' | translate }}</p>
+    </div>
+    <div class="flex gap-1 rounded-lg border border-border p-0.5">
+      <button (click)="setTheme('light')" [disabled]="disabled"
+        [class]="'rounded-md px-3 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed ' + (mode() === 'light' ? 'bg-primary text-white' : 'text-text-secondary')">
+        {{ 'profile.preferences.light' | translate }}
+      </button>
+      <button (click)="setTheme('dark')" [disabled]="disabled"
+        [class]="'rounded-md px-3 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed ' + (mode() === 'dark' ? 'bg-primary text-white' : 'text-text-secondary')">
+        {{ 'profile.preferences.dark' | translate }}
+      </button>
+    </div>
+  </div>
+</section>

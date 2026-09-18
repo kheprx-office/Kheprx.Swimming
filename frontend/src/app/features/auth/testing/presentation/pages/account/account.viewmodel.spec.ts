@@ -7,7 +7,17 @@ import { AppError } from '@core/domain/errors/app-error';
 import { GENERIC_ERROR_AR } from '@core/domain/errors/user-message';
 import { CurrentUser } from '@features/auth/domain/model/shared/auth';
 
-const user: CurrentUser = { userId: 'USR-1', email: 'a@b.c', fullName: 'أحمد', role: 'admin', phone: null, gender: null, age: null };
+const user: CurrentUser = {
+  userId: 'USR-1',
+  email: 'a@b.c',
+  nameEn: 'Ahmed Samir',
+  nameAr: 'أحمد سمير',
+  role: 'head_coach',
+  phone: null,
+  gender: null,
+  age: null,
+  nationalId: '29901010100000',
+};
 
 describe('AccountViewModel', () => {
   let loadCurrentUser: { run: jest.Mock };
@@ -30,11 +40,15 @@ describe('AccountViewModel', () => {
     notify = { error: jest.fn(), success: jest.fn() };
   });
 
-  it('loads the current user into the user signal', async () => {
+  // --- init() ---
+
+  it('loads the current user (with nameEn/nationalId) into the user signal', async () => {
     loadCurrentUser.run.mockResolvedValue(ok(user));
     const vm = make();
     await vm.init();
     expect(vm.user()).toEqual(user);
+    expect(vm.user()?.nameEn).toBe('Ahmed Samir');
+    expect(vm.user()?.nationalId).toBe('29901010100000');
     expect(vm.loading()).toBe(false);
     expect(notify.error).not.toHaveBeenCalled();
   });

@@ -6,7 +6,7 @@ import { TokenStore } from '@features/auth/data/token-store';
 import { KeyValueStore } from '@core/datasource/keyvalue/key-value.store';
 import { AppError } from '@core/domain/errors/app-error';
 
-const rotated: SessionDtoRs = { accessToken: 'new-a', refreshToken: 'new-r', role: 'moqawel', userId: 'USR-MOQAWEL', mustChangePassword: false };
+const rotated: SessionDtoRs = { accessToken: 'new-a', refreshToken: 'new-r', role: 'captain', userId: 'USR-CAPTAIN', mustChangePassword: false };
 
 function makeRepo(overrides: Partial<IAuthRepository> = {}): IAuthRepository {
   return {
