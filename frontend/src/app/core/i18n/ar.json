@@ -79,7 +79,7 @@
     "fields": {
       "nameEn": "الاسم بالإنجليزية", "nameAr": "الاسم بالعربية",
       "username": "اسم المستخدم", "email": "البريد الإلكتروني", "phone": "رقم الهاتف",
-      "gender": "النوع", "dob": "تاريخ الميلاد", "bloodType": "فصيلة الدم",
+      "gender": "النوع", "dob": "تاريخ الميلاد",
       "trainingClub": "نادي التدريب", "championshipClub": "نادي البطولات",
       "specialization": "التخصص",
       "nationalId": "الرقم القومي", "captainType": "نوع الكابتن"

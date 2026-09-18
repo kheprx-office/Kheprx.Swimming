@@ -20,6 +20,5 @@ internal sealed class SwimmerProfileConfiguration : IEntityTypeConfiguration<Swi
         builder.HasOne<AppUser>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Club>().WithMany().HasForeignKey(s => s.TrainingClubId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Club>().WithMany().HasForeignKey(s => s.RepresentChampionshipClubId).OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne<BloodType>().WithMany().HasForeignKey(s => s.BloodTypeId).OnDelete(DeleteBehavior.Restrict);
     }
 }

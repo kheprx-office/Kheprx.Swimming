@@ -91,7 +91,6 @@ explicitly a later, separate effort — not part of this work.
 | uid | varchar | UK, e.g. `SW-2026-4KD91` |
 | training_club_id | uuid | FK → club (training club) |
 | represent_championship_club_id | uuid | FK → club (nullable) |
-| blood_type_id | uuid | FK → reference.blood_type; nullable |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
@@ -113,9 +112,10 @@ explicitly a later, separate effort — not part of this work.
 | id | uuid | PK |
 | swimmer_id | uuid | FK → identity.swimmer_profile (cross-module) |
 | exam_date | date | |
-| internal_med | enum `fitness_assessment` | fit \| unfit |
-| heart_assess | enum `fitness_assessment` | fit \| unfit |
-| spine_assess | enum `fitness_assessment` | fit \| unfit |
+| internal_med_id | uuid | FK → reference.fitness_assessment |
+| heart_assess_id | uuid | FK → reference.fitness_assessment |
+| spine_assess_id | uuid | FK → reference.fitness_assessment |
+| blood_type_id | uuid | FK → reference.blood_type (nullable) |
 | hemoglobin | numeric(4,1) | g/dL |
 | height_cm | numeric(5,1) | |
 | weight_kg | numeric(5,1) | |
@@ -378,15 +378,23 @@ _Seed rows — fixed Egyptian clubs (~70). English `name_en` transliterations ar
 | name_en | varchar | |
 | name_ar | varchar | nullable |
 
-**Enum types:** `guardian_relation` (father|mother), `fitness_assessment` (fit|unfit),
+**fitness_assessment** — medical exam fitness result lookup
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar | e.g. `fit`, `unfit` |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+
+**Enum types:** `guardian_relation` (father|mother),
 `feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
 `attendance_status` (present|late|absent|excused), `competition_status` (upcoming|completed).
 
 ## 11. Relationships (cardinalities)
 
-**28 tables / 33 relationships.**
+**29 tables / 34 relationships.**
 
-- gender 1—* app_user; role 1—* app_user; blood_type 1—* swimmer_profile; observation_category 1—* observation.
+- gender 1—* app_user; role 1—* app_user; blood_type 1—* medical_exam; observation_category 1—* observation; fitness_assessment 1—* medical_exam.
 - club 1—* swimmer_profile; club 1—* attendance_session.
 - app_user 1—1 swimmer_profile (via swimmer_profile.user_id); app_user 1—1 captain_profile (via captain_profile.user_id); app_user 1—1 head_coach_profile (via head_coach_profile.user_id).
 - swimmer_profile 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.

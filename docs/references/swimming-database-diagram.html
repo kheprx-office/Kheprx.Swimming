@@ -165,6 +165,11 @@ const SCHEMA = [
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"code",t:"varchar",k:"",n:false,note:"allergy | surgery | chronic | autoimmune | composition | flag | other"},
    {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"fitness_assessment",note:"medical exam fitness result lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"fit | unfit"},
+   {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true}]}
  ]},
  {schema:"identity",color:"--identity",tables:[
@@ -197,7 +202,6 @@ const SCHEMA = [
    {c:"uid",t:"varchar",k:"U",n:false},
    {c:"training_club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:false},
    {c:"represent_championship_club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:true},
-   {c:"blood_type_id",t:"uuid",k:"FK",fk:"reference.blood_type.id",n:true},
    {c:"created_at",t:"timestamptz",k:"",n:false},
    {c:"updated_at",t:"timestamptz",k:"",n:false}]},
  ]},
@@ -213,9 +217,10 @@ const SCHEMA = [
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"exam_date",t:"date",k:"",n:false},
-   {c:"internal_med",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
-   {c:"heart_assess",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
-   {c:"spine_assess",t:"fitness_assessment",k:"",n:false,note:"fit | unfit"},
+   {c:"internal_med_id",t:"uuid",k:"FK",fk:"reference.fitness_assessment.id",n:false},
+   {c:"heart_assess_id",t:"uuid",k:"FK",fk:"reference.fitness_assessment.id",n:false},
+   {c:"spine_assess_id",t:"uuid",k:"FK",fk:"reference.fitness_assessment.id",n:false},
+   {c:"blood_type_id",t:"uuid",k:"FK",fk:"reference.blood_type.id",n:true},
    {c:"hemoglobin",t:"numeric(4,1)",k:"",n:false},
    {c:"height_cm",t:"numeric(5,1)",k:"",n:false},
    {c:"weight_kg",t:"numeric(5,1)",k:"",n:false},
@@ -351,6 +356,7 @@ const RELATIONSHIPS = [
  {from:"identity.app_user",to:"identity.swimmer_profile",card:"1-1",label:"logs in as"},
  {from:"identity.swimmer_profile",to:"athlete.guardian",card:"1-N",label:"has"},
  {from:"identity.swimmer_profile",to:"athlete.medical_exam",card:"1-N",label:"examined in"},
+ {from:"reference.fitness_assessment",to:"athlete.medical_exam",card:"1-N",label:"assessed in"},
  {from:"identity.swimmer_profile",to:"athlete.body_measurement",card:"1-N",label:"measured in"},
  {from:"identity.swimmer_profile",to:"athlete.swimmer_specialization",card:"1-N",label:"specializes"},
  {from:"reference.stroke",to:"athlete.swimmer_specialization",card:"1-N",label:"chosen in"},
@@ -376,7 +382,7 @@ const RELATIONSHIPS = [
  {from:"identity.swimmer_profile",to:"championships.race_result",card:"1-N",label:"achieves"},
  {from:"reference.gender",to:"identity.app_user",card:"1-N",label:"of"},
  {from:"reference.role",to:"identity.app_user",card:"1-N",label:"of"},
- {from:"reference.blood_type",to:"identity.swimmer_profile",card:"1-N",label:"of"}
+ {from:"reference.blood_type",to:"athlete.medical_exam",card:"1-N",label:"typed in"}
 ];
 </script>
 <script type="module">

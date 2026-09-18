@@ -33,7 +33,6 @@ public static class SwimmerMessages
         public static string GenderRequired(string lang) => lang switch { "ar" => "النوع مطلوب", _ => "Gender is required" };
         public static string DobRequired(string lang) => lang switch { "ar" => "تاريخ الميلاد مطلوب", _ => "Date of birth is required" };
         public static string DobInPast(string lang) => lang switch { "ar" => "يجب أن يكون تاريخ الميلاد في الماضي", _ => "Date of birth must be in the past" };
-        public static string BloodTypeRequired(string lang) => lang switch { "ar" => "فصيلة الدم مطلوبة", _ => "Blood type is required" };
         public static string SpecializationRequired(string lang) => lang switch { "ar" => "اختر تخصصًا واحدًا على الأقل", _ => "Select at least one specialization" };
         public static string UsernameRequired(string lang) => lang switch { "ar" => "اسم المستخدم مطلوب", _ => "Username is required" };
     }

@@ -79,7 +79,7 @@
     "fields": {
       "nameEn": "Full Name (English)", "nameAr": "Full Name (Arabic)",
       "username": "Username", "email": "Email Address", "phone": "Phone Number",
-      "gender": "Gender", "dob": "Date of Birth", "bloodType": "Blood Type",
+      "gender": "Gender", "dob": "Date of Birth",
       "trainingClub": "Training Club", "championshipClub": "Championship Club",
       "specialization": "Specialization",
       "nationalId": "National ID", "captainType": "Captain Type"

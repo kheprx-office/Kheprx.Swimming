@@ -74,7 +74,6 @@ public static class IdentitySeeder
         if (await db.SwimmerProfiles.AnyAsync(ct)) return; // idempotent — seed only when empty
 
         var clubId = await db.Clubs.OrderBy(c => c.NameEn).Select(c => c.Id).FirstAsync(ct);
-        var bloodId = await db.BloodTypes.OrderBy(b => b.Code).Select(b => b.Id).FirstAsync(ct);
         var strokeId = await db.Strokes.OrderBy(s => s.NameEn).Select(s => s.Id).FirstAsync(ct);
         var passwordHash = hasher.Hash(DevPassword);
 
@@ -87,7 +86,7 @@ public static class IdentitySeeder
                 dob: new DateOnly(2010, 1, 1).AddDays(i), isFirstLogin: true);
             await db.Users.AddAsync(user, ct);
 
-            var profile = new SwimmerProfile(user.Id, $"SW-{i:D4}", clubId, bloodTypeId: bloodId);
+            var profile = new SwimmerProfile(user.Id, $"SW-{i:D4}", clubId);
             await db.SwimmerProfiles.AddAsync(profile, ct);
             await db.SwimmerSpecializations.AddAsync(new SwimmerSpecialization(profile.Id, strokeId), ct);
         }

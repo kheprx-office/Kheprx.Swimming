@@ -15,7 +15,7 @@ public class SwimmerServiceTests
 {
     private static CreateSwimmerRequest Req() => new(
         "Mona Ali", "mona.ali", Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2010, 5, 1),
-        Guid.NewGuid(), new[] { Guid.NewGuid() }, null, null, null, null);
+        new[] { Guid.NewGuid() }, null, null, null, null);
 
     private static (SwimmerService svc, Mock<ISwimmerProfileRepository> swimmers, Mock<IUserRepository> users)
         Build(bool usernameTaken = false, bool emailTaken = false, bool refsExist = true)
@@ -36,7 +36,6 @@ public class SwimmerServiceTests
              .ReturnsAsync(new Role("swimmer", "Swimmer"));
 
         var clubs = new Mock<IClubRepository>(); clubs.Setup(c => c.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(refsExist);
-        var blood = new Mock<IBloodTypeRepository>(); blood.Setup(c => c.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(refsExist);
         var strokes = new Mock<IStrokeRepository>(); strokes.Setup(c => c.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(refsExist);
         var genders = new Mock<IGenderRepository>(); genders.Setup(c => c.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(refsExist);
 
@@ -44,7 +43,7 @@ public class SwimmerServiceTests
         var opts = Microsoft.Extensions.Options.Options.Create(new AccountCreationOptions { GenericPassword = "Oasis2026!" });
 
         var svc = new SwimmerService(swimmers.Object, users.Object, roles.Object,
-            clubs.Object, blood.Object, strokes.Object, genders.Object, hasher.Object, opts);
+            clubs.Object, strokes.Object, genders.Object, hasher.Object, opts);
         return (svc, swimmers, users);
     }
 

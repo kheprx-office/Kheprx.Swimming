@@ -16,7 +16,6 @@ internal sealed class SwimmerService : ISwimmerService
     private readonly IUserRepository _users;
     private readonly IRoleRepository _roles;
     private readonly IClubRepository _clubs;
-    private readonly IBloodTypeRepository _bloodTypes;
     private readonly IStrokeRepository _strokes;
     private readonly IGenderRepository _genders;
     private readonly IPasswordHasher _hasher;
@@ -24,14 +23,13 @@ internal sealed class SwimmerService : ISwimmerService
 
     public SwimmerService(
         ISwimmerProfileRepository swimmers, IUserRepository users, IRoleRepository roles,
-        IClubRepository clubs, IBloodTypeRepository bloodTypes, IStrokeRepository strokes,
+        IClubRepository clubs, IStrokeRepository strokes,
         IGenderRepository genders, IPasswordHasher hasher, IOptions<AccountCreationOptions> options)
     {
         _swimmers = swimmers;
         _users = users;
         _roles = roles;
         _clubs = clubs;
-        _bloodTypes = bloodTypes;
         _strokes = strokes;
         _genders = genders;
         _hasher = hasher;
@@ -84,7 +82,7 @@ internal sealed class SwimmerService : ISwimmerService
         await _users.AddAsync(user, ct);
 
         var profile = new SwimmerProfile(user.Id, uid, request.TrainingClubId,
-            request.RepresentChampionshipClubId, request.BloodTypeId);
+            request.RepresentChampionshipClubId);
         await _swimmers.AddAsync(profile, ct);
 
         await _swimmers.AddSpecializationsAsync(
@@ -101,7 +99,6 @@ internal sealed class SwimmerService : ISwimmerService
         if (!await _genders.ExistsAsync(r.GenderId, ct)) throw new InvalidUserException("Unknown gender.");
         if (!await _clubs.ExistsAsync(r.TrainingClubId, ct)) throw new InvalidUserException("Unknown training club.");
         if (r.RepresentChampionshipClubId is { } champ && !await _clubs.ExistsAsync(champ, ct)) throw new InvalidUserException("Unknown championship club.");
-        if (!await _bloodTypes.ExistsAsync(r.BloodTypeId, ct)) throw new InvalidUserException("Unknown blood type.");
         foreach (var sid in r.StrokeIds)
             if (!await _strokes.ExistsAsync(sid, ct)) throw new InvalidUserException("Unknown stroke.");
     }

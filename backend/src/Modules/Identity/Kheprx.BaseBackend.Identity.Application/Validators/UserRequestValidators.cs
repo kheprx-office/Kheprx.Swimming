@@ -75,8 +75,6 @@ public sealed class CreateSwimmerRequestValidator : AbstractValidator<CreateSwim
             .NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.TrainingClubRequired(AppLanguage.Current));
         RuleFor(x => x.GenderId)
             .NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.GenderRequired(AppLanguage.Current));
-        RuleFor(x => x.BloodTypeId)
-            .NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.BloodTypeRequired(AppLanguage.Current));
         RuleFor(x => x.Dob)
             .NotEqual(default(DateOnly)).WithMessage(_ => SwimmerMessages.Errors.DobRequired(AppLanguage.Current))
             .LessThan(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => SwimmerMessages.Errors.DobInPast(AppLanguage.Current));

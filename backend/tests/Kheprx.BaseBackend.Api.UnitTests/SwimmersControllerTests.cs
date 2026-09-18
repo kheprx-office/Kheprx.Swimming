@@ -34,7 +34,7 @@ public class SwimmersControllerTests
         svc.Setup(s => s.CreateAsync(It.IsAny<CreateSwimmerRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(created);
 
         var req = new CreateSwimmerRequest("Mona Ali", "mona.ali", Guid.NewGuid(), Guid.NewGuid(),
-            new DateOnly(2010, 5, 1), Guid.NewGuid(), new[] { Guid.NewGuid() }, null, null, null, null);
+            new DateOnly(2010, 5, 1), new[] { Guid.NewGuid() }, null, null, null, null);
 
         var result = await new SwimmersController(svc.Object).Create(req, CancellationToken.None);
 
@@ -50,7 +50,7 @@ public class SwimmersControllerTests
         var svc = new Mock<ISwimmerService>();
         svc.Setup(s => s.CreateAsync(It.IsAny<CreateSwimmerRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync((CreatedSwimmerDto?)null);
         var req = new CreateSwimmerRequest("Mona Ali", "mona.ali", Guid.NewGuid(), Guid.NewGuid(),
-            new DateOnly(2010, 5, 1), Guid.NewGuid(), new[] { Guid.NewGuid() }, null, null, null, null);
+            new DateOnly(2010, 5, 1), new[] { Guid.NewGuid() }, null, null, null, null);
 
         var result = await new SwimmersController(svc.Object).Create(req, CancellationToken.None);
 

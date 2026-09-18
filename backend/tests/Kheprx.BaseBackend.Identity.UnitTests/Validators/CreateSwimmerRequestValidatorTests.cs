@@ -8,7 +8,7 @@ public class CreateSwimmerRequestValidatorTests
 {
     private static CreateSwimmerRequest Valid() => new(
         NameEn: "Mona Ali", Username: "mona.ali", TrainingClubId: Guid.NewGuid(),
-        GenderId: Guid.NewGuid(), Dob: new DateOnly(2010, 5, 1), BloodTypeId: Guid.NewGuid(),
+        GenderId: Guid.NewGuid(), Dob: new DateOnly(2010, 5, 1),
         StrokeIds: new[] { Guid.NewGuid() }, NameAr: null, Email: null, Phone: null,
         RepresentChampionshipClubId: null);
 
@@ -23,7 +23,6 @@ public class CreateSwimmerRequestValidatorTests
         Assert.False(_v.Validate(Valid() with { Username = "" }).IsValid);
         Assert.False(_v.Validate(Valid() with { TrainingClubId = Guid.Empty }).IsValid);
         Assert.False(_v.Validate(Valid() with { GenderId = Guid.Empty }).IsValid);
-        Assert.False(_v.Validate(Valid() with { BloodTypeId = Guid.Empty }).IsValid);
         Assert.False(_v.Validate(Valid() with { StrokeIds = Array.Empty<Guid>() }).IsValid);
     }
 

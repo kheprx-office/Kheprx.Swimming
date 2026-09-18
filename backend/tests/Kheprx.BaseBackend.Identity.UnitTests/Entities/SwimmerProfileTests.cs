@@ -10,16 +10,14 @@ public class SwimmerProfileTests
     {
         var userId = Guid.NewGuid();
         var clubId = Guid.NewGuid();
-        var bloodId = Guid.NewGuid();
 
-        var p = new SwimmerProfile(userId, " SW-0007 ", clubId, bloodTypeId: bloodId);
+        var p = new SwimmerProfile(userId, " SW-0007 ", clubId);
 
         Assert.NotEqual(Guid.Empty, p.Id);
         Assert.Equal(userId, p.UserId);
         Assert.Equal("SW-0007", p.Uid);
         Assert.Equal(clubId, p.TrainingClubId);
         Assert.Null(p.RepresentChampionshipClubId);
-        Assert.Equal(bloodId, p.BloodTypeId);
         Assert.NotEqual(default, p.CreatedAt);
         Assert.Equal(p.CreatedAt, p.UpdatedAt);
     }

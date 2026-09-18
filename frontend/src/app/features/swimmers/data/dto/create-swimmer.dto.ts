@@ -6,7 +6,6 @@ export interface CreateSwimmerDtoRq {
   trainingClubId: string;
   genderId: string;
   dob: string; // ISO date (yyyy-mm-dd)
-  bloodTypeId: string;
   strokeIds: string[];
   nameAr?: string;
   email?: string;

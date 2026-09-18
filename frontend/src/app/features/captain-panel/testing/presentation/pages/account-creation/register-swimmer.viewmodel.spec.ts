@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ok, fail } from '@core/domain/result/result';
 import { AppError } from '@core/domain/errors/app-error';
 import { RegisterSwimmerViewModel } from '@features/captain-panel/presentation/pages/account-creation/register-swimmer.viewmodel';
-import { LoadClubsUseCase, LoadGendersUseCase, LoadBloodTypesUseCase, LoadStrokesUseCase } from '@features/reference';
+import { LoadClubsUseCase, LoadGendersUseCase, LoadStrokesUseCase } from '@features/reference';
 import { CreateSwimmerUseCase } from '@features/swimmers/domain/usecases/create-swimmer.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 
@@ -17,7 +17,6 @@ function build(create = { run: jest.fn() }) {
       RegisterSwimmerViewModel,
       { provide: LoadClubsUseCase, useValue: lookups() },
       { provide: LoadGendersUseCase, useValue: lookups() },
-      { provide: LoadBloodTypesUseCase, useValue: lookups() },
       { provide: LoadStrokesUseCase, useValue: lookups() },
       { provide: CreateSwimmerUseCase, useValue: create },
       { provide: NotificationService, useValue: notify },
@@ -44,7 +43,7 @@ describe('RegisterSwimmerViewModel', () => {
     const create = { run: jest.fn().mockResolvedValue(ok(created)) };
     const { vm, notify } = build(create);
     vm.nameEn.set('Mona'); vm.username.set('mona'); vm.trainingClubId.set('c1');
-    vm.genderId.set('g1'); vm.dob.set('2010-05-01'); vm.bloodTypeId.set('b1'); vm.strokeIds.set(['s1']);
+    vm.genderId.set('g1'); vm.dob.set('2010-05-01'); vm.strokeIds.set(['s1']);
     await vm.submit();
     expect(create.run).toHaveBeenCalled();
     expect(vm.created()?.uid).toBe('SW-0007');
@@ -55,7 +54,7 @@ describe('RegisterSwimmerViewModel', () => {
     const create = { run: jest.fn().mockResolvedValue(fail(new AppError('taken', 'http', 409))) };
     const { vm, notify } = build(create);
     vm.nameEn.set('Mona'); vm.username.set('mona'); vm.trainingClubId.set('c1');
-    vm.genderId.set('g1'); vm.dob.set('2010-05-01'); vm.bloodTypeId.set('b1'); vm.strokeIds.set(['s1']);
+    vm.genderId.set('g1'); vm.dob.set('2010-05-01'); vm.strokeIds.set(['s1']);
     await vm.submit();
     expect(vm.created()).toBeNull();
     expect(notify.error).toHaveBeenCalled();

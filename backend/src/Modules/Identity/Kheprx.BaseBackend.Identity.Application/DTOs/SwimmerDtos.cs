@@ -11,7 +11,6 @@ public sealed record CreateSwimmerRequest(
     Guid TrainingClubId,
     Guid GenderId,
     DateOnly Dob,
-    Guid BloodTypeId,
     IReadOnlyList<Guid> StrokeIds,
     string? NameAr,
     string? Email,

@@ -22,7 +22,7 @@ describe('SwimmerRepositoryImpl', () => {
 
   it('create POSTs /api/swimmers with the body', async () => {
     (http.post as jest.Mock) = jest.fn().mockResolvedValue({ data: {} });
-    const rq = { nameEn: 'Mona', username: 'mona', trainingClubId: 'c1', genderId: 'g1', dob: '2010-05-01', bloodTypeId: 'b1', strokeIds: ['s1'] };
+    const rq = { nameEn: 'Mona', username: 'mona', trainingClubId: 'c1', genderId: 'g1', dob: '2010-05-01', strokeIds: ['s1'] };
     await repo.create(rq as never);
     expect((http.post as jest.Mock)).toHaveBeenCalledWith('/api/swimmers', { body: rq });
   });

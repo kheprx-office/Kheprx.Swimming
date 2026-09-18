@@ -3,7 +3,7 @@ import { CreateSwimmerUseCase } from '@features/swimmers/domain/usecases/create-
 import { SWIMMER_REPOSITORY, ISwimmerRepository } from '@features/swimmers/domain/repositories/swimmer.repository';
 
 const OK = { data: { id: 'x', uid: 'SW-0007', username: 'mona.ali', nameEn: 'Mona Ali', temporaryPassword: 'Oasis2026!' } };
-const rq = { nameEn: 'Mona Ali', username: 'mona.ali', trainingClubId: 'c1', genderId: 'g1', dob: '2010-05-01', bloodTypeId: 'b1', strokeIds: ['s1'] };
+const rq = { nameEn: 'Mona Ali', username: 'mona.ali', trainingClubId: 'c1', genderId: 'g1', dob: '2010-05-01', strokeIds: ['s1'] };
 
 function build(repo: ISwimmerRepository) {
   TestBed.resetTestingModule();
