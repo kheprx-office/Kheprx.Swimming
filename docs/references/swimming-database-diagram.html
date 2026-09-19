@@ -168,7 +168,12 @@ const SCHEMA = [
    {c:"name_ar",t:"varchar",k:"",n:true}]},
   {name:"fitness_assessment",note:"medical exam fitness result lookup",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"code",t:"varchar",k:"",n:false,note:"fit | unfit"},
+   {c:"code",t:"varchar",k:"",n:false,note:"fit | unfit | under_review"},
+   {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"guardian_relation",note:"guardian relation lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"father | mother"},
    {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true}]}
  ]},
@@ -209,7 +214,7 @@ const SCHEMA = [
   {name:"guardian",note:"father/mother of a swimmer",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
-   {c:"relation",t:"guardian_relation",k:"",n:false,note:"father | mother"},
+   {c:"relation_id",t:"uuid",k:"FK",fk:"reference.guardian_relation.id",n:false},
    {c:"name",t:"varchar",k:"",n:false},
    {c:"national_id",t:"varchar(14)",k:"",n:false},
    {c:"phone",t:"varchar",k:"",n:false}]},
@@ -355,6 +360,7 @@ const RELATIONSHIPS = [
  {from:"reference.club",to:"identity.swimmer_profile",card:"1-N",label:"represents"},
  {from:"identity.app_user",to:"identity.swimmer_profile",card:"1-1",label:"logs in as"},
  {from:"identity.swimmer_profile",to:"athlete.guardian",card:"1-N",label:"has"},
+ {from:"reference.guardian_relation",to:"athlete.guardian",card:"1-N",label:"classifies"},
  {from:"identity.swimmer_profile",to:"athlete.medical_exam",card:"1-N",label:"examined in"},
  {from:"reference.fitness_assessment",to:"athlete.medical_exam",card:"1-N",label:"assessed in"},
  {from:"identity.swimmer_profile",to:"athlete.body_measurement",card:"1-N",label:"measured in"},
@@ -441,7 +447,9 @@ const IMPLEMENTED = new Set([
   "identity.app_user","identity.captain_profile","identity.head_coach_profile","identity.swimmer_profile",
   "athlete.swimmer_specialization",
   "health.medical_test","health.health_reading",
-  "reference.observation_category","health.observation"
+  "reference.observation_category","health.observation",
+  "reference.fitness_assessment",
+  "athlete.medical_exam"
 ]);
 const isImplemented = key => IMPLEMENTED.has(key);
 function statusDot(key){
@@ -594,7 +602,7 @@ function renderEnums(view){
     const color = tablesByKey[key].color;
     const rows = byTable[key].map(e=>`<div class="enumrow"><span class="enumcol">${escapeHtml(e.column)}</span>
       <span>${e.values.map(v=>`<span class="enumval ${isArabic(v)?'ar':''}">${escapeHtml(v)}</span>`).join("")}</span></div>`).join("");
-    return `<div class="enumgrp"><div class="enumtab"><a href="#/table/${key}/columns" style="color:${cssVar(color)}">${key}</a></div>${rows}</div>`;
+    return `<div class="enumgrp"><div class="enumtab">${statusDot(key)}<a href="#/table/${key}/columns" style="color:${cssVar(color)}">${key}</a> <span class="muted small">· ${isImplemented(key)?'implemented':'not implemented yet'}</span></div>${rows}</div>`;
   }).join("");
   view.innerHTML = `<div class="thead"><span class="ttitle">Enum Reference</span>
     <span class="muted small">· ${enumColumns.length} CHECK columns across the schema</span></div>${groups}`;

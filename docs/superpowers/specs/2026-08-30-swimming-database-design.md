@@ -101,7 +101,7 @@ explicitly a later, separate effort — not part of this work.
 |---|---|---|
 | id | uuid | PK |
 | swimmer_id | uuid | FK → identity.swimmer_profile (cross-module) |
-| relation | enum `guardian_relation` | father \| mother |
+| relation_id | uuid | FK → reference.guardian_relation (father \| mother) |
 | name | varchar | |
 | national_id | varchar(14) | |
 | phone | varchar | |
@@ -386,15 +386,22 @@ _Seed rows — fixed Egyptian clubs (~70). English `name_en` transliterations ar
 | name_en | varchar | |
 | name_ar | varchar | nullable |
 
-**Enum types:** `guardian_relation` (father|mother),
-`feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
+**guardian_relation** — guardian relation lookup
+| column | type | notes |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar | `father`, `mother` |
+| name_en | varchar | |
+| name_ar | varchar | nullable |
+
+**Enum types:** `feedback_category` (Technique|Endurance|Attitude|Punctuality|Other),
 `attendance_status` (present|late|absent|excused), `competition_status` (upcoming|completed).
 
 ## 11. Relationships (cardinalities)
 
-**29 tables / 34 relationships.**
+**30 tables / 35 relationships.**
 
-- gender 1—* app_user; role 1—* app_user; blood_type 1—* medical_exam; observation_category 1—* observation; fitness_assessment 1—* medical_exam.
+- gender 1—* app_user; role 1—* app_user; blood_type 1—* medical_exam; observation_category 1—* observation; fitness_assessment 1—* medical_exam; guardian_relation 1—* guardian.
 - club 1—* swimmer_profile; club 1—* attendance_session.
 - app_user 1—1 swimmer_profile (via swimmer_profile.user_id); app_user 1—1 captain_profile (via captain_profile.user_id); app_user 1—1 head_coach_profile (via head_coach_profile.user_id).
 - swimmer_profile 1—* {guardian, medical_exam, body_measurement, inbody_reading, health_reading, observation, feedback_entry, attendance_record, race_assignment, race_result}.
