@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { SwimmersPage } from '@features/swimmers/presentation/pages/swimmers/swimmers.page';
 import { ListSwimmersUseCase } from '@features/swimmers/domain/usecases/list-swimmers.use-case';
 import { SwimmerListItem } from '@features/swimmers/domain/model/swimmer';
@@ -15,6 +16,7 @@ function setup(items: SwimmerListItem[]) {
   TestBed.configureTestingModule({
     imports: [SwimmersPage],
     providers: [
+      provideRouter([]),
       { provide: ListSwimmersUseCase, useValue: { run } },
       { provide: LanguageStore, useValue: { lang: () => 'en' } },
     ],

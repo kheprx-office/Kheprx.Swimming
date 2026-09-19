@@ -23,6 +23,53 @@
     "empty": { "title": "لا يوجد سبّاحون", "desc": "جرّب تعديل البحث أو الفلتر." },
     "error": "تعذّر تحميل السبّاحين. حاول مرة أخرى."
   },
+  "swimmerProfile": {
+    "years": "سنة",
+    "registeredClub": "النادي المسجل",
+    "edit": "تحرير",
+    "recordExam": "تسجيل فحص",
+    "selectExam": "تاريخ الفحص",
+    "latest": "الأحدث",
+    "editExam": "تعديل الفحص",
+    "delete": "حذف",
+    "confirmDelete": "حذف هذا الفحص؟",
+    "confirmYes": "نعم",
+    "confirmNo": "لا",
+    "tabs": {
+      "identityVitals": "الهوية والمؤشرات",
+      "guardian": "ولي الأمر",
+      "physiological": "القياسات الفسيولوجية",
+      "inbody": "InBody",
+      "records": "السجلات",
+      "healthMonitoring": "المتابعة الصحية",
+      "attendance": "الحضور",
+      "championships": "البطولات",
+      "feedback": "التقييمات"
+    },
+    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية" },
+    "fields": {
+      "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
+      "dob": "تاريخ الميلاد", "phone": "رقم الهاتف",
+      "bloodType": "فصيلة الدم", "height": "الطول (سم)", "weight": "الوزن (كجم)",
+      "hemoglobin": "الهيموجلوبين (جم/دل)", "examDate": "تاريخ آخر فحص",
+      "internalMed": "نتيجة الباطنة", "heart": "تقييم القلب", "spine": "تقييم العمود الفقري"
+    },
+    "placeholders": { "optional": "— بدون —", "assessment": "اختر النتيجة" },
+    "states": {
+      "loading": "جارٍ تحميل الملف…",
+      "notFound": "السبّاح غير موجود.",
+      "error": "تعذّر تحميل الملف. حاول مرة أخرى.",
+      "noExam": "لا يوجد فحص مسجّل بعد."
+    },
+    "toasts": {
+      "identityUpdated": "تم تحديث بيانات الهوية",
+      "examRecorded": "تم تسجيل الفحص",
+      "examUpdated": "تم تحديث الفحص",
+      "examDeleted": "تم حذف الفحص",
+      "saveFailed": "تعذّر الحفظ. حاول مرة أخرى.",
+      "deleteFailed": "تعذّر الحذف. حاول مرة أخرى."
+    }
+  },
   "shell": {
     "brand": "أكاديمية الواحة",
     "brandSubtitle": "السباحة الدولية",

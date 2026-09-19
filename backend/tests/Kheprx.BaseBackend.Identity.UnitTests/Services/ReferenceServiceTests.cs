@@ -11,10 +11,12 @@ public class ReferenceServiceTests
     private static ReferenceService NewService(
         IClubRepository? clubs = null, IBloodTypeRepository? blood = null,
         IStrokeRepository? strokes = null, IGenderRepository? genders = null,
-        IObservationCategoryRepository? categories = null)
+        IObservationCategoryRepository? categories = null,
+        IFitnessAssessmentRepository? fitness = null)
         => new(clubs ?? Mock.Of<IClubRepository>(), blood ?? Mock.Of<IBloodTypeRepository>(),
                strokes ?? Mock.Of<IStrokeRepository>(), genders ?? Mock.Of<IGenderRepository>(),
-               categories ?? Mock.Of<IObservationCategoryRepository>());
+               categories ?? Mock.Of<IObservationCategoryRepository>(),
+               fitness ?? Mock.Of<IFitnessAssessmentRepository>());
 
     [Fact]
     public async Task GetStrokes_maps_entities_to_coded_dtos()
@@ -57,5 +59,19 @@ public class ReferenceServiceTests
         Assert.Single(result);
         Assert.Equal("allergy", result[0].Code);
         Assert.Equal("Allergy", result[0].NameEn);
+    }
+
+    [Fact]
+    public async Task GetFitnessAssessments_maps_entities_to_coded_dtos()
+    {
+        var fitness = new Mock<IFitnessAssessmentRepository>();
+        fitness.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+               .ReturnsAsync(new[] { new Kheprx.BaseBackend.Identity.Domain.Entities.FitnessAssessment("fit", "Fit", "لائق") });
+
+        var result = await NewService(fitness: fitness.Object).GetFitnessAssessmentsAsync();
+
+        Assert.Single(result);
+        Assert.Equal("fit", result[0].Code);
+        Assert.Equal("Fit", result[0].NameEn);
     }
 }

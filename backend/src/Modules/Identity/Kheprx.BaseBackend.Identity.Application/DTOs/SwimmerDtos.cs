@@ -30,3 +30,22 @@ public sealed record SwimmerListItemDto(
     string? ClubNameAr,
     string GenderCode,
     int? Age);
+
+/// <summary>Composite swimmer profile (GET /api/swimmers/{id}) — identity + latest vitals (null when no exam).</summary>
+public sealed record SwimmerProfileDto(SwimmerIdentityDto Identity, SwimmerVitalsDto? Vitals);
+
+public sealed record SwimmerIdentityDto(
+    Guid Id, string Uid, string NameEn, string? NameAr, DateOnly? Dob, int? Age,
+    string GenderCode, string? Phone, string? TrainingClubNameEn, string? TrainingClubNameAr);
+
+public sealed record SwimmerVitalsDto(
+    Guid Id, DateOnly ExamDate, CodedLookupDto? BloodType, decimal Hemoglobin, decimal HeightCm, decimal WeightKg,
+    CodedLookupDto InternalMed, CodedLookupDto HeartAssess, CodedLookupDto SpineAssess);
+
+/// <summary>Payload to update a swimmer's identity (PUT /api/swimmers/{id}/identity).</summary>
+public sealed record UpdateSwimmerIdentityRequest(string NameEn, string? NameAr, DateOnly Dob, string? Phone);
+
+/// <summary>Payload to record a new dated medical exam (POST /api/swimmers/{id}/medical-exams).</summary>
+public sealed record CreateMedicalExamRequest(
+    DateOnly ExamDate, Guid? BloodTypeId, decimal Hemoglobin, decimal HeightCm, decimal WeightKg,
+    Guid InternalMedId, Guid HeartAssessId, Guid SpineAssessId);

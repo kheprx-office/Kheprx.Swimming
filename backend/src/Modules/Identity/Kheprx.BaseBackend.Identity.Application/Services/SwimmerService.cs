@@ -18,13 +18,16 @@ internal sealed class SwimmerService : ISwimmerService
     private readonly IClubRepository _clubs;
     private readonly IStrokeRepository _strokes;
     private readonly IGenderRepository _genders;
+    private readonly IFitnessAssessmentRepository _fitness;
+    private readonly IBloodTypeRepository _bloodTypes;
     private readonly IPasswordHasher _hasher;
     private readonly AccountCreationOptions _options;
 
     public SwimmerService(
         ISwimmerProfileRepository swimmers, IUserRepository users, IRoleRepository roles,
-        IClubRepository clubs, IStrokeRepository strokes,
-        IGenderRepository genders, IPasswordHasher hasher, IOptions<AccountCreationOptions> options)
+        IClubRepository clubs, IStrokeRepository strokes, IGenderRepository genders,
+        IFitnessAssessmentRepository fitness, IBloodTypeRepository bloodTypes,
+        IPasswordHasher hasher, IOptions<AccountCreationOptions> options)
     {
         _swimmers = swimmers;
         _users = users;
@@ -32,6 +35,8 @@ internal sealed class SwimmerService : ISwimmerService
         _clubs = clubs;
         _strokes = strokes;
         _genders = genders;
+        _fitness = fitness;
+        _bloodTypes = bloodTypes;
         _hasher = hasher;
         _options = options.Value;
     }
@@ -101,5 +106,99 @@ internal sealed class SwimmerService : ISwimmerService
         if (r.RepresentChampionshipClubId is { } champ && !await _clubs.ExistsAsync(champ, ct)) throw new InvalidUserException("Unknown championship club.");
         foreach (var sid in r.StrokeIds)
             if (!await _strokes.ExistsAsync(sid, ct)) throw new InvalidUserException("Unknown stroke.");
+    }
+
+    public async Task<SwimmerProfileDto?> GetProfileAsync(Guid id, CancellationToken ct = default)
+    {
+        var row = await _swimmers.GetProfileByIdAsync(id, ct);
+        if (row is null) return null;
+
+        var identity = new SwimmerIdentityDto(
+            row.Id, row.Uid, row.NameEn, row.NameAr, row.Dob, ComputeAge(row.Dob),
+            row.GenderCode ?? string.Empty, row.Phone, row.TrainingClubNameEn, row.TrainingClubNameAr);
+
+        var exam = await _swimmers.GetLatestExamAsync(id, ct);
+        return new SwimmerProfileDto(identity, MapVitals(exam));
+    }
+
+    private static SwimmerVitalsDto? MapVitals(Kheprx.BaseBackend.Identity.Domain.ReadModels.MedicalExamRow? e)
+    {
+        if (e is null) return null;
+        var blood = e.BloodTypeId is null
+            ? null
+            : new CodedLookupDto(e.BloodTypeId.Value, e.BloodTypeCode!, e.BloodTypeNameEn!, e.BloodTypeNameAr);
+        return new SwimmerVitalsDto(
+            e.Id, e.ExamDate, blood, e.Hemoglobin, e.HeightCm, e.WeightKg,
+            new CodedLookupDto(e.InternalMedId, e.InternalMedCode, e.InternalMedNameEn, e.InternalMedNameAr),
+            new CodedLookupDto(e.HeartAssessId, e.HeartAssessCode, e.HeartAssessNameEn, e.HeartAssessNameAr),
+            new CodedLookupDto(e.SpineAssessId, e.SpineAssessCode, e.SpineAssessNameEn, e.SpineAssessNameAr));
+    }
+
+    public async Task<bool> UpdateIdentityAsync(Guid id, UpdateSwimmerIdentityRequest request, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(id, ct);
+        if (profile is null) return false;
+
+        var user = await _users.GetByIdAsync(profile.UserId, ct);
+        if (user is null) return false;
+
+        user.UpdateProfile(request.NameEn, request.NameAr, user.Email, user.GenderId, request.Dob, request.Phone);
+        await _users.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<SwimmerVitalsDto?> CreateExamAsync(Guid id, CreateMedicalExamRequest request, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(id, ct);
+        if (profile is null) return null;
+
+        await EnsureExamReferencesExist(request, ct);
+
+        var exam = new MedicalExam(id, request.ExamDate, request.InternalMedId, request.HeartAssessId,
+            request.SpineAssessId, request.BloodTypeId, request.Hemoglobin, request.HeightCm, request.WeightKg);
+        await _swimmers.AddExamAsync(exam, ct);
+        await _swimmers.SaveChangesAsync(ct);
+
+        return MapVitals(await _swimmers.GetExamRowByIdAsync(exam.Id, ct));
+    }
+
+    private async Task EnsureExamReferencesExist(CreateMedicalExamRequest r, CancellationToken ct)
+    {
+        if (!await _fitness.ExistsAsync(r.InternalMedId, ct)) throw new InvalidUserException("Unknown internal medicine assessment.");
+        if (!await _fitness.ExistsAsync(r.HeartAssessId, ct)) throw new InvalidUserException("Unknown heart assessment.");
+        if (!await _fitness.ExistsAsync(r.SpineAssessId, ct)) throw new InvalidUserException("Unknown spine assessment.");
+        if (r.BloodTypeId is { } bt && !await _bloodTypes.ExistsAsync(bt, ct)) throw new InvalidUserException("Unknown blood type.");
+    }
+
+    public async Task<IReadOnlyList<SwimmerVitalsDto>?> ListExamsAsync(Guid swimmerId, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(swimmerId, ct);
+        if (profile is null) return null;
+        var rows = await _swimmers.ListExamsAsync(swimmerId, ct);
+        return rows.Select(r => MapVitals(r)!).ToList();
+    }
+
+    public async Task<SwimmerVitalsDto?> UpdateExamAsync(Guid swimmerId, Guid examId, CreateMedicalExamRequest request, CancellationToken ct = default)
+    {
+        var exam = await _swimmers.GetExamTrackedAsync(examId, ct);
+        if (exam is null || exam.SwimmerId != swimmerId) return null;
+
+        await EnsureExamReferencesExist(request, ct);
+
+        exam.Update(request.ExamDate, request.InternalMedId, request.HeartAssessId, request.SpineAssessId,
+            request.BloodTypeId, request.Hemoglobin, request.HeightCm, request.WeightKg);
+        await _swimmers.SaveChangesAsync(ct);
+
+        return MapVitals(await _swimmers.GetExamRowByIdAsync(examId, ct));
+    }
+
+    public async Task<bool> DeleteExamAsync(Guid swimmerId, Guid examId, CancellationToken ct = default)
+    {
+        var exam = await _swimmers.GetExamTrackedAsync(examId, ct);
+        if (exam is null || exam.SwimmerId != swimmerId) return false;
+
+        _swimmers.RemoveExam(exam);
+        await _swimmers.SaveChangesAsync(ct);
+        return true;
     }
 }

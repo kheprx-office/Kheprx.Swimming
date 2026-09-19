@@ -72,4 +72,15 @@ public sealed class ReferenceController : BaseApiController
             ReferenceMessages.Success.ObservationCategoriesListed(AppLanguage.Current), data);
         return Ok(body);
     }
+
+    /// <summary>Lists all fitness assessment results (Internal Medicine / Heart / Spine selectors).</summary>
+    [HttpGet("fitness-assessments")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CodedLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CodedLookupDto>>>> FitnessAssessments(CancellationToken ct)
+    {
+        var data = await _service.GetFitnessAssessmentsAsync(ct);
+        var body = ApiResponse<IReadOnlyList<CodedLookupDto>>.Success(
+            ReferenceMessages.Success.FitnessAssessmentsListed(AppLanguage.Current), data);
+        return Ok(body);
+    }
 }

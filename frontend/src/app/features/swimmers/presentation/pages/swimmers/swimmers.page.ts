@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@core/i18n';
 import { LanguageStore } from '@core/i18n/language.store';
 import { Gender } from '@core/domain/gender/gender';
@@ -14,7 +15,7 @@ type GenderFilter = 'all' | Gender;
 @Component({
   selector: 'app-swimmers-page',
   standalone: true,
-  imports: [FormsModule, TranslatePipe],
+  imports: [FormsModule, RouterLink, TranslatePipe],
   templateUrl: './swimmers.page.html',
 })
 export class SwimmersPage implements OnInit, OnDestroy {

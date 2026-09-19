@@ -22,6 +22,16 @@ public static class SwimmerMessages
             "ar" => "قائمة السبّاحين",
             _ => "Swimmers list"
         };
+
+        public static string ProfileRetrieved(string lang) => lang switch { "ar" => "بيانات السبّاح", _ => "Swimmer profile" };
+
+        public static string IdentityUpdated(string lang) => lang switch { "ar" => "تم تحديث بيانات الهوية", _ => "Identity updated" };
+
+        public static string ExamRecorded(string lang) => lang switch { "ar" => "تم تسجيل الفحص", _ => "Exam recorded" };
+
+        public static string ExamsListed(string lang) => lang switch { "ar" => "سجل الفحوصات", _ => "Exam history" };
+        public static string ExamUpdated(string lang) => lang switch { "ar" => "تم تحديث الفحص", _ => "Exam updated" };
+        public static string ExamDeleted(string lang) => lang switch { "ar" => "تم حذف الفحص", _ => "Exam deleted" };
     }
 
     public static class Errors
@@ -35,5 +45,10 @@ public static class SwimmerMessages
         public static string DobInPast(string lang) => lang switch { "ar" => "يجب أن يكون تاريخ الميلاد في الماضي", _ => "Date of birth must be in the past" };
         public static string SpecializationRequired(string lang) => lang switch { "ar" => "اختر تخصصًا واحدًا على الأقل", _ => "Select at least one specialization" };
         public static string UsernameRequired(string lang) => lang switch { "ar" => "اسم المستخدم مطلوب", _ => "Username is required" };
+        public static string ProfileNotFound(string lang) => lang switch { "ar" => "السبّاح غير موجود", _ => "Swimmer not found" };
+        public static string MeasurementInvalid(string lang) => lang switch { "ar" => "قيمة قياس غير صالحة", _ => "A measurement value is invalid" };
+        public static string AssessmentRequired(string lang) => lang switch { "ar" => "نتيجة التقييم مطلوبة", _ => "An assessment result is required" };
+        public static string ExamDateInvalid(string lang) => lang switch { "ar" => "تاريخ الفحص غير صالح", _ => "The exam date is invalid" };
+        public static string ExamNotFound(string lang) => lang switch { "ar" => "الفحص غير موجود", _ => "Exam not found" };
     }
 }

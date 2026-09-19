@@ -37,4 +37,10 @@ describe('ReferenceRepositoryImpl', () => {
     await repo.getGenders();
     expect(http.get).toHaveBeenCalledWith('/api/reference/genders');
   });
+
+  it('getFitnessAssessments GETs the reference endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ data: [] });
+    await repo.getFitnessAssessments();
+    expect(http.get).toHaveBeenCalledWith('/api/reference/fitness-assessments');
+  });
 });

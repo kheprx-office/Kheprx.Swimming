@@ -3,6 +3,7 @@ import { authGuard, firstLoginGuard, roleGuard } from '@features/auth/presentati
 import { LayoutComponent } from './layout/layout.component';
 import { LoginViewModel, AccountViewModel } from '@features/auth';
 import { RegisterSwimmerViewModel, RegisterCoachViewModel, MedicalTestsViewModel, HealthMonitoringViewModel, SwimmerDataViewModel } from '@features/captain-panel';
+import { SwimmerProfileViewModel } from '@features/swimmer-profile';
 
 export const routes: Routes = [
   {
@@ -19,6 +20,12 @@ export const routes: Routes = [
       // Placeholder feature routes — blank pages so the sidebar nav is fully clickable
       // while the real features are still to be built.
       { path: 'swimmers', canActivate: [firstLoginGuard], loadComponent: () => import('@features/swimmers').then((m) => m.SwimmersPage) },
+      {
+        path: 'swimmers/:id',
+        canActivate: [firstLoginGuard],
+        loadComponent: () => import('@features/swimmer-profile').then((m) => m.SwimmerProfilePage),
+        providers: [SwimmerProfileViewModel],
+      },
       { path: 'attendance', canActivate: [firstLoginGuard], loadComponent: () => import('@features/attendance').then((m) => m.AttendancePage) },
       { path: 'championships', canActivate: [firstLoginGuard], loadComponent: () => import('@features/championships').then((m) => m.ChampionshipsPage) },
       { path: 'captain-panel', canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')], loadComponent: () => import('@features/captain-panel').then((m) => m.CaptainPanelPage) },

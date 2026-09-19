@@ -77,4 +77,160 @@ public class SwimmersControllerTests
         Assert.Single(body.Data!);
         Assert.Equal("SW-0001", body.Data![0].Uid);
     }
+
+    [Fact]
+    public async Task GetById_returns_200_with_profile()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        var identity = new SwimmerIdentityDto(id, "SW-0001", "Alpha", null, null, 15, "male", null, "Oasis Main", null);
+        svc.Setup(s => s.GetProfileAsync(id, It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new SwimmerProfileDto(identity, null));
+
+        var result = await new SwimmersController(svc.Object).GetById(id, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<SwimmerProfileDto>>(ok.Value);
+        Assert.Equal("SW-0001", body.Data!.Identity.Uid);
+    }
+
+    [Fact]
+    public async Task GetById_returns_404_when_service_returns_null()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.GetProfileAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync((SwimmerProfileDto?)null);
+
+        var result = await new SwimmersController(svc.Object).GetById(Guid.NewGuid(), CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateIdentity_returns_200_when_updated()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.UpdateIdentityAsync(It.IsAny<Guid>(), It.IsAny<UpdateSwimmerIdentityRequest>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(true);
+        var req = new UpdateSwimmerIdentityRequest("New Name", null, new DateOnly(2010, 1, 1), "01000000009");
+
+        var result = await new SwimmersController(svc.Object).UpdateIdentity(Guid.NewGuid(), req, CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpdateIdentity_returns_404_when_not_found()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.UpdateIdentityAsync(It.IsAny<Guid>(), It.IsAny<UpdateSwimmerIdentityRequest>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(false);
+        var req = new UpdateSwimmerIdentityRequest("New Name", null, new DateOnly(2010, 1, 1), null);
+
+        var result = await new SwimmersController(svc.Object).UpdateIdentity(Guid.NewGuid(), req, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateExam_returns_201_with_vitals()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var im = new CodedLookupDto(Guid.NewGuid(), "fit", "Fit", "لائق");
+        svc.Setup(s => s.CreateExamAsync(It.IsAny<Guid>(), It.IsAny<CreateMedicalExamRequest>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new SwimmerVitalsDto(Guid.NewGuid(), new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, im, im, im));
+        var req = new CreateMedicalExamRequest(new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
+        var result = await new SwimmersController(svc.Object).CreateExam(Guid.NewGuid(), req, CancellationToken.None);
+
+        var ok = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status201Created, ok.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateExam_returns_404_when_swimmer_missing()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.CreateExamAsync(It.IsAny<Guid>(), It.IsAny<CreateMedicalExamRequest>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync((SwimmerVitalsDto?)null);
+        var req = new CreateMedicalExamRequest(new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
+        var result = await new SwimmersController(svc.Object).CreateExam(Guid.NewGuid(), req, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task ListExams_returns_200_with_exams()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var im = new CodedLookupDto(Guid.NewGuid(), "fit", "Fit", "لائق");
+        svc.Setup(s => s.ListExamsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new List<SwimmerVitalsDto> { new(Guid.NewGuid(), new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, im, im, im) });
+
+        var result = await new SwimmersController(svc.Object).ListExams(Guid.NewGuid(), CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<IReadOnlyList<SwimmerVitalsDto>>>(ok.Value);
+        Assert.Single(body.Data!);
+    }
+
+    [Fact]
+    public async Task ListExams_returns_404_when_swimmer_missing()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.ListExamsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync((IReadOnlyList<SwimmerVitalsDto>?)null);
+        var result = await new SwimmersController(svc.Object).ListExams(Guid.NewGuid(), CancellationToken.None);
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateExam_returns_200_with_vitals()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var im = new CodedLookupDto(Guid.NewGuid(), "fit", "Fit", "لائق");
+        svc.Setup(s => s.UpdateExamAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateMedicalExamRequest>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new SwimmerVitalsDto(Guid.NewGuid(), new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, im, im, im));
+        var req = new CreateMedicalExamRequest(new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
+        var result = await new SwimmersController(svc.Object).UpdateExam(Guid.NewGuid(), Guid.NewGuid(), req, CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpdateExam_returns_404_when_not_found()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.UpdateExamAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CreateMedicalExamRequest>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync((SwimmerVitalsDto?)null);
+        var req = new CreateMedicalExamRequest(new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var result = await new SwimmersController(svc.Object).UpdateExam(Guid.NewGuid(), Guid.NewGuid(), req, CancellationToken.None);
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteExam_returns_200_when_deleted()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.DeleteExamAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var result = await new SwimmersController(svc.Object).DeleteExam(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+        Assert.IsType<OkObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task DeleteExam_returns_404_when_missing()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.DeleteExamAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        var result = await new SwimmersController(svc.Object).DeleteExam(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
 }

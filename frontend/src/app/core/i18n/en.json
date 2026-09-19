@@ -23,6 +23,53 @@
     "empty": { "title": "No swimmers found", "desc": "Try adjusting your search or filter." },
     "error": "Couldn't load swimmers. Please try again."
   },
+  "swimmerProfile": {
+    "years": "years",
+    "registeredClub": "Registered Club",
+    "edit": "Edit",
+    "recordExam": "Record exam",
+    "selectExam": "Examination date",
+    "latest": "latest",
+    "editExam": "Edit exam",
+    "delete": "Delete",
+    "confirmDelete": "Delete this exam?",
+    "confirmYes": "Yes",
+    "confirmNo": "No",
+    "tabs": {
+      "identityVitals": "Identity & Vitals",
+      "guardian": "Guardian",
+      "physiological": "Physiological",
+      "inbody": "InBody",
+      "records": "Records",
+      "healthMonitoring": "Health Monitoring",
+      "attendance": "Attendance",
+      "championships": "Championships",
+      "feedback": "Feedback"
+    },
+    "sections": { "identity": "Identity", "vitals": "Vitals" },
+    "fields": {
+      "fullName": "Full Name", "nameEn": "Full Name (EN)", "nameAr": "Full Name (AR)",
+      "dob": "Date of Birth", "phone": "Phone Number",
+      "bloodType": "Blood Type", "height": "Height (cm)", "weight": "Weight (kg)",
+      "hemoglobin": "Hemoglobin (g/dL)", "examDate": "Last Examination Date",
+      "internalMed": "Internal Medicine Result", "heart": "Heart Assessment", "spine": "Spine Assessment"
+    },
+    "placeholders": { "optional": "— none —", "assessment": "Select result" },
+    "states": {
+      "loading": "Loading profile…",
+      "notFound": "Swimmer not found.",
+      "error": "Couldn't load the profile. Please try again.",
+      "noExam": "No exam on record yet."
+    },
+    "toasts": {
+      "identityUpdated": "Identity updated",
+      "examRecorded": "Exam recorded",
+      "examUpdated": "Exam updated",
+      "examDeleted": "Exam deleted",
+      "saveFailed": "Couldn't save. Please try again.",
+      "deleteFailed": "Couldn't delete. Please try again."
+    }
+  },
   "shell": {
     "brand": "Oasis Academy",
     "brandSubtitle": "International Swimming",

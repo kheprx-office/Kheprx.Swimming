@@ -45,20 +45,23 @@
     } @else {
       <ul class="divide-y divide-border">
         @for (s of visible(); track s.id) {
-          <li class="flex items-center gap-4 px-5 py-4">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              {{ initials(s) }}
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-ink">{{ displayName(s) }}</p>
-              <p class="mt-0.5 truncate text-xs text-text-secondary">{{ s.uid }}</p>
-            </div>
-            <div class="hidden w-32 shrink-0 truncate text-sm text-text-secondary md:block">{{ clubName(s) }}</div>
-            <div class="hidden w-24 shrink-0 text-xs text-text-secondary sm:block">
-              @if (s.gender) { <span>{{ genderLabelKey(s) | translate }}</span> }
-              @if (s.gender && s.age !== null) { <span> · </span> }
-              @if (s.age !== null) { <span>{{ s.age }}</span> }
-            </div>
+          <li>
+            <a [routerLink]="['/swimmers', s.id]"
+               class="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                {{ initials(s) }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-ink">{{ displayName(s) }}</p>
+                <p class="mt-0.5 truncate text-xs text-text-secondary">{{ s.uid }}</p>
+              </div>
+              <div class="hidden w-32 shrink-0 truncate text-sm text-text-secondary md:block">{{ clubName(s) }}</div>
+              <div class="hidden w-24 shrink-0 text-xs text-text-secondary sm:block">
+                @if (s.gender) { <span>{{ genderLabelKey(s) | translate }}</span> }
+                @if (s.gender && s.age !== null) { <span> · </span> }
+                @if (s.age !== null) { <span>{{ s.age }}</span> }
+              </div>
+            </a>
           </li>
         }
       </ul>

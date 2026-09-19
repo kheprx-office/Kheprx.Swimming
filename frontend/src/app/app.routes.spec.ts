@@ -1,3 +1,4 @@
+import { Route } from '@angular/router';
 import { routes } from './app.routes';
 
 describe('routes', () => {
@@ -31,5 +32,14 @@ describe('routes', () => {
     const layout = routes.find((r) => r.path === '');
     const paths = layout?.children?.map((c) => c.path) ?? [];
     expect(paths).toContain('captain-panel/account-creation');
+  });
+});
+
+describe('swimmer profile route', () => {
+  it('registers swimmers/:id under the shell layout', () => {
+    const shell = routes.find((r: Route) => r.path === '' && Array.isArray(r.children));
+    const child = shell?.children?.find((r: Route) => r.path === 'swimmers/:id');
+    expect(child).toBeTruthy();
+    expect(child?.loadComponent).toBeTruthy();
   });
 });

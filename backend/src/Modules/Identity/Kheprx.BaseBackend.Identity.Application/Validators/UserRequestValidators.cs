@@ -123,3 +123,36 @@ public sealed class CreateCoachRequestValidator : AbstractValidator<CreateCoachR
         RuleFor(x => x.NameAr).MaximumLength(200).When(x => !string.IsNullOrEmpty(x.NameAr));
     }
 }
+
+public sealed class UpdateSwimmerIdentityRequestValidator : AbstractValidator<UpdateSwimmerIdentityRequest>
+{
+    public UpdateSwimmerIdentityRequestValidator()
+    {
+        RuleFor(x => x.NameEn)
+            .NotEmpty().WithMessage(_ => CommonMessages.Errors.FullNameRequired(AppLanguage.Current))
+            .MaximumLength(200).WithMessage(_ => CommonMessages.Errors.FullNameTooLong(AppLanguage.Current));
+        RuleFor(x => x.NameAr).MaximumLength(200).When(x => !string.IsNullOrEmpty(x.NameAr));
+        RuleFor(x => x.Dob)
+            .NotEqual(default(DateOnly)).WithMessage(_ => SwimmerMessages.Errors.DobRequired(AppLanguage.Current))
+            .LessThan(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => SwimmerMessages.Errors.DobInPast(AppLanguage.Current));
+        RuleFor(x => x.Phone)
+            .Matches(UserValidationRules.PhonePattern).WithMessage(_ => UserMessages.Errors.PhoneInvalid(AppLanguage.Current))
+            .When(x => !string.IsNullOrEmpty(x.Phone));
+    }
+}
+
+public sealed class CreateMedicalExamRequestValidator : AbstractValidator<CreateMedicalExamRequest>
+{
+    public CreateMedicalExamRequestValidator()
+    {
+        RuleFor(x => x.ExamDate)
+            .NotEqual(default(DateOnly)).WithMessage(_ => SwimmerMessages.Errors.ExamDateInvalid(AppLanguage.Current))
+            .LessThanOrEqualTo(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => SwimmerMessages.Errors.ExamDateInvalid(AppLanguage.Current));
+        RuleFor(x => x.InternalMedId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.AssessmentRequired(AppLanguage.Current));
+        RuleFor(x => x.HeartAssessId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.AssessmentRequired(AppLanguage.Current));
+        RuleFor(x => x.SpineAssessId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.AssessmentRequired(AppLanguage.Current));
+        RuleFor(x => x.Hemoglobin).GreaterThan(0m).LessThan(30m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+        RuleFor(x => x.HeightCm).GreaterThan(0m).LessThan(300m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+        RuleFor(x => x.WeightKg).GreaterThan(0m).LessThan(500m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+    }
+}

@@ -164,6 +164,34 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                     b.ToTable("club", "reference");
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.FitnessAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("fitness_assessment", "reference");
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Gender", b =>
                 {
                     b.Property<Guid>("Id")
@@ -218,6 +246,60 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("head_coach_profile", "identity");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.MedicalExam", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BloodTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("ExamDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("HeartAssessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("HeightCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<decimal>("Hemoglobin")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("numeric(4,1)");
+
+                    b.Property<Guid>("InternalMedId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SpineAssessId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SwimmerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BloodTypeId");
+
+                    b.HasIndex("HeartAssessId");
+
+                    b.HasIndex("InternalMedId");
+
+                    b.HasIndex("SpineAssessId");
+
+                    b.HasIndex("SwimmerId");
+
+                    b.ToTable("medical_exam", "athlete");
                 });
 
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.ObservationCategory", b =>
@@ -425,6 +507,38 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                     b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.MedicalExam", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.BloodType", null)
+                        .WithMany()
+                        .HasForeignKey("BloodTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.FitnessAssessment", null)
+                        .WithMany()
+                        .HasForeignKey("HeartAssessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.FitnessAssessment", null)
+                        .WithMany()
+                        .HasForeignKey("InternalMedId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.FitnessAssessment", null)
+                        .WithMany()
+                        .HasForeignKey("SpineAssessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerProfile", null)
+                        .WithMany()
+                        .HasForeignKey("SwimmerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -84,4 +84,152 @@ public class SwimmerProfileRepositoryTests
         Assert.Equal("male", rows[0].GenderCode);
         Assert.Equal(new DateOnly(2012, 6, 1), rows[0].Dob);
     }
+
+    [Fact]
+    public async Task GetLatestExam_returns_null_when_none()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        Assert.Null(await repo.GetLatestExamAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetLatestExam_picks_newest_by_exam_date_and_resolves_refs()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        var fit = new FitnessAssessment("fit", "Fit", "لائق");
+        var blood = new BloodType("O+", "O+", "O+");
+        db.FitnessAssessments.Add(fit);
+        db.BloodTypes.Add(blood);
+        db.MedicalExams.Add(new MedicalExam(swimmerId, new DateOnly(2024, 1, 1), fit.Id, fit.Id, fit.Id, blood.Id, 13.0m, 178m, 71m));
+        db.MedicalExams.Add(new MedicalExam(swimmerId, new DateOnly(2024, 10, 8), fit.Id, fit.Id, fit.Id, null, 14.8m, 182m, 74m));
+        await db.SaveChangesAsync();
+
+        var row = await new SwimmerProfileRepository(db).GetLatestExamAsync(swimmerId);
+
+        Assert.NotNull(row);
+        Assert.Equal(new DateOnly(2024, 10, 8), row!.ExamDate); // newest
+        Assert.Equal(14.8m, row.Hemoglobin);
+        Assert.Null(row.BloodTypeId);                          // newest had no blood type
+        Assert.Equal("Fit", row.InternalMedNameEn);
+    }
+
+    [Fact]
+    public async Task AddExam_persists_and_GetExamRowById_resolves()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        var fit = new FitnessAssessment("fit", "Fit", "لائق");
+        db.FitnessAssessments.Add(fit);
+        await db.SaveChangesAsync();
+        var repo = new SwimmerProfileRepository(db);
+
+        var exam = new MedicalExam(swimmerId, new DateOnly(2026, 9, 19), fit.Id, fit.Id, fit.Id, null, 15.0m, 183m, 75m);
+        await repo.AddExamAsync(exam);
+        await repo.SaveChangesAsync();
+
+        var row = await repo.GetExamRowByIdAsync(exam.Id);
+        Assert.NotNull(row);
+        Assert.Equal(15.0m, row!.Hemoglobin);
+        Assert.Equal("Fit", row.SpineAssessNameEn);
+    }
+
+    [Fact]
+    public async Task GetProfileById_returns_null_when_missing()
+    {
+        await using var db = NewDb();
+        Assert.Null(await new SwimmerProfileRepository(db).GetProfileByIdAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetProfileById_joins_user_club_gender_and_phone()
+    {
+        await using var db = NewDb();
+        var gender = new Gender("male", "Male", "ذكر");
+        var club = new Club("Oasis Main", "الواحة");
+        db.Genders.Add(gender); db.Clubs.Add(club);
+        var user = new AppUser("a.user", "Alpha", Guid.NewGuid(), nameAr: "ألفا",
+            genderId: gender.Id, dob: new DateOnly(2010, 1, 1), phone: "01000000001");
+        db.Users.Add(user);
+        var profile = new SwimmerProfile(user.Id, "SW-0001", club.Id);
+        db.SwimmerProfiles.Add(profile);
+        await db.SaveChangesAsync();
+
+        var row = await new SwimmerProfileRepository(db).GetProfileByIdAsync(profile.Id);
+
+        Assert.NotNull(row);
+        Assert.Equal("Alpha", row!.NameEn);
+        Assert.Equal("ألفا", row.NameAr);
+        Assert.Equal("male", row.GenderCode);
+        Assert.Equal("Oasis Main", row.TrainingClubNameEn);
+        Assert.Equal("01000000001", row.Phone);
+        Assert.Equal(new DateOnly(2010, 1, 1), row.Dob);
+    }
+
+    [Fact]
+    public async Task GetByIdTracked_returns_tracked_profile()
+    {
+        await using var db = NewDb();
+        var profile = new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid());
+        db.SwimmerProfiles.Add(profile);
+        await db.SaveChangesAsync();
+
+        var tracked = await new SwimmerProfileRepository(db).GetByIdTrackedAsync(profile.Id);
+        Assert.NotNull(tracked);
+        Assert.Equal(profile.Id, tracked!.Id);
+    }
+
+    [Fact]
+    public async Task ListExams_returns_all_newest_first_with_ids()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        var fit = new FitnessAssessment("fit", "Fit", "لائق");
+        db.FitnessAssessments.Add(fit);
+        var older = new MedicalExam(swimmerId, new DateOnly(2024, 1, 1), fit.Id, fit.Id, fit.Id, null, 13m, 178m, 71m);
+        var newer = new MedicalExam(swimmerId, new DateOnly(2024, 10, 8), fit.Id, fit.Id, fit.Id, null, 14.8m, 182m, 74m);
+        db.MedicalExams.AddRange(older, newer);
+        await db.SaveChangesAsync();
+
+        var rows = await new SwimmerProfileRepository(db).ListExamsAsync(swimmerId);
+
+        Assert.Equal(2, rows.Count);
+        Assert.Equal(newer.Id, rows[0].Id);       // newest first
+        Assert.Equal(older.Id, rows[1].Id);
+        Assert.Equal("Fit", rows[0].InternalMedNameEn);
+    }
+
+    [Fact]
+    public async Task GetExamTracked_returns_tracked_or_null()
+    {
+        await using var db = NewDb();
+        var fit = new FitnessAssessment("fit", "Fit", "لائق");
+        db.FitnessAssessments.Add(fit);
+        var exam = new MedicalExam(Guid.NewGuid(), new DateOnly(2024, 1, 1), fit.Id, fit.Id, fit.Id, null, 13m, 178m, 71m);
+        db.MedicalExams.Add(exam);
+        await db.SaveChangesAsync();
+        var repo = new SwimmerProfileRepository(db);
+
+        Assert.NotNull(await repo.GetExamTrackedAsync(exam.Id));
+        Assert.Null(await repo.GetExamTrackedAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task RemoveExam_deletes_on_save()
+    {
+        await using var db = NewDb();
+        var fit = new FitnessAssessment("fit", "Fit", "لائق");
+        db.FitnessAssessments.Add(fit);
+        var exam = new MedicalExam(Guid.NewGuid(), new DateOnly(2024, 1, 1), fit.Id, fit.Id, fit.Id, null, 13m, 178m, 71m);
+        db.MedicalExams.Add(exam);
+        await db.SaveChangesAsync();
+        var repo = new SwimmerProfileRepository(db);
+
+        var tracked = await repo.GetExamTrackedAsync(exam.Id);
+        repo.RemoveExam(tracked!);
+        await repo.SaveChangesAsync();
+
+        Assert.Equal(0, await db.MedicalExams.CountAsync());
+    }
 }

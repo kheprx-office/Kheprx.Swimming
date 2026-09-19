@@ -11,17 +11,20 @@ internal sealed class ReferenceService : IReferenceService
     private readonly IStrokeRepository _strokes;
     private readonly IGenderRepository _genders;
     private readonly IObservationCategoryRepository _categories;
+    private readonly IFitnessAssessmentRepository _fitness;
 
     public ReferenceService(
         IClubRepository clubs, IBloodTypeRepository bloodTypes,
         IStrokeRepository strokes, IGenderRepository genders,
-        IObservationCategoryRepository categories)
+        IObservationCategoryRepository categories,
+        IFitnessAssessmentRepository fitness)
     {
         _clubs = clubs;
         _bloodTypes = bloodTypes;
         _strokes = strokes;
         _genders = genders;
         _categories = categories;
+        _fitness = fitness;
     }
 
     public async Task<IReadOnlyList<ClubDto>> GetClubsAsync(CancellationToken ct = default)
@@ -38,4 +41,7 @@ internal sealed class ReferenceService : IReferenceService
 
     public async Task<IReadOnlyList<CodedLookupDto>> GetObservationCategoriesAsync(CancellationToken ct = default)
         => (await _categories.GetAllAsync(ct)).Select(c => new CodedLookupDto(c.Id, c.Code, c.NameEn, c.NameAr)).ToList();
+
+    public async Task<IReadOnlyList<CodedLookupDto>> GetFitnessAssessmentsAsync(CancellationToken ct = default)
+        => (await _fitness.GetAllAsync(ct)).Select(f => new CodedLookupDto(f.Id, f.Code, f.NameEn, f.NameAr)).ToList();
 }
