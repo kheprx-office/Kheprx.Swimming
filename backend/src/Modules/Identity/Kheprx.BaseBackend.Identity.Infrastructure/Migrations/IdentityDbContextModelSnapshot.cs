@@ -113,6 +113,53 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                     b.ToTable("blood_type", "reference");
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.BodyMeasurement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BustDiameterCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<decimal>("LeftArmCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<decimal>("LeftLegCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<DateOnly>("MeasuredAt")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("RightArmCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<decimal>("RightLegCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<Guid>("SwimmerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TorsoCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<decimal>("WaistDiameterCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SwimmerId", "MeasuredAt");
+
+                    b.ToTable("body_measurement", "athlete");
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.CaptainProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -218,6 +265,71 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("gender", "reference");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Guardian", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NationalId")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("RelationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SwimmerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RelationId");
+
+                    b.HasIndex("SwimmerId", "RelationId")
+                        .IsUnique();
+
+                    b.ToTable("guardian", "athlete");
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.GuardianRelation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("guardian_relation", "reference");
                 });
 
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.HeadCoachProfile", b =>
@@ -493,11 +605,35 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.BodyMeasurement", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerProfile", null)
+                        .WithMany()
+                        .HasForeignKey("SwimmerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.CaptainProfile", b =>
                 {
                     b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.Guardian", b =>
+                {
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.GuardianRelation", null)
+                        .WithMany()
+                        .HasForeignKey("RelationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Kheprx.BaseBackend.Identity.Domain.Entities.SwimmerProfile", null)
+                        .WithMany()
+                        .HasForeignKey("SwimmerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

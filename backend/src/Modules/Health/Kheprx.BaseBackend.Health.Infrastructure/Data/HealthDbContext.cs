@@ -10,6 +10,7 @@ public sealed class HealthDbContext : DbContext
     public DbSet<MedicalTest> MedicalTests => Set<MedicalTest>();
     public DbSet<HealthReading> HealthReadings => Set<HealthReading>();
     public DbSet<Observation> Observations => Set<Observation>();
+    public DbSet<InBodyReading> InBodyReadings => Set<InBodyReading>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

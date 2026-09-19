@@ -340,4 +340,151 @@ public class SwimmerServiceTests
                 .ReturnsAsync((MedicalExam?)null);
         Assert.False(await svc.DeleteExamAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
+
+    // ── Guardian tests ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetGuardiansAsync_returns_null_when_swimmer_missing()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((SwimmerProfile?)null);
+
+        Assert.Null(await svc.GetGuardiansAsync(id));
+    }
+
+    [Fact]
+    public async Task GetGuardiansAsync_maps_father_and_mother_slots()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid()));
+        swimmers.Setup(r => r.ListGuardiansAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(new List<GuardianRow>
+        {
+            new(Guid.NewGuid(), "father", "Hassan Ali", "27001010123456", "+201009876543"),
+            new(Guid.NewGuid(), "mother", "Fatima Ibrahim", "27505050123456", "+201005554444"),
+        });
+
+        var dto = await svc.GetGuardiansAsync(id);
+
+        Assert.NotNull(dto);
+        Assert.Equal("Hassan Ali", dto!.Father!.Name);
+        Assert.Equal("Fatima Ibrahim", dto.Mother!.Name);
+    }
+
+    [Fact]
+    public async Task UpsertGuardiansAsync_returns_false_when_swimmer_missing()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((SwimmerProfile?)null);
+
+        var req = new UpsertGuardiansRequest(
+            new GuardianInputDto("Hassan Ali", "27001010123456", "+201009876543"),
+            new GuardianInputDto("Fatima Ibrahim", "27505050123456", "+201005554444"));
+
+        Assert.False(await svc.UpsertGuardiansAsync(id, req));
+    }
+
+    [Fact]
+    public async Task UpsertGuardiansAsync_inserts_when_slot_absent_and_updates_when_present()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        var fatherRel = Guid.NewGuid();
+        var motherRel = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid()));
+        swimmers.Setup(r => r.GetGuardianRelationIdByCodeAsync("father", It.IsAny<CancellationToken>())).ReturnsAsync(fatherRel);
+        swimmers.Setup(r => r.GetGuardianRelationIdByCodeAsync("mother", It.IsAny<CancellationToken>())).ReturnsAsync(motherRel);
+        // father already exists → updated; mother absent → inserted
+        var existingFather = new Guardian(id, fatherRel, "Old Name", "27001010123456", "+201000000000");
+        swimmers.Setup(r => r.GetGuardianTrackedAsync(id, fatherRel, It.IsAny<CancellationToken>())).ReturnsAsync(existingFather);
+        swimmers.Setup(r => r.GetGuardianTrackedAsync(id, motherRel, It.IsAny<CancellationToken>())).ReturnsAsync((Guardian?)null);
+
+        var req = new UpsertGuardiansRequest(
+            new GuardianInputDto("Hassan Ali", "27001010123456", "+201009876543"),
+            new GuardianInputDto("Fatima Ibrahim", "27505050123456", "+201005554444"));
+
+        var ok = await svc.UpsertGuardiansAsync(id, req);
+
+        Assert.True(ok);
+        Assert.Equal("Hassan Ali", existingFather.Name); // updated in place
+        swimmers.Verify(r => r.AddGuardianAsync(It.Is<Guardian>(g => g.RelationId == motherRel && g.Name == "Fatima Ibrahim"), It.IsAny<CancellationToken>()), Times.Once);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── Body measurement tests ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetBodyMeasurementAsync_returns_null_when_swimmer_missing()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((SwimmerProfile?)null);
+
+        Assert.Null(await svc.GetBodyMeasurementAsync(id));
+    }
+
+    [Fact]
+    public async Task GetBodyMeasurementAsync_returns_wrapper_with_null_latest_when_no_rows()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid()));
+        swimmers.Setup(r => r.GetLatestBodyMeasurementAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((BodyMeasurementRow?)null);
+
+        var dto = await svc.GetBodyMeasurementAsync(id);
+
+        Assert.NotNull(dto);
+        Assert.Null(dto!.Latest);
+    }
+
+    [Fact]
+    public async Task GetBodyMeasurementAsync_maps_latest_row()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid()));
+        swimmers.Setup(r => r.GetLatestBodyMeasurementAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BodyMeasurementRow(Guid.NewGuid(), new DateOnly(2026, 9, 19), 78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m));
+
+        var dto = await svc.GetBodyMeasurementAsync(id);
+
+        Assert.NotNull(dto!.Latest);
+        Assert.Equal(78.5m, dto.Latest!.RightArmCm);
+        Assert.Equal(76.5m, dto.Latest.WaistDiameterCm);
+    }
+
+    [Fact]
+    public async Task AddBodyMeasurementAsync_returns_false_when_swimmer_missing()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((SwimmerProfile?)null);
+
+        var req = new CreateBodyMeasurementRequest(78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m);
+        Assert.False(await svc.AddBodyMeasurementAsync(id, req));
+    }
+
+    [Fact]
+    public async Task AddBodyMeasurementAsync_inserts_and_saves_when_swimmer_exists()
+    {
+        var (svc, swimmers, _) = Build();
+        var id = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByIdTrackedAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid()));
+
+        var req = new CreateBodyMeasurementRequest(78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m);
+        var ok = await svc.AddBodyMeasurementAsync(id, req);
+
+        Assert.True(ok);
+        swimmers.Verify(r => r.AddBodyMeasurementAsync(
+            It.Is<BodyMeasurement>(m => m.SwimmerId == id && m.RightArmCm == 78.5m && m.WaistDiameterCm == 76.5m),
+            It.IsAny<CancellationToken>()), Times.Once);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

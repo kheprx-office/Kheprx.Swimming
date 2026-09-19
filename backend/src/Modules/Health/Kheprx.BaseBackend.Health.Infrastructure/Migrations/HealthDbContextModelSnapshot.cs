@@ -51,6 +51,59 @@ namespace Kheprx.BaseBackend.Health.Infrastructure.Migrations
                     b.ToTable("health_reading", "health");
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Health.Domain.Entities.InBodyReading", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BodyDensity")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)");
+
+                    b.Property<decimal>("BoneDensity")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("FatPct")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("numeric(4,1)");
+
+                    b.Property<decimal>("HeightCm")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.Property<decimal>("MusclePct")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("numeric(4,1)");
+
+                    b.Property<DateOnly>("ReadingDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("RecordedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SwimmerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("WaterPct")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("numeric(4,1)");
+
+                    b.Property<decimal>("WeightKg")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("numeric(5,1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SwimmerId", "ReadingDate");
+
+                    b.ToTable("inbody_reading", "health");
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Health.Domain.Entities.MedicalTest", b =>
                 {
                     b.Property<Guid>("Id")

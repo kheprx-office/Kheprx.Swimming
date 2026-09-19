@@ -32,6 +32,10 @@ public static class SwimmerMessages
         public static string ExamsListed(string lang) => lang switch { "ar" => "سجل الفحوصات", _ => "Exam history" };
         public static string ExamUpdated(string lang) => lang switch { "ar" => "تم تحديث الفحص", _ => "Exam updated" };
         public static string ExamDeleted(string lang) => lang switch { "ar" => "تم حذف الفحص", _ => "Exam deleted" };
+        public static string GuardiansRetrieved(string lang) => lang switch { "ar" => "بيانات ولي الأمر", _ => "Guardian details" };
+        public static string GuardiansSaved(string lang) => lang switch { "ar" => "تم حفظ بيانات ولي الأمر", _ => "Guardian details saved" };
+        public static string BodyMeasurementRetrieved(string lang) => lang switch { "ar" => "قياسات الجسم", _ => "Body measurements" };
+        public static string BodyMeasurementSaved(string lang) => lang switch { "ar" => "تم حفظ قياسات الجسم", _ => "Body measurements saved" };
     }
 
     public static class Errors

@@ -9,6 +9,14 @@ import { UpdateMedicalExamUseCase } from '@features/swimmer-profile/domain/useca
 import { DeleteMedicalExamUseCase } from '@features/swimmer-profile/domain/usecases/delete-medical-exam.use-case';
 import { LoadBloodTypesUseCase } from '@features/reference/domain/usecases/load-blood-types.use-case';
 import { LoadFitnessAssessmentsUseCase } from '@features/reference/domain/usecases/load-fitness-assessments.use-case';
+import { GetSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-guardians.use-case';
+import { UpsertSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/upsert-swimmer-guardians.use-case';
+import { GetLatestBodyMeasurementUseCase } from '@features/swimmer-profile/domain/usecases/get-latest-body-measurement.use-case';
+import { CreateBodyMeasurementUseCase } from '@features/swimmer-profile/domain/usecases/create-body-measurement.use-case';
+import { ListInBodyReadingsUseCase } from '@features/swimmer-profile/domain/usecases/list-inbody-readings.use-case';
+import { CreateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/create-inbody-reading.use-case';
+import { UpdateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/update-inbody-reading.use-case';
+import { DeleteInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/delete-inbody-reading.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -18,7 +26,7 @@ const IDENTITY = { id: 's1', uid: 'SW-1', nameEn: 'Ahmed', nameAr: 'أحمد', d
 const VITALS = { id: 'e1', examDate: '2026-09-19', bloodType: null, hemoglobin: 14.8, heightCm: 182, weightKg: 74, internalMed: REF, heartAssess: REF, spineAssess: REF };
 const VITALS2 = { id: 'e2', examDate: '2024-01-01', bloodType: null, hemoglobin: 13, heightCm: 178, weightKg: 71, internalMed: REF, heartAssess: REF, spineAssess: REF };
 
-function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
+function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
   const getUc = { run: jest.fn().mockResolvedValue(over.profile ?? { ok: true, data: { identity: IDENTITY, vitals: VITALS } }) };
   const updateUc = { run: jest.fn().mockResolvedValue(over.update ?? { ok: true, data: undefined }) };
   const createUc = { run: jest.fn().mockResolvedValue(over.create ?? { ok: true, data: VITALS }) };
@@ -27,6 +35,16 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const deleteExamUc = { run: jest.fn().mockResolvedValue(over.deleteExam ?? { ok: true, data: undefined }) };
   const bloodUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
   const fitnessUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [REF] }) };
+  const getGuardiansUc = { run: jest.fn().mockResolvedValue(over.getGuardians ?? { ok: true, data: { father: null, mother: null } }) };
+  const upsertGuardiansUc = { run: jest.fn().mockResolvedValue(over.upsertGuardians ?? { ok: true, data: undefined }) };
+  const getBodyMeasurementUc = { run: jest.fn().mockResolvedValue((over as any).getBodyMeasurement ?? { ok: true, data: null }) };
+  const createBodyMeasurementUc = { run: jest.fn().mockResolvedValue((over as any).createBodyMeasurement ?? { ok: true, data: undefined }) };
+  const R1 = { id: 'r1', readingDate: '2024-06-15', heightCm: 180, weightKg: 72.5, fatPct: 15.2, musclePct: 40.1, waterPct: 55.0, boneDensity: 1.30, bodyDensity: 1.05 };
+  const R2 = { id: 'r2', readingDate: '2024-10-04', heightCm: 181, weightKg: 74.0, fatPct: 12.8, musclePct: 42.1, waterPct: 56.5, boneDensity: 1.35, bodyDensity: 1.07 };
+  const listInBodyUc = { run: jest.fn().mockResolvedValue((over as any).listInBody ?? { ok: true, data: [R2, R1] }) };   // newest first
+  const createInBodyUc = { run: jest.fn().mockResolvedValue((over as any).createInBody ?? { ok: true, data: R2 }) };
+  const updateInBodyUc = { run: jest.fn().mockResolvedValue((over as any).updateInBody ?? { ok: true, data: R2 }) };
+  const deleteInBodyUc = { run: jest.fn().mockResolvedValue((over as any).deleteInBody ?? { ok: true, data: undefined }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -41,11 +59,19 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: DeleteMedicalExamUseCase, useValue: deleteExamUc },
     { provide: LoadBloodTypesUseCase, useValue: bloodUc },
     { provide: LoadFitnessAssessmentsUseCase, useValue: fitnessUc },
+    { provide: GetSwimmerGuardiansUseCase, useValue: getGuardiansUc },
+    { provide: UpsertSwimmerGuardiansUseCase, useValue: upsertGuardiansUc },
+    { provide: GetLatestBodyMeasurementUseCase, useValue: getBodyMeasurementUc },
+    { provide: CreateBodyMeasurementUseCase, useValue: createBodyMeasurementUc },
+    { provide: ListInBodyReadingsUseCase, useValue: listInBodyUc },
+    { provide: CreateInBodyReadingUseCase, useValue: createInBodyUc },
+    { provide: UpdateInBodyReadingUseCase, useValue: updateInBodyUc },
+    { provide: DeleteInBodyReadingUseCase, useValue: deleteInBodyUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },
   ] });
-  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, notify };
+  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, getBodyMeasurementUc, createBodyMeasurementUc, listInBodyUc, createInBodyUc, updateInBodyUc, deleteInBodyUc, notify };
 }
 
 describe('SwimmerProfileViewModel', () => {
@@ -139,5 +165,158 @@ describe('SwimmerProfileViewModel', () => {
     expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.examDeleted');
     expect(vm.confirmingDelete()).toBe(false);
     expect(listExamsUc.run).toHaveBeenCalledTimes(2); // initial load + after delete
+  });
+
+  describe('guardian tab', () => {
+    it('setTab("guardian") lazy-loads guardians once', async () => {
+      const { vm, getGuardiansUc } = build();
+      await vm.load('s1');
+      getGuardiansUc.run.mockResolvedValue({ ok: true, data: { father: null, mother: null } });
+      vm.setTab('guardian');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('guardian');
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(1);
+      vm.setTab('identityVitals');
+      vm.setTab('guardian');
+      await Promise.resolve();
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(1); // not reloaded
+    });
+
+    it('load() resets to Identity & Vitals and re-fetches guardians for a new swimmer', async () => {
+      const { vm, getGuardiansUc } = build();
+      await vm.load('s1');
+      vm.setTab('guardian');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('guardian');
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(1);
+
+      // Navigate to another swimmer (same persisted view-model instance).
+      await vm.load('s2');
+      expect(vm.activeTab()).toBe('identityVitals');       // Symptom B: default tab restored
+      expect(vm.guardians()).toBeNull();                   // stale data cleared
+
+      // Opening Guardian for the new swimmer must fetch again, not stay blocked by a stale flag.
+      vm.setTab('guardian');
+      await Promise.resolve(); await Promise.resolve();
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(2); // Symptom A: re-fetched for s2
+    });
+
+    it('canSaveGuardians requires all six fields and 14-digit national IDs', () => {
+      const { vm } = build();
+      vm.startEditGuardians();
+      expect(vm.canSaveGuardians()).toBe(false);
+      vm.gFatherName.set('Hassan'); vm.gFatherNationalId.set('27001010123456'); vm.gFatherPhone.set('+201009876543');
+      vm.gMotherName.set('Fatima'); vm.gMotherNationalId.set('123'); vm.gMotherPhone.set('+201005554444');
+      expect(vm.canSaveGuardians()).toBe(false); // mother national id invalid
+      vm.gMotherNationalId.set('27505050123456');
+      expect(vm.canSaveGuardians()).toBe(true);
+    });
+  });
+
+  describe('physiological tab', () => {
+    const M = { id: 'b1', measuredAt: '2026-09-19', rightArmCm: 78.5, leftArmCm: 78.2, rightLegCm: 96.2, leftLegCm: 96.0, torsoCm: 52.8, bustDiameterCm: 94.0, waistDiameterCm: 76.5 };
+
+    it('setTab("physiological") lazy-loads the measurement once', async () => {
+      const { vm, getBodyMeasurementUc } = build({ getBodyMeasurement: { ok: true, data: M } } as any);
+      await vm.load('s1');
+      vm.setTab('physiological');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('physiological');
+      expect(vm.bodyMeasurement()?.rightArmCm).toBe(78.5);
+      expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(1);
+      vm.setTab('identityVitals');
+      vm.setTab('physiological');
+      await Promise.resolve();
+      expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(1); // not reloaded
+    });
+
+    it('canSaveBodyMeasurement requires all seven positive, in-range numbers', () => {
+      const { vm } = build();
+      vm.startEditBodyMeasurement();
+      expect(vm.canSaveBodyMeasurement()).toBe(false);
+      vm.bmRightArm.set('78.5'); vm.bmLeftArm.set('78.2'); vm.bmRightLeg.set('96.2'); vm.bmLeftLeg.set('96');
+      vm.bmTorso.set('52.8'); vm.bmBustDiameter.set('94'); vm.bmWaistDiameter.set('1000'); // out of range
+      expect(vm.canSaveBodyMeasurement()).toBe(false);
+      vm.bmWaistDiameter.set('76.5');
+      expect(vm.canSaveBodyMeasurement()).toBe(true);
+      vm.bmRightArm.set('0'); // not positive
+      expect(vm.canSaveBodyMeasurement()).toBe(false);
+    });
+
+    it('saveBodyMeasurement posts, toasts success and reloads', async () => {
+      const { vm, createBodyMeasurementUc, getBodyMeasurementUc, notify } = build({ getBodyMeasurement: { ok: true, data: M } } as any);
+      await vm.load('s1');
+      vm.setTab('physiological');
+      await Promise.resolve(); await Promise.resolve();
+      vm.startEditBodyMeasurement();
+      await vm.saveBodyMeasurement();
+      expect(createBodyMeasurementUc.run).toHaveBeenCalled();
+      expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.bodyMeasurementSaved');
+      expect(vm.editingBodyMeasurement()).toBe(false);
+      expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(2); // initial tab open + reload after save
+    });
+  });
+
+  describe('inbody tab', () => {
+    it('setTab("inbody") lazy-loads readings once and selects the latest', async () => {
+      const { vm, listInBodyUc } = build();
+      await vm.load('s1');
+      vm.setTab('inbody');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('inbody');
+      expect(vm.inbodyReadings()).toHaveLength(2);
+      expect(vm.selectedInBodyId()).toBe('r2');            // newest first
+      expect(vm.selectedInBodyReading()?.id).toBe('r2');
+      expect(listInBodyUc.run).toHaveBeenCalledTimes(1);
+      vm.setTab('identityVitals');
+      vm.setTab('inbody');
+      await Promise.resolve();
+      expect(listInBodyUc.run).toHaveBeenCalledTimes(1);   // not reloaded
+    });
+
+    it('inbodyHistory builds a metric matrix with latest-vs-previous change', async () => {
+      const { vm } = build();
+      await vm.load('s1');
+      vm.setTab('inbody');
+      await Promise.resolve(); await Promise.resolve();
+      const h = vm.inbodyHistory();
+      expect(h.dates).toEqual(['2024-06-15', '2024-10-04']);  // oldest -> newest
+      const weight = h.rows.find((r) => r.labelKey === 'swimmerProfile.inbody.weight')!;
+      expect(weight.values).toEqual([72.5, 74.0]);
+      expect(weight.change).toBe(1.5);                        // 74.0 - 72.5
+    });
+
+    it('canSaveInBody enforces date + metric ranges', async () => {
+      const { vm } = build();
+      await vm.load('s1');
+      vm.startAddInBody();
+      vm.ibDate.set('');   // startAddInBody sets today; clear it
+      expect(vm.canSaveInBody()).toBe(false);
+      vm.ibDate.set('2024-10-04');
+      vm.ibHeight.set('180'); vm.ibWeight.set('74'); vm.ibFat.set('12.8'); vm.ibMuscle.set('42.1'); vm.ibWater.set('55'); vm.ibBone.set('1.35'); vm.ibBody.set('1.07');
+      expect(vm.canSaveInBody()).toBe(true);
+      vm.ibFat.set('101');   // out of 0..100
+      expect(vm.canSaveInBody()).toBe(false);
+    });
+
+    it('saveInBody creates, toasts and reloads; delete flow confirms and reloads', async () => {
+      const { vm, createInBodyUc, deleteInBodyUc, listInBodyUc, notify } = build();
+      await vm.load('s1');
+      vm.setTab('inbody');
+      await Promise.resolve(); await Promise.resolve();
+      vm.startAddInBody();
+      vm.ibHeight.set('181'); vm.ibWeight.set('74'); vm.ibFat.set('12.8'); vm.ibMuscle.set('42.1'); vm.ibWater.set('55'); vm.ibBone.set('1.35'); vm.ibBody.set('1.07');
+      await vm.saveInBody();
+      expect(createInBodyUc.run).toHaveBeenCalled();
+      expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.readingSaved');
+      expect(listInBodyUc.run).toHaveBeenCalledTimes(2);     // load + reload after save
+
+      vm.askDeleteInBody();
+      expect(vm.confirmingInBodyDelete()).toBe(true);
+      await vm.confirmDeleteInBody();
+      expect(deleteInBodyUc.run).toHaveBeenCalled();
+      expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.readingDeleted');
+      expect(listInBodyUc.run).toHaveBeenCalledTimes(3);     // reload after delete
+    });
   });
 });

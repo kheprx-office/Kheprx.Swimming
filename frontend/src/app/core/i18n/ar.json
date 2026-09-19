@@ -46,7 +46,46 @@
       "championships": "البطولات",
       "feedback": "التقييمات"
     },
-    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية" },
+    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية", "guardian": "بيانات ولي الأمر", "physiological": "قياسات الجسم", "inbody": "InBody" },
+    "guardian": {
+      "fatherInfo": "بيانات الأب",
+      "motherInfo": "بيانات الأم",
+      "fullName": "الاسم الكامل",
+      "nationalId": "الرقم القومي",
+      "phone": "الهاتف",
+      "noRecord": "لا يوجد ولي أمر مسجل بعد."
+    },
+    "physiological": {
+      "rightArm": "الذراع اليمنى",
+      "leftArm": "الذراع اليسرى",
+      "leftLeg": "الساق اليسرى",
+      "rightLeg": "الساق اليمنى",
+      "torsoLength": "طول الجذع",
+      "bustDiameter": "محيط الصدر",
+      "waistDiameter": "محيط الخصر",
+      "cm": "سم",
+      "noRecord": "لا توجد قياسات مسجلة بعد."
+    },
+    "inbody": {
+      "reading": "القياس",
+      "addReading": "إضافة قياس",
+      "editReading": "تحرير القياس",
+      "deleteReading": "حذف القياس",
+      "confirmDelete": "حذف هذا القياس؟",
+      "date": "التاريخ",
+      "height": "الطول (سم)",
+      "weight": "الوزن (كجم)",
+      "fatPercent": "نسبة الدهون (%)",
+      "musclePercent": "نسبة العضلات (%)",
+      "waterPercent": "نسبة الماء (%)",
+      "boneDensity": "كثافة العظام",
+      "bodyDensity": "كثافة الجسم",
+      "measurementHistory": "سجل القياسات",
+      "metric": "المؤشر",
+      "change": "التغير",
+      "noReadings": "لا توجد قياسات مسجلة بعد.",
+      "readingsCount": "قياس مسجل"
+    },
     "fields": {
       "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
       "dob": "تاريخ الميلاد", "phone": "رقم الهاتف",
@@ -67,7 +106,11 @@
       "examUpdated": "تم تحديث الفحص",
       "examDeleted": "تم حذف الفحص",
       "saveFailed": "تعذّر الحفظ. حاول مرة أخرى.",
-      "deleteFailed": "تعذّر الحذف. حاول مرة أخرى."
+      "deleteFailed": "تعذّر الحذف. حاول مرة أخرى.",
+      "guardiansSaved": "تم حفظ بيانات ولي الأمر",
+      "bodyMeasurementSaved": "تم حفظ قياسات الجسم",
+      "readingSaved": "تم حفظ القياس",
+      "readingDeleted": "تم حذف القياس"
     }
   },
   "shell": {

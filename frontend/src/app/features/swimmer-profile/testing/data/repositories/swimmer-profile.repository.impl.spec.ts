@@ -50,4 +50,59 @@ describe('SwimmerProfileRepositoryImpl', () => {
     await repo.deleteExam('s1', 'e1');
     expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/swimmers/s1/medical-exams/e1');
   });
+
+  it('getGuardians GETs the guardians endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ successStatus: true, data: { father: null, mother: null } });
+    await repo.getGuardians('sw1');
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/sw1/guardians');
+  });
+
+  it('upsertGuardians PUTs to the guardians endpoint', async () => {
+    const rq = {
+      father: { name: 'Hassan Ali', nationalId: '27001010123456', phone: '+201009876543' },
+      mother: { name: 'Fatima Ibrahim', nationalId: '27505050123456', phone: '+201005554444' },
+    };
+    (http.put as jest.Mock).mockResolvedValue({ successStatus: true, data: null });
+    await repo.upsertGuardians('sw1', rq);
+    expect(http.put).toHaveBeenCalledWith('/api/swimmers/sw1/guardians', { body: rq });
+  });
+
+  it('getBodyMeasurement GETs the latest endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ successStatus: true, data: { latest: null } });
+    await repo.getBodyMeasurement('sw1');
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/sw1/body-measurements/latest');
+  });
+
+  it('createBodyMeasurement POSTs to the collection endpoint with the body', async () => {
+    (http.post as jest.Mock).mockResolvedValue({ successStatus: true, data: null });
+    const rq = { rightArmCm: 78.5, leftArmCm: 78.2, rightLegCm: 96.2, leftLegCm: 96.0, torsoCm: 52.8, bustDiameterCm: 94.0, waistDiameterCm: 76.5 };
+    await repo.createBodyMeasurement('sw1', rq);
+    expect(http.post).toHaveBeenCalledWith('/api/swimmers/sw1/body-measurements', { body: rq });
+  });
+
+  it('getInBodyReadings GETs the readings endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ successStatus: true, data: [] });
+    await repo.getInBodyReadings('sw1');
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings');
+  });
+
+  it('createInBodyReading POSTs to the readings endpoint', async () => {
+    (http.post as jest.Mock).mockResolvedValue({ successStatus: true, data: {} });
+    const rq = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07 };
+    await repo.createInBodyReading('sw1', rq);
+    expect(http.post).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings', { body: rq });
+  });
+
+  it('updateInBodyReading PUTs the reading endpoint', async () => {
+    (http.put as jest.Mock).mockResolvedValue({ successStatus: true, data: {} });
+    const rq = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07 };
+    await repo.updateInBodyReading('sw1', 'r1', rq);
+    expect(http.put).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings/r1', { body: rq });
+  });
+
+  it('deleteInBodyReading DELETEs the reading endpoint', async () => {
+    ((http as unknown as { delete: jest.Mock }).delete) = jest.fn().mockResolvedValue({ successStatus: true, data: null });
+    await repo.deleteInBodyReading('sw1', 'r1');
+    expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings/r1');
+  });
 });

@@ -5,6 +5,9 @@ import { ISwimmerProfileRepository } from '@features/swimmer-profile/domain/repo
 import { SwimmerProfileItemDtoRs, MedicalExamListDtoRs, DeleteExamItemDtoRs } from '@features/swimmer-profile/data/dto/swimmer-profile.dto';
 import { UpdateIdentityDtoRq, UpdateIdentityItemDtoRs } from '@features/swimmer-profile/data/dto/update-identity.dto';
 import { CreateMedicalExamDtoRq, CreatedVitalsItemDtoRs } from '@features/swimmer-profile/data/dto/create-medical-exam.dto';
+import { GuardiansItemDtoRs, UpsertGuardiansDtoRq, UpsertGuardiansItemDtoRs } from '@features/swimmer-profile/data/dto/guardians.dto';
+import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasurementItemDtoRs } from '@features/swimmer-profile/data/dto/body-measurement.dto';
+import { InBodyReadingListDtoRs, InBodyReadingItemDtoRs, DeleteInBodyReadingItemDtoRs, CreateInBodyReadingDtoRq } from '@features/swimmer-profile/data/dto/inbody-reading.dto';
 
 @Injectable({ providedIn: 'root' })
 export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
@@ -27,5 +30,29 @@ export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
   }
   deleteExam(id: string, examId: string): Promise<DeleteExamItemDtoRs> {
     return this.http.delete<DeleteExamItemDtoRs>(`/api/swimmers/${id}/medical-exams/${examId}`);
+  }
+  getGuardians(id: string): Promise<GuardiansItemDtoRs> {
+    return this.http.get<GuardiansItemDtoRs>(`/api/swimmers/${id}/guardians`);
+  }
+  upsertGuardians(id: string, rq: UpsertGuardiansDtoRq): Promise<UpsertGuardiansItemDtoRs> {
+    return this.http.put<UpsertGuardiansItemDtoRs>(`/api/swimmers/${id}/guardians`, { body: rq });
+  }
+  getBodyMeasurement(id: string): Promise<BodyMeasurementItemDtoRs> {
+    return this.http.get<BodyMeasurementItemDtoRs>(`/api/swimmers/${id}/body-measurements/latest`);
+  }
+  createBodyMeasurement(id: string, rq: CreateBodyMeasurementDtoRq): Promise<CreateBodyMeasurementItemDtoRs> {
+    return this.http.post<CreateBodyMeasurementItemDtoRs>(`/api/swimmers/${id}/body-measurements`, { body: rq });
+  }
+  getInBodyReadings(id: string): Promise<InBodyReadingListDtoRs> {
+    return this.http.get<InBodyReadingListDtoRs>(`/api/swimmers/${id}/inbody-readings`);
+  }
+  createInBodyReading(id: string, rq: CreateInBodyReadingDtoRq): Promise<InBodyReadingItemDtoRs> {
+    return this.http.post<InBodyReadingItemDtoRs>(`/api/swimmers/${id}/inbody-readings`, { body: rq });
+  }
+  updateInBodyReading(id: string, readingId: string, rq: CreateInBodyReadingDtoRq): Promise<InBodyReadingItemDtoRs> {
+    return this.http.put<InBodyReadingItemDtoRs>(`/api/swimmers/${id}/inbody-readings/${readingId}`, { body: rq });
+  }
+  deleteInBodyReading(id: string, readingId: string): Promise<DeleteInBodyReadingItemDtoRs> {
+    return this.http.delete<DeleteInBodyReadingItemDtoRs>(`/api/swimmers/${id}/inbody-readings/${readingId}`);
   }
 }

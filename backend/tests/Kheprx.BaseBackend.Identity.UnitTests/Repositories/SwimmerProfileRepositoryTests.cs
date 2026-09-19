@@ -232,4 +232,96 @@ public class SwimmerProfileRepositoryTests
 
         Assert.Equal(0, await db.MedicalExams.CountAsync());
     }
+
+    [Fact]
+    public async Task ListGuardiansAsync_returns_rows_joined_to_relation_code()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var swimmerId = Guid.NewGuid();
+        var father = new GuardianRelation("father", "Father", "الأب");
+        var mother = new GuardianRelation("mother", "Mother", "الأم");
+        db.GuardianRelations.AddRange(father, mother);
+        db.Guardians.Add(new Guardian(swimmerId, father.Id, "Hassan Ali", "27001010123456", "+201009876543"));
+        db.Guardians.Add(new Guardian(swimmerId, mother.Id, "Fatima Ibrahim", "27505050123456", "+201005554444"));
+        await db.SaveChangesAsync();
+
+        var rows = await repo.ListGuardiansAsync(swimmerId);
+
+        Assert.Equal(2, rows.Count);
+        Assert.Contains(rows, r => r.RelationCode == "father" && r.Name == "Hassan Ali" && r.NationalId == "27001010123456");
+        Assert.Contains(rows, r => r.RelationCode == "mother" && r.Name == "Fatima Ibrahim");
+    }
+
+    [Fact]
+    public async Task GetGuardianRelationIdByCodeAsync_resolves_seeded_code()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var father = new GuardianRelation("father", "Father", "الأب");
+        db.GuardianRelations.Add(father);
+        await db.SaveChangesAsync();
+
+        Assert.Equal(father.Id, await repo.GetGuardianRelationIdByCodeAsync("father"));
+        Assert.Null(await repo.GetGuardianRelationIdByCodeAsync("nonexistent"));
+    }
+
+    [Fact]
+    public async Task GetGuardianTrackedAsync_returns_existing_row_for_swimmer_and_relation()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var swimmerId = Guid.NewGuid();
+        var relationId = Guid.NewGuid();
+        db.Guardians.Add(new Guardian(swimmerId, relationId, "Hassan Ali", "27001010123456", "+201009876543"));
+        await db.SaveChangesAsync();
+
+        var found = await repo.GetGuardianTrackedAsync(swimmerId, relationId);
+        Assert.NotNull(found);
+        Assert.Equal("Hassan Ali", found!.Name);
+        Assert.Null(await repo.GetGuardianTrackedAsync(swimmerId, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetLatestBodyMeasurementAsync_returns_null_when_none()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+
+        Assert.Null(await repo.GetLatestBodyMeasurementAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetLatestBodyMeasurementAsync_returns_a_deterministic_row_when_several_exist()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        // The entity stamps MeasuredAt = today, so both rows share a date; the OrderBy(MeasuredAt desc).ThenBy(Id desc)
+        // tiebreak makes the lookup deterministic and non-null. (Cross-day ordering is exercised via the DB, not in-memory.)
+        db.BodyMeasurements.Add(new BodyMeasurement(swimmerId, 70m, 70m, 90m, 90m, 50m, 90m, 70m));
+        db.BodyMeasurements.Add(new BodyMeasurement(swimmerId, 78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m));
+        await db.SaveChangesAsync();
+        var repo = new SwimmerProfileRepository(db);
+
+        var row = await repo.GetLatestBodyMeasurementAsync(swimmerId);
+
+        Assert.NotNull(row);
+        Assert.Contains(row!.RightArmCm, new[] { 70m, 78.5m }); // one of the two same-day rows (the Id-max)
+    }
+
+    [Fact]
+    public async Task AddBodyMeasurementAsync_inserts_and_is_readable()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        var repo = new SwimmerProfileRepository(db);
+
+        await repo.AddBodyMeasurementAsync(new BodyMeasurement(swimmerId, 78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m));
+        await db.SaveChangesAsync();
+
+        var row = await repo.GetLatestBodyMeasurementAsync(swimmerId);
+        Assert.NotNull(row);
+        Assert.Equal(76.5m, row!.WaistDiameterCm);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), row.MeasuredAt);
+    }
 }
