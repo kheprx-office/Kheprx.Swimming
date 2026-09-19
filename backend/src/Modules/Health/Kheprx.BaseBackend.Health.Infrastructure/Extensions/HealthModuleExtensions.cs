@@ -22,6 +22,8 @@ public static class HealthModuleExtensions
         services.AddScoped<IObservationRepository, ObservationRepository>();
         services.AddScoped<IObservationService, ObservationService>();
         services.AddScoped<IHealthReadingService, HealthReadingService>();
+        services.AddScoped<IInBodyReadingRepository, InBodyReadingRepository>();
+        services.AddScoped<IInBodyReadingService, InBodyReadingService>();
         return services;
     }
 }
