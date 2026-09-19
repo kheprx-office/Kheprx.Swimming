@@ -298,6 +298,7 @@
             <app-text-field [label]="'swimmerProfile.inbody.weight' | translate" [value]="vm.ibWeight()" (valueChange)="vm.ibWeight.set($event)"></app-text-field>
             <app-text-field [label]="'swimmerProfile.inbody.fatPercent' | translate" [value]="vm.ibFat()" (valueChange)="vm.ibFat.set($event)"></app-text-field>
             <app-text-field [label]="'swimmerProfile.inbody.musclePercent' | translate" [value]="vm.ibMuscle()" (valueChange)="vm.ibMuscle.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.waterPercent' | translate" [value]="vm.ibWater()" (valueChange)="vm.ibWater.set($event)"></app-text-field>
             <app-text-field [label]="'swimmerProfile.inbody.boneDensity' | translate" [value]="vm.ibBone()" (valueChange)="vm.ibBone.set($event)"></app-text-field>
             <app-text-field [label]="'swimmerProfile.inbody.bodyDensity' | translate" [value]="vm.ibBody()" (valueChange)="vm.ibBody.set($event)"></app-text-field>
             <div class="col-span-2 flex items-end gap-2 md:col-span-4">
@@ -311,6 +312,7 @@
             <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.weight' | translate }}</span><span class="font-medium text-ink">{{ r.weightKg }}</span></li>
             <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.fatPercent' | translate }}</span><span class="font-medium text-ink">{{ r.fatPct }}</span></li>
             <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.musclePercent' | translate }}</span><span class="font-medium text-ink">{{ r.musclePct }}</span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.waterPercent' | translate }}</span><span class="font-medium text-ink">{{ r.waterPct }}</span></li>
             <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.boneDensity' | translate }}</span><span class="font-medium text-ink">{{ r.boneDensity }}</span></li>
             <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.bodyDensity' | translate }}</span><span class="font-medium text-ink">{{ r.bodyDensity }}</span></li>
           </ul>

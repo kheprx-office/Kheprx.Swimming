@@ -16,6 +16,7 @@ internal sealed class InBodyReadingConfiguration : IEntityTypeConfiguration<InBo
         builder.Property(r => r.WeightKg).HasPrecision(5, 1).IsRequired();
         builder.Property(r => r.FatPct).HasPrecision(4, 1).IsRequired();
         builder.Property(r => r.MusclePct).HasPrecision(4, 1).IsRequired();
+        builder.Property(r => r.WaterPct).HasPrecision(4, 1).IsRequired();
         builder.Property(r => r.BoneDensity).HasPrecision(4, 2).IsRequired();
         builder.Property(r => r.BodyDensity).HasPrecision(4, 2).IsRequired();
         builder.Property(r => r.RecordedBy).IsRequired();    // loose Guid — no cross-module FK

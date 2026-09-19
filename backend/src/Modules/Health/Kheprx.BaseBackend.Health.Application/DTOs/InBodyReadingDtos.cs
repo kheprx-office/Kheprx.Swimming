@@ -7,6 +7,7 @@ public sealed record CreateInBodyReadingRequest(
     decimal WeightKg,
     decimal FatPct,
     decimal MusclePct,
+    decimal WaterPct,
     decimal BoneDensity,
     decimal BodyDensity);
 
@@ -18,6 +19,7 @@ public sealed record InBodyReadingDto(
     decimal WeightKg,
     decimal FatPct,
     decimal MusclePct,
+    decimal WaterPct,
     decimal BoneDensity,
     decimal BodyDensity,
     Guid RecordedBy);

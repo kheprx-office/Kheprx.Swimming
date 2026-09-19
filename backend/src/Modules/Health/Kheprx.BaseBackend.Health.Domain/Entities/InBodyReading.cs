@@ -9,6 +9,7 @@ public sealed class InBodyReading
     public decimal WeightKg { get; private set; }
     public decimal FatPct { get; private set; }
     public decimal MusclePct { get; private set; }
+    public decimal WaterPct { get; private set; }
     public decimal BoneDensity { get; private set; }
     public decimal BodyDensity { get; private set; }
     public Guid RecordedBy { get; private set; }
@@ -17,7 +18,7 @@ public sealed class InBodyReading
     private InBodyReading() { } // EF Core
 
     public InBodyReading(Guid swimmerId, DateOnly readingDate, decimal heightCm, decimal weightKg,
-        decimal fatPct, decimal musclePct, decimal boneDensity, decimal bodyDensity, Guid recordedBy)
+        decimal fatPct, decimal musclePct, decimal waterPct, decimal boneDensity, decimal bodyDensity, Guid recordedBy)
     {
         Id = Guid.NewGuid();
         SwimmerId = swimmerId;
@@ -26,6 +27,7 @@ public sealed class InBodyReading
         WeightKg = weightKg;
         FatPct = fatPct;
         MusclePct = musclePct;
+        WaterPct = waterPct;
         BoneDensity = boneDensity;
         BodyDensity = bodyDensity;
         RecordedBy = recordedBy;
@@ -33,13 +35,14 @@ public sealed class InBodyReading
     }
 
     public void Update(DateOnly readingDate, decimal heightCm, decimal weightKg,
-        decimal fatPct, decimal musclePct, decimal boneDensity, decimal bodyDensity)
+        decimal fatPct, decimal musclePct, decimal waterPct, decimal boneDensity, decimal bodyDensity)
     {
         ReadingDate = readingDate;
         HeightCm = heightCm;
         WeightKg = weightKg;
         FatPct = fatPct;
         MusclePct = musclePct;
+        WaterPct = waterPct;
         BoneDensity = boneDensity;
         BodyDensity = bodyDensity;
     }

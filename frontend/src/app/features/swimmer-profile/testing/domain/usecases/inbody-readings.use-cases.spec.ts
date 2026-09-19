@@ -5,8 +5,8 @@ import { UpdateInBodyReadingUseCase } from '@features/swimmer-profile/domain/use
 import { DeleteInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/delete-inbody-reading.use-case';
 import { SWIMMER_PROFILE_REPOSITORY } from '@features/swimmer-profile/domain/repositories/swimmer-profile.repository';
 
-const READING = { id: 'r1', readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, boneDensity: 1.35, bodyDensity: 1.07, recordedBy: 'u1' };
-const RQ = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, boneDensity: 1.35, bodyDensity: 1.07 };
+const READING = { id: 'r1', readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07, recordedBy: 'u1' };
+const RQ = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07 };
 
 describe('inbody use cases', () => {
   const repo = { getInBodyReadings: jest.fn(), createInBodyReading: jest.fn(), updateInBodyReading: jest.fn(), deleteInBodyReading: jest.fn() } as any;

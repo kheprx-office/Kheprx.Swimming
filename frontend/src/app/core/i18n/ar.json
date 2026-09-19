@@ -77,6 +77,7 @@
       "weight": "الوزن (كجم)",
       "fatPercent": "نسبة الدهون (%)",
       "musclePercent": "نسبة العضلات (%)",
+      "waterPercent": "نسبة الماء (%)",
       "boneDensity": "كثافة العظام",
       "bodyDensity": "كثافة الجسم",
       "measurementHistory": "سجل القياسات",

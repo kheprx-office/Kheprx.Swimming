@@ -7,6 +7,7 @@ export interface InBodyReadingDtoRs {
   weightKg: number;
   fatPct: number;
   musclePct: number;
+  waterPct: number;
   boneDensity: number;
   bodyDensity: number;
   recordedBy: string;
@@ -21,11 +22,12 @@ export interface CreateInBodyReadingDtoRq {
   weightKg: number;
   fatPct: number;
   musclePct: number;
+  waterPct: number;
   boneDensity: number;
   bodyDensity: number;
 }
 
-const VALUE_KEYS = ['heightCm', 'weightKg', 'fatPct', 'musclePct', 'boneDensity', 'bodyDensity'] as const;
+const VALUE_KEYS = ['heightCm', 'weightKg', 'fatPct', 'musclePct', 'waterPct', 'boneDensity', 'bodyDensity'] as const;
 
 export function isInBodyReadingDtoRsValid(x: unknown): x is InBodyReadingDtoRs {
   const d = x as InBodyReadingDtoRs;

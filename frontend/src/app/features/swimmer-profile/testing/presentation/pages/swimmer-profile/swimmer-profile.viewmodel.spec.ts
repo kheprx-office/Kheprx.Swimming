@@ -39,8 +39,8 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const upsertGuardiansUc = { run: jest.fn().mockResolvedValue(over.upsertGuardians ?? { ok: true, data: undefined }) };
   const getBodyMeasurementUc = { run: jest.fn().mockResolvedValue((over as any).getBodyMeasurement ?? { ok: true, data: null }) };
   const createBodyMeasurementUc = { run: jest.fn().mockResolvedValue((over as any).createBodyMeasurement ?? { ok: true, data: undefined }) };
-  const R1 = { id: 'r1', readingDate: '2024-06-15', heightCm: 180, weightKg: 72.5, fatPct: 15.2, musclePct: 40.1, boneDensity: 1.30, bodyDensity: 1.05 };
-  const R2 = { id: 'r2', readingDate: '2024-10-04', heightCm: 181, weightKg: 74.0, fatPct: 12.8, musclePct: 42.1, boneDensity: 1.35, bodyDensity: 1.07 };
+  const R1 = { id: 'r1', readingDate: '2024-06-15', heightCm: 180, weightKg: 72.5, fatPct: 15.2, musclePct: 40.1, waterPct: 55.0, boneDensity: 1.30, bodyDensity: 1.05 };
+  const R2 = { id: 'r2', readingDate: '2024-10-04', heightCm: 181, weightKg: 74.0, fatPct: 12.8, musclePct: 42.1, waterPct: 56.5, boneDensity: 1.35, bodyDensity: 1.07 };
   const listInBodyUc = { run: jest.fn().mockResolvedValue((over as any).listInBody ?? { ok: true, data: [R2, R1] }) };   // newest first
   const createInBodyUc = { run: jest.fn().mockResolvedValue((over as any).createInBody ?? { ok: true, data: R2 }) };
   const updateInBodyUc = { run: jest.fn().mockResolvedValue((over as any).updateInBody ?? { ok: true, data: R2 }) };
@@ -293,7 +293,7 @@ describe('SwimmerProfileViewModel', () => {
       vm.ibDate.set('');   // startAddInBody sets today; clear it
       expect(vm.canSaveInBody()).toBe(false);
       vm.ibDate.set('2024-10-04');
-      vm.ibHeight.set('180'); vm.ibWeight.set('74'); vm.ibFat.set('12.8'); vm.ibMuscle.set('42.1'); vm.ibBone.set('1.35'); vm.ibBody.set('1.07');
+      vm.ibHeight.set('180'); vm.ibWeight.set('74'); vm.ibFat.set('12.8'); vm.ibMuscle.set('42.1'); vm.ibWater.set('55'); vm.ibBone.set('1.35'); vm.ibBody.set('1.07');
       expect(vm.canSaveInBody()).toBe(true);
       vm.ibFat.set('101');   // out of 0..100
       expect(vm.canSaveInBody()).toBe(false);
@@ -305,7 +305,7 @@ describe('SwimmerProfileViewModel', () => {
       vm.setTab('inbody');
       await Promise.resolve(); await Promise.resolve();
       vm.startAddInBody();
-      vm.ibHeight.set('181'); vm.ibWeight.set('74'); vm.ibFat.set('12.8'); vm.ibMuscle.set('42.1'); vm.ibBone.set('1.35'); vm.ibBody.set('1.07');
+      vm.ibHeight.set('181'); vm.ibWeight.set('74'); vm.ibFat.set('12.8'); vm.ibMuscle.set('42.1'); vm.ibWater.set('55'); vm.ibBone.set('1.35'); vm.ibBody.set('1.07');
       await vm.saveInBody();
       expect(createInBodyUc.run).toHaveBeenCalled();
       expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.readingSaved');

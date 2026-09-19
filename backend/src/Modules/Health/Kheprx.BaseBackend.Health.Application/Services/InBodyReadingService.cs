@@ -19,7 +19,7 @@ internal sealed class InBodyReadingService : IInBodyReadingService
     public async Task<InBodyReadingDto> CreateAsync(Guid swimmerId, CreateInBodyReadingRequest request, Guid recordedBy, CancellationToken ct = default)
     {
         var reading = new InBodyReading(swimmerId, request.ReadingDate, request.HeightCm, request.WeightKg,
-            request.FatPct, request.MusclePct, request.BoneDensity, request.BodyDensity, recordedBy);
+            request.FatPct, request.MusclePct, request.WaterPct, request.BoneDensity, request.BodyDensity, recordedBy);
         await _readings.AddAsync(reading, ct);
         await _readings.SaveChangesAsync(ct);
         return ToDto(reading);
@@ -31,7 +31,7 @@ internal sealed class InBodyReadingService : IInBodyReadingService
         if (reading is null || reading.SwimmerId != swimmerId) return null;
 
         reading.Update(request.ReadingDate, request.HeightCm, request.WeightKg,
-            request.FatPct, request.MusclePct, request.BoneDensity, request.BodyDensity);
+            request.FatPct, request.MusclePct, request.WaterPct, request.BoneDensity, request.BodyDensity);
         await _readings.SaveChangesAsync(ct);
         return ToDto(reading);
     }
@@ -47,5 +47,5 @@ internal sealed class InBodyReadingService : IInBodyReadingService
     }
 
     private static InBodyReadingDto ToDto(InBodyReading r) =>
-        new(r.Id, r.ReadingDate, r.HeightCm, r.WeightKg, r.FatPct, r.MusclePct, r.BoneDensity, r.BodyDensity, r.RecordedBy);
+        new(r.Id, r.ReadingDate, r.HeightCm, r.WeightKg, r.FatPct, r.MusclePct, r.WaterPct, r.BoneDensity, r.BodyDensity, r.RecordedBy);
 }

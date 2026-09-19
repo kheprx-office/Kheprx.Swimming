@@ -15,6 +15,7 @@ public sealed class CreateInBodyReadingRequestValidator : AbstractValidator<Crea
         RuleFor(x => x.WeightKg).GreaterThan(0m).LessThanOrEqualTo(999.9m).WithMessage(_ => InBodyReadingMessages.Errors.ValueInvalid(AppLanguage.Current));
         RuleFor(x => x.FatPct).InclusiveBetween(0m, 100m).WithMessage(_ => InBodyReadingMessages.Errors.ValueInvalid(AppLanguage.Current));
         RuleFor(x => x.MusclePct).InclusiveBetween(0m, 100m).WithMessage(_ => InBodyReadingMessages.Errors.ValueInvalid(AppLanguage.Current));
+        RuleFor(x => x.WaterPct).InclusiveBetween(0m, 100m).WithMessage(_ => InBodyReadingMessages.Errors.ValueInvalid(AppLanguage.Current));
         RuleFor(x => x.BoneDensity).GreaterThan(0m).LessThanOrEqualTo(99.99m).WithMessage(_ => InBodyReadingMessages.Errors.ValueInvalid(AppLanguage.Current));
         RuleFor(x => x.BodyDensity).GreaterThan(0m).LessThanOrEqualTo(99.99m).WithMessage(_ => InBodyReadingMessages.Errors.ValueInvalid(AppLanguage.Current));
     }

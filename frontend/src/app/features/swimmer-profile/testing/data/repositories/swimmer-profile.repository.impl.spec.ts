@@ -88,14 +88,14 @@ describe('SwimmerProfileRepositoryImpl', () => {
 
   it('createInBodyReading POSTs to the readings endpoint', async () => {
     (http.post as jest.Mock).mockResolvedValue({ successStatus: true, data: {} });
-    const rq = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, boneDensity: 1.35, bodyDensity: 1.07 };
+    const rq = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07 };
     await repo.createInBodyReading('sw1', rq);
     expect(http.post).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings', { body: rq });
   });
 
   it('updateInBodyReading PUTs the reading endpoint', async () => {
     (http.put as jest.Mock).mockResolvedValue({ successStatus: true, data: {} });
-    const rq = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, boneDensity: 1.35, bodyDensity: 1.07 };
+    const rq = { readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1, waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07 };
     await repo.updateInBodyReading('sw1', 'r1', rq);
     expect(http.put).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings/r1', { body: rq });
   });

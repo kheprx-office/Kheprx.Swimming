@@ -9,6 +9,7 @@ export function toInBodyReading(d: InBodyReadingDtoRs): InBodyReading {
     weightKg: d.weightKg,
     fatPct: d.fatPct,
     musclePct: d.musclePct,
+    waterPct: d.waterPct,
     boneDensity: d.boneDensity,
     bodyDensity: d.bodyDensity,
   };

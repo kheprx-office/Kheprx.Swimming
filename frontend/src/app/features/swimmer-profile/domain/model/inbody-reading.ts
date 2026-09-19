@@ -5,6 +5,7 @@ export interface InBodyReading {
   weightKg: number;
   fatPct: number;
   musclePct: number;
+  waterPct: number;
   boneDensity: number;
   bodyDensity: number;
 }

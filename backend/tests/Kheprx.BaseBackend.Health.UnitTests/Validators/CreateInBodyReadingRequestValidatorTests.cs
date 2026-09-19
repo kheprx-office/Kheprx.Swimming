@@ -9,7 +9,7 @@ public class CreateInBodyReadingRequestValidatorTests
     private readonly CreateInBodyReadingRequestValidator _validator = new();
 
     private static CreateInBodyReadingRequest Valid()
-        => new(new DateOnly(2024, 10, 4), 180m, 74m, 12.8m, 42.1m, 1.35m, 1.07m);
+        => new(new DateOnly(2024, 10, 4), 180m, 74m, 12.8m, 42.1m, 55.3m, 1.35m, 1.07m);
 
     [Fact]
     public void Valid_request_passes() => Assert.True(_validator.Validate(Valid()).IsValid);
@@ -32,6 +32,14 @@ public class CreateInBodyReadingRequestValidatorTests
         var result = _validator.Validate(Valid() with { FatPct = 101m });
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "FatPct");
+    }
+
+    [Fact]
+    public void Water_over_100_fails()
+    {
+        var result = _validator.Validate(Valid() with { WaterPct = 101m });
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "WaterPct");
     }
 
     [Fact]

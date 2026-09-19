@@ -3,7 +3,7 @@ import { InBodyReadingDtoRs } from '@features/swimmer-profile/data/dto/inbody-re
 
 const DTO: InBodyReadingDtoRs = {
   id: 'r1', readingDate: '2024-10-04', heightCm: 180, weightKg: 74, fatPct: 12.8, musclePct: 42.1,
-  boneDensity: 1.35, bodyDensity: 1.07, recordedBy: 'u1',
+  waterPct: 55.3, boneDensity: 1.35, bodyDensity: 1.07, recordedBy: 'u1',
 };
 
 describe('inbody-reading.mapper', () => {

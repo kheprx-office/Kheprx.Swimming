@@ -12,7 +12,7 @@ public class InBodyReadingRepositoryTests
         => new(new DbContextOptionsBuilder<HealthDbContext>().UseInMemoryDatabase($"health-{Guid.NewGuid()}").Options);
 
     private static InBodyReading Reading(Guid swimmerId, DateOnly date)
-        => new(swimmerId, date, 180m, 74m, 12.8m, 42.1m, 1.35m, 1.07m, Guid.NewGuid());
+        => new(swimmerId, date, 180m, 74m, 12.8m, 42.1m, 55.3m, 1.35m, 1.07m, Guid.NewGuid());
 
     [Fact]
     public async Task ListBySwimmerAsync_returns_only_that_swimmer_newest_first()

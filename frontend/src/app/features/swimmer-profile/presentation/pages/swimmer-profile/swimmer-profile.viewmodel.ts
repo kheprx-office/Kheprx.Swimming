@@ -137,7 +137,7 @@ export class SwimmerProfileViewModel {
   readonly confirmingInBodyDelete = signal(false);
   readonly deletingInBody = signal(false);
   readonly ibDate = signal(''); readonly ibHeight = signal(''); readonly ibWeight = signal('');
-  readonly ibFat = signal(''); readonly ibMuscle = signal(''); readonly ibBone = signal(''); readonly ibBody = signal('');
+  readonly ibFat = signal(''); readonly ibMuscle = signal(''); readonly ibWater = signal(''); readonly ibBone = signal(''); readonly ibBody = signal('');
 
   readonly selectedInBodyReading = computed(() =>
     this.inbodyReadings().find((r) => r.id === this.selectedInBodyId()) ?? this.inbodyReadings()[0] ?? null);
@@ -145,10 +145,10 @@ export class SwimmerProfileViewModel {
   readonly canSaveInBody = computed(() => {
     const num = (v: string) => (v.trim().length > 0 && Number.isFinite(Number(v)) ? Number(v) : NaN);
     const h = num(this.ibHeight()), w = num(this.ibWeight()), f = num(this.ibFat()),
-          mu = num(this.ibMuscle()), bo = num(this.ibBone()), bd = num(this.ibBody());
+          mu = num(this.ibMuscle()), wa = num(this.ibWater()), bo = num(this.ibBone()), bd = num(this.ibBody());
     return this.ibDate().length > 0
       && h > 0 && h <= 999.9 && w > 0 && w <= 999.9
-      && f >= 0 && f <= 100 && mu >= 0 && mu <= 100
+      && f >= 0 && f <= 100 && mu >= 0 && mu <= 100 && wa >= 0 && wa <= 100
       && bo > 0 && bo <= 99.99 && bd > 0 && bd <= 99.99;
   });
 
@@ -158,6 +158,7 @@ export class SwimmerProfileViewModel {
       { key: 'weightKg' as const, labelKey: 'swimmerProfile.inbody.weight', unit: 'kg' },
       { key: 'fatPct' as const, labelKey: 'swimmerProfile.inbody.fatPercent', unit: '%' },
       { key: 'musclePct' as const, labelKey: 'swimmerProfile.inbody.musclePercent', unit: '%' },
+      { key: 'waterPct' as const, labelKey: 'swimmerProfile.inbody.waterPercent', unit: '%' },
       { key: 'boneDensity' as const, labelKey: 'swimmerProfile.inbody.boneDensity', unit: '' },
       { key: 'bodyDensity' as const, labelKey: 'swimmerProfile.inbody.bodyDensity', unit: '' },
     ];
@@ -438,7 +439,7 @@ export class SwimmerProfileViewModel {
   startAddInBody(): void {
     this.editingInBodyId.set(null);
     this.ibDate.set(new Date().toISOString().slice(0, 10));
-    this.ibHeight.set(''); this.ibWeight.set(''); this.ibFat.set(''); this.ibMuscle.set(''); this.ibBone.set(''); this.ibBody.set('');
+    this.ibHeight.set(''); this.ibWeight.set(''); this.ibFat.set(''); this.ibMuscle.set(''); this.ibWater.set(''); this.ibBone.set(''); this.ibBody.set('');
     this.editingInBody.set(true);
   }
 
@@ -448,7 +449,7 @@ export class SwimmerProfileViewModel {
     this.editingInBodyId.set(r.id);
     this.ibDate.set(r.readingDate);
     this.ibHeight.set(String(r.heightCm)); this.ibWeight.set(String(r.weightKg));
-    this.ibFat.set(String(r.fatPct)); this.ibMuscle.set(String(r.musclePct));
+    this.ibFat.set(String(r.fatPct)); this.ibMuscle.set(String(r.musclePct)); this.ibWater.set(String(r.waterPct));
     this.ibBone.set(String(r.boneDensity)); this.ibBody.set(String(r.bodyDensity));
     this.editingInBody.set(true);
   }
@@ -461,7 +462,7 @@ export class SwimmerProfileViewModel {
     const rq = {
       readingDate: this.ibDate(),
       heightCm: Number(this.ibHeight()), weightKg: Number(this.ibWeight()),
-      fatPct: Number(this.ibFat()), musclePct: Number(this.ibMuscle()),
+      fatPct: Number(this.ibFat()), musclePct: Number(this.ibMuscle()), waterPct: Number(this.ibWater()),
       boneDensity: Number(this.ibBone()), bodyDensity: Number(this.ibBody()),
     };
     const readingId = this.editingInBodyId();

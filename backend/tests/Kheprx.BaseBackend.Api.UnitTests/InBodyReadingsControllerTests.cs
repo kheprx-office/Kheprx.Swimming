@@ -14,8 +14,8 @@ public class InBodyReadingsControllerTests
     private static InBodyReadingsController Controller(IInBodyReadingService svc)
         => new(svc) { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() } };
 
-    private static InBodyReadingDto Dto(Guid id) => new(id, new DateOnly(2024, 10, 4), 180m, 74m, 12.8m, 42.1m, 1.35m, 1.07m, Guid.NewGuid());
-    private static CreateInBodyReadingRequest Req() => new(new DateOnly(2024, 10, 4), 180m, 74m, 12.8m, 42.1m, 1.35m, 1.07m);
+    private static InBodyReadingDto Dto(Guid id) => new(id, new DateOnly(2024, 10, 4), 180m, 74m, 12.8m, 42.1m, 55.3m, 1.35m, 1.07m, Guid.NewGuid());
+    private static CreateInBodyReadingRequest Req() => new(new DateOnly(2024, 10, 4), 180m, 74m, 12.8m, 42.1m, 55.3m, 1.35m, 1.07m);
 
     [Fact]
     public async Task List_returns_200_with_readings()
