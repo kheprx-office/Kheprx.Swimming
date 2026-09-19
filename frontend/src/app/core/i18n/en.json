@@ -46,7 +46,7 @@
       "championships": "Championships",
       "feedback": "Feedback"
     },
-    "sections": { "identity": "Identity", "vitals": "Vitals", "guardian": "Guardian Details", "physiological": "Body Measurements" },
+    "sections": { "identity": "Identity", "vitals": "Vitals", "guardian": "Guardian Details", "physiological": "Body Measurements", "inbody": "InBody" },
     "guardian": {
       "fatherInfo": "Father Info",
       "motherInfo": "Mother Info",
@@ -65,6 +65,25 @@
       "waistDiameter": "Waist Diameter",
       "cm": "cm",
       "noRecord": "No measurements recorded yet."
+    },
+    "inbody": {
+      "reading": "Reading",
+      "addReading": "Add reading",
+      "editReading": "Edit reading",
+      "deleteReading": "Delete reading",
+      "confirmDelete": "Delete this reading?",
+      "date": "Date",
+      "height": "Height (cm)",
+      "weight": "Weight (kg)",
+      "fatPercent": "Fat Percentage (%)",
+      "musclePercent": "Muscle Percentage (%)",
+      "boneDensity": "Bone Density",
+      "bodyDensity": "Body Density",
+      "measurementHistory": "Measurement History",
+      "metric": "Metric",
+      "change": "Change",
+      "noReadings": "No readings on record yet.",
+      "readingsCount": "readings on record"
     },
     "fields": {
       "fullName": "Full Name", "nameEn": "Full Name (EN)", "nameAr": "Full Name (AR)",
@@ -88,7 +107,9 @@
       "saveFailed": "Couldn't save. Please try again.",
       "deleteFailed": "Couldn't delete. Please try again.",
       "guardiansSaved": "Guardian details saved",
-      "bodyMeasurementSaved": "Body measurements saved"
+      "bodyMeasurementSaved": "Body measurements saved",
+      "readingSaved": "Reading saved",
+      "readingDeleted": "Reading deleted"
     }
   },
   "shell": {

@@ -46,7 +46,7 @@
       "championships": "البطولات",
       "feedback": "التقييمات"
     },
-    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية", "guardian": "بيانات ولي الأمر", "physiological": "قياسات الجسم" },
+    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية", "guardian": "بيانات ولي الأمر", "physiological": "قياسات الجسم", "inbody": "InBody" },
     "guardian": {
       "fatherInfo": "بيانات الأب",
       "motherInfo": "بيانات الأم",
@@ -65,6 +65,25 @@
       "waistDiameter": "محيط الخصر",
       "cm": "سم",
       "noRecord": "لا توجد قياسات مسجلة بعد."
+    },
+    "inbody": {
+      "reading": "القياس",
+      "addReading": "إضافة قياس",
+      "editReading": "تحرير القياس",
+      "deleteReading": "حذف القياس",
+      "confirmDelete": "حذف هذا القياس؟",
+      "date": "التاريخ",
+      "height": "الطول (سم)",
+      "weight": "الوزن (كجم)",
+      "fatPercent": "نسبة الدهون (%)",
+      "musclePercent": "نسبة العضلات (%)",
+      "boneDensity": "كثافة العظام",
+      "bodyDensity": "كثافة الجسم",
+      "measurementHistory": "سجل القياسات",
+      "metric": "المؤشر",
+      "change": "التغير",
+      "noReadings": "لا توجد قياسات مسجلة بعد.",
+      "readingsCount": "قياس مسجل"
     },
     "fields": {
       "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
@@ -88,7 +107,9 @@
       "saveFailed": "تعذّر الحفظ. حاول مرة أخرى.",
       "deleteFailed": "تعذّر الحذف. حاول مرة أخرى.",
       "guardiansSaved": "تم حفظ بيانات ولي الأمر",
-      "bodyMeasurementSaved": "تم حفظ قياسات الجسم"
+      "bodyMeasurementSaved": "تم حفظ قياسات الجسم",
+      "readingSaved": "تم حفظ القياس",
+      "readingDeleted": "تم حذف القياس"
     }
   },
   "shell": {

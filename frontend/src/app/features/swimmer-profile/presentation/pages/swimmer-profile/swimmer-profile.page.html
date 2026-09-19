@@ -255,5 +255,95 @@
         }
       </section>
     }
+
+    @if (vm.activeTab() === 'inbody') {
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
+          <div>
+            <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.tabs.inbody' | translate }}</h2>
+            <p class="mt-0.5 text-sm text-text-secondary">{{ vm.inbodyReadings().length }} {{ 'swimmerProfile.inbody.readingsCount' | translate }}</p>
+          </div>
+          <div class="flex items-end gap-2">
+            @if (vm.inbodyReadings().length > 0) {
+              <select class="h-9 rounded-md border border-border bg-surface px-2 text-sm" [value]="vm.selectedInBodyId()" (change)="vm.selectedInBodyId.set($any($event.target).value)">
+                @for (r of vm.inbodyReadings(); track r.id) {
+                  <option [value]="r.id">{{ r.readingDate }}</option>
+                }
+              </select>
+            }
+            @if (vm.canEdit()) {
+              <button type="button" class="rounded-md px-3 py-1.5 text-sm font-medium text-primary" (click)="vm.startAddInBody()">{{ 'swimmerProfile.inbody.addReading' | translate }}</button>
+              @if (vm.selectedInBodyReading()) {
+                <button type="button" class="rounded-md px-3 py-1.5 text-sm font-medium text-primary" (click)="vm.startEditInBody()">{{ 'swimmerProfile.inbody.editReading' | translate }}</button>
+                <button type="button" class="rounded-md px-3 py-1.5 text-sm font-medium text-danger" (click)="vm.askDeleteInBody()">{{ 'swimmerProfile.inbody.deleteReading' | translate }}</button>
+              }
+            }
+          </div>
+        </div>
+
+        @if (vm.confirmingInBodyDelete()) {
+          <div class="mb-4 flex items-center gap-3 rounded-lg border border-danger/40 bg-danger/5 p-3 text-sm">
+            <span class="text-ink">{{ 'swimmerProfile.inbody.confirmDelete' | translate }}</span>
+            <button type="button" class="rounded-md bg-danger px-3 py-1 text-white disabled:opacity-50" [disabled]="vm.deletingInBody()" (click)="vm.confirmDeleteInBody()">{{ 'swimmerProfile.confirmYes' | translate }}</button>
+            <button type="button" class="rounded-md px-3 py-1 text-text-secondary" (click)="vm.cancelDeleteInBody()">{{ 'swimmerProfile.confirmNo' | translate }}</button>
+          </div>
+        }
+
+        @if (vm.loadingInBody()) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.loading' | translate }}</p>
+        } @else if (vm.editingInBody()) {
+          <form class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4" (submit)="$event.preventDefault(); vm.saveInBody()">
+            <app-text-field [label]="'swimmerProfile.inbody.date' | translate" [value]="vm.ibDate()" (valueChange)="vm.ibDate.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.height' | translate" [value]="vm.ibHeight()" (valueChange)="vm.ibHeight.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.weight' | translate" [value]="vm.ibWeight()" (valueChange)="vm.ibWeight.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.fatPercent' | translate" [value]="vm.ibFat()" (valueChange)="vm.ibFat.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.musclePercent' | translate" [value]="vm.ibMuscle()" (valueChange)="vm.ibMuscle.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.boneDensity' | translate" [value]="vm.ibBone()" (valueChange)="vm.ibBone.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.inbody.bodyDensity' | translate" [value]="vm.ibBody()" (valueChange)="vm.ibBody.set($event)"></app-text-field>
+            <div class="col-span-2 flex items-end gap-2 md:col-span-4">
+              <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveInBody() || vm.savingInBody()">{{ 'common.save' | translate }}</button>
+              <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditInBody()">{{ 'common.cancel' | translate }}</button>
+            </div>
+          </form>
+        } @else if (vm.selectedInBodyReading(); as r) {
+          <ul class="mb-6 max-w-2xl divide-y divide-border rounded-lg border border-border">
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.height' | translate }}</span><span class="font-medium text-ink">{{ r.heightCm }}</span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.weight' | translate }}</span><span class="font-medium text-ink">{{ r.weightKg }}</span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.fatPercent' | translate }}</span><span class="font-medium text-ink">{{ r.fatPct }}</span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.musclePercent' | translate }}</span><span class="font-medium text-ink">{{ r.musclePct }}</span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.boneDensity' | translate }}</span><span class="font-medium text-ink">{{ r.boneDensity }}</span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.inbody.bodyDensity' | translate }}</span><span class="font-medium text-ink">{{ r.bodyDensity }}</span></li>
+          </ul>
+
+          @if (vm.inbodyHistory().dates.length > 0) {
+            <h3 class="mb-2 text-base font-semibold text-ink">{{ 'swimmerProfile.inbody.measurementHistory' | translate }}</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[32rem] border-collapse text-sm">
+                <thead>
+                  <tr class="border-b border-border text-left text-text-secondary">
+                    <th class="py-2 pe-4 font-semibold">{{ 'swimmerProfile.inbody.metric' | translate }}</th>
+                    @for (d of vm.inbodyHistory().dates; track d) { <th class="py-2 pe-4 font-semibold">{{ d }}</th> }
+                    <th class="py-2 font-semibold">{{ 'swimmerProfile.inbody.change' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of vm.inbodyHistory().rows; track row.labelKey) {
+                    <tr class="border-b border-border/60">
+                      <td class="py-2 pe-4 text-text-secondary">{{ row.labelKey | translate }}</td>
+                      @for (v of row.values; track $index) { <td class="py-2 pe-4 text-ink">{{ v }} {{ row.unit }}</td> }
+                      <td class="py-2 font-medium" [class.text-success]="(row.change ?? 0) >= 0" [class.text-danger]="(row.change ?? 0) < 0">
+                        @if (row.change !== null) { {{ row.change > 0 ? '+' : '' }}{{ row.change }} {{ row.unit }} } @else { — }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        } @else {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.inbody.noReadings' | translate }}</p>
+        }
+      </section>
+    }
   }
 </div>

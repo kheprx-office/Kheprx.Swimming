@@ -11,6 +11,11 @@ import { GetSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/use
 import { UpsertSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/upsert-swimmer-guardians.use-case';
 import { GetLatestBodyMeasurementUseCase } from '@features/swimmer-profile/domain/usecases/get-latest-body-measurement.use-case';
 import { CreateBodyMeasurementUseCase } from '@features/swimmer-profile/domain/usecases/create-body-measurement.use-case';
+import { ListInBodyReadingsUseCase } from '@features/swimmer-profile/domain/usecases/list-inbody-readings.use-case';
+import { CreateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/create-inbody-reading.use-case';
+import { UpdateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/update-inbody-reading.use-case';
+import { DeleteInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/delete-inbody-reading.use-case';
+import { InBodyReading } from '@features/swimmer-profile/domain/model/inbody-reading';
 import { LookupItem } from '@features/reference/domain/model/reference';
 import { BodyMeasurement } from '@features/swimmer-profile/domain/model/body-measurement';
 import { SwimmerProfile, SwimmerVitals } from '@features/swimmer-profile/domain/model/swimmer-profile';
@@ -33,6 +38,10 @@ export class SwimmerProfileViewModel {
   private readonly upsertGuardiansUc = inject(UpsertSwimmerGuardiansUseCase);
   private readonly getBodyMeasurementUc = inject(GetLatestBodyMeasurementUseCase);
   private readonly createBodyMeasurementUc = inject(CreateBodyMeasurementUseCase);
+  private readonly listInBodyUc = inject(ListInBodyReadingsUseCase);
+  private readonly createInBodyUc = inject(CreateInBodyReadingUseCase);
+  private readonly updateInBodyUc = inject(UpdateInBodyReadingUseCase);
+  private readonly deleteInBodyUc = inject(DeleteInBodyReadingUseCase);
   private readonly notify = inject(NotificationService);
   private readonly i18n = inject(TranslateService);
   private readonly session = inject(AuthSessionStore);
@@ -89,9 +98,10 @@ export class SwimmerProfileViewModel {
   readonly deleting = signal(false);
 
   // Tab state — only the two built tabs are switchable.
-  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological'>('identityVitals');
+  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody'>('identityVitals');
   private guardiansLoaded = false;
   private bodyMeasurementLoaded = false;
+  private inbodyLoaded = false;
 
   // Guardian state
   readonly guardians = signal<SwimmerGuardians | null>(null);
@@ -117,6 +127,51 @@ export class SwimmerProfileViewModel {
     });
   });
 
+  // InBody state
+  readonly inbodyReadings = signal<InBodyReading[]>([]);
+  readonly selectedInBodyId = signal('');
+  readonly loadingInBody = signal(false);
+  readonly editingInBody = signal(false);
+  readonly editingInBodyId = signal<string | null>(null);
+  readonly savingInBody = signal(false);
+  readonly confirmingInBodyDelete = signal(false);
+  readonly deletingInBody = signal(false);
+  readonly ibDate = signal(''); readonly ibHeight = signal(''); readonly ibWeight = signal('');
+  readonly ibFat = signal(''); readonly ibMuscle = signal(''); readonly ibBone = signal(''); readonly ibBody = signal('');
+
+  readonly selectedInBodyReading = computed(() =>
+    this.inbodyReadings().find((r) => r.id === this.selectedInBodyId()) ?? this.inbodyReadings()[0] ?? null);
+
+  readonly canSaveInBody = computed(() => {
+    const num = (v: string) => (v.trim().length > 0 && Number.isFinite(Number(v)) ? Number(v) : NaN);
+    const h = num(this.ibHeight()), w = num(this.ibWeight()), f = num(this.ibFat()),
+          mu = num(this.ibMuscle()), bo = num(this.ibBone()), bd = num(this.ibBody());
+    return this.ibDate().length > 0
+      && h > 0 && h <= 999.9 && w > 0 && w <= 999.9
+      && f >= 0 && f <= 100 && mu >= 0 && mu <= 100
+      && bo > 0 && bo <= 99.99 && bd > 0 && bd <= 99.99;
+  });
+
+  readonly inbodyHistory = computed(() => {
+    const readings = [...this.inbodyReadings()].sort((a, b) => a.readingDate.localeCompare(b.readingDate)); // oldest -> newest
+    const metrics = [
+      { key: 'weightKg' as const, labelKey: 'swimmerProfile.inbody.weight', unit: 'kg' },
+      { key: 'fatPct' as const, labelKey: 'swimmerProfile.inbody.fatPercent', unit: '%' },
+      { key: 'musclePct' as const, labelKey: 'swimmerProfile.inbody.musclePercent', unit: '%' },
+      { key: 'boneDensity' as const, labelKey: 'swimmerProfile.inbody.boneDensity', unit: '' },
+      { key: 'bodyDensity' as const, labelKey: 'swimmerProfile.inbody.bodyDensity', unit: '' },
+    ];
+    return {
+      dates: readings.map((r) => r.readingDate),
+      rows: metrics.map((m) => {
+        const values = readings.map((r) => r[m.key]);
+        const n = values.length;
+        const change = n >= 2 ? Math.round((values[n - 1] - values[n - 2]) * 100) / 100 : null;
+        return { labelKey: m.labelKey, unit: m.unit, values, change };
+      }),
+    };
+  });
+
   private static readonly NATIONAL_ID = /^\d{14}$/;
   readonly canSaveGuardians = computed(() => {
     const slotOk = (name: string, nid: string, phone: string) =>
@@ -139,6 +194,10 @@ export class SwimmerProfileViewModel {
     this.bodyMeasurementLoaded = false;
     this.bodyMeasurement.set(null);
     this.editingBodyMeasurement.set(false);
+    this.inbodyLoaded = false;
+    this.inbodyReadings.set([]);
+    this.editingInBody.set(false);
+    this.confirmingInBodyDelete.set(false);
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
@@ -274,10 +333,11 @@ export class SwimmerProfileViewModel {
     }
   }
 
-  setTab(key: 'identityVitals' | 'guardian' | 'physiological'): void {
+  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody'): void {
     this.activeTab.set(key);
     if (key === 'guardian' && !this.guardiansLoaded) void this.loadGuardians();
     if (key === 'physiological' && !this.bodyMeasurementLoaded) void this.loadBodyMeasurement();
+    if (key === 'inbody' && !this.inbodyLoaded) void this.loadInBody();
   }
 
   private async loadGuardians(): Promise<void> {
@@ -357,6 +417,84 @@ export class SwimmerProfileViewModel {
       await this.loadBodyMeasurement();
     } else {
       this.notify.error(this.i18n.t('swimmerProfile.toasts.saveFailed'));
+    }
+  }
+
+  private async loadInBody(): Promise<void> {
+    this.inbodyLoaded = true;
+    this.loadingInBody.set(true);
+    const r = await this.listInBodyUc.run(this.swimmerId);
+    this.loadingInBody.set(false);
+    if (r.ok) {
+      this.inbodyReadings.set(r.data);
+      this.selectedInBodyId.set(r.data[0]?.id ?? '');
+    } else {
+      this.inbodyLoaded = false;
+      this.inbodyReadings.set([]);
+      this.selectedInBodyId.set('');
+    }
+  }
+
+  startAddInBody(): void {
+    this.editingInBodyId.set(null);
+    this.ibDate.set(new Date().toISOString().slice(0, 10));
+    this.ibHeight.set(''); this.ibWeight.set(''); this.ibFat.set(''); this.ibMuscle.set(''); this.ibBone.set(''); this.ibBody.set('');
+    this.editingInBody.set(true);
+  }
+
+  startEditInBody(): void {
+    const r = this.selectedInBodyReading();
+    if (!r) return;
+    this.editingInBodyId.set(r.id);
+    this.ibDate.set(r.readingDate);
+    this.ibHeight.set(String(r.heightCm)); this.ibWeight.set(String(r.weightKg));
+    this.ibFat.set(String(r.fatPct)); this.ibMuscle.set(String(r.musclePct));
+    this.ibBone.set(String(r.boneDensity)); this.ibBody.set(String(r.bodyDensity));
+    this.editingInBody.set(true);
+  }
+
+  cancelEditInBody(): void { this.editingInBody.set(false); this.editingInBodyId.set(null); }
+
+  async saveInBody(): Promise<void> {
+    if (!this.canSaveInBody() || this.savingInBody()) return;
+    this.savingInBody.set(true);
+    const rq = {
+      readingDate: this.ibDate(),
+      heightCm: Number(this.ibHeight()), weightKg: Number(this.ibWeight()),
+      fatPct: Number(this.ibFat()), musclePct: Number(this.ibMuscle()),
+      boneDensity: Number(this.ibBone()), bodyDensity: Number(this.ibBody()),
+    };
+    const readingId = this.editingInBodyId();
+    const r = readingId
+      ? await this.updateInBodyUc.run({ id: this.swimmerId, readingId, rq })
+      : await this.createInBodyUc.run({ id: this.swimmerId, rq });
+    this.savingInBody.set(false);
+    if (r.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.readingSaved'));
+      this.editingInBody.set(false);
+      this.editingInBodyId.set(null);
+      await this.loadInBody();
+      this.selectedInBodyId.set(r.data.id);
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.saveFailed'));
+    }
+  }
+
+  askDeleteInBody(): void { this.confirmingInBodyDelete.set(true); }
+  cancelDeleteInBody(): void { this.confirmingInBodyDelete.set(false); }
+
+  async confirmDeleteInBody(): Promise<void> {
+    const r = this.selectedInBodyReading();
+    if (!r || this.deletingInBody()) return;
+    this.deletingInBody.set(true);
+    const res = await this.deleteInBodyUc.run({ id: this.swimmerId, readingId: r.id });
+    this.deletingInBody.set(false);
+    if (res.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.readingDeleted'));
+      this.confirmingInBodyDelete.set(false);
+      await this.loadInBody();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
     }
   }
 }
