@@ -214,5 +214,46 @@
         }
       </section>
     }
+
+    @if (vm.activeTab() === 'physiological') {
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 flex items-center justify-between border-b border-border pb-2">
+          <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.sections.physiological' | translate }}</h2>
+          @if (vm.canEdit() && !vm.editingBodyMeasurement()) {
+            <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditBodyMeasurement()">{{ 'swimmerProfile.edit' | translate }}</button>
+          }
+        </div>
+
+        @if (vm.loadingBodyMeasurement()) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.loading' | translate }}</p>
+        } @else if (vm.editingBodyMeasurement()) {
+          <form class="grid grid-cols-1 gap-4 md:grid-cols-2" (submit)="$event.preventDefault(); vm.saveBodyMeasurement()">
+            <app-text-field [label]="'swimmerProfile.physiological.rightArm' | translate" [value]="vm.bmRightArm()" (valueChange)="vm.bmRightArm.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.physiological.leftArm' | translate" [value]="vm.bmLeftArm()" (valueChange)="vm.bmLeftArm.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.physiological.leftLeg' | translate" [value]="vm.bmLeftLeg()" (valueChange)="vm.bmLeftLeg.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.physiological.rightLeg' | translate" [value]="vm.bmRightLeg()" (valueChange)="vm.bmRightLeg.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.physiological.torsoLength' | translate" [value]="vm.bmTorso()" (valueChange)="vm.bmTorso.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.physiological.bustDiameter' | translate" [value]="vm.bmBustDiameter()" (valueChange)="vm.bmBustDiameter.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.physiological.waistDiameter' | translate" [value]="vm.bmWaistDiameter()" (valueChange)="vm.bmWaistDiameter.set($event)"></app-text-field>
+            <div class="flex items-end gap-2 md:col-span-2">
+              <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveBodyMeasurement() || vm.savingBodyMeasurement()">{{ 'common.save' | translate }}</button>
+              <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditBodyMeasurement()">{{ 'common.cancel' | translate }}</button>
+            </div>
+          </form>
+        } @else if (vm.bodyMeasurement(); as m) {
+          <ul class="max-w-2xl divide-y divide-border rounded-lg border border-border">
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.rightArm' | translate }}</span><span class="font-medium text-ink">{{ m.rightArmCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.leftArm' | translate }}</span><span class="font-medium text-ink">{{ m.leftArmCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.leftLeg' | translate }}</span><span class="font-medium text-ink">{{ m.leftLegCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.rightLeg' | translate }}</span><span class="font-medium text-ink">{{ m.rightLegCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.torsoLength' | translate }}</span><span class="font-medium text-ink">{{ m.torsoCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.bustDiameter' | translate }}</span><span class="font-medium text-ink">{{ m.bustDiameterCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+            <li class="flex items-center gap-3 px-4 py-3 text-sm"><span class="flex-1 text-text-secondary">{{ 'swimmerProfile.physiological.waistDiameter' | translate }}</span><span class="font-medium text-ink">{{ m.waistDiameterCm }} <span class="font-normal text-text-secondary">{{ 'swimmerProfile.physiological.cm' | translate }}</span></span></li>
+          </ul>
+        } @else {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.physiological.noRecord' | translate }}</p>
+        }
+      </section>
+    }
   }
 </div>

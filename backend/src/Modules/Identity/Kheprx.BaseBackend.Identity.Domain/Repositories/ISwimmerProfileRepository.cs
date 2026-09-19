@@ -23,4 +23,6 @@ public interface ISwimmerProfileRepository
     Task<Guid?> GetGuardianRelationIdByCodeAsync(string code, CancellationToken ct = default);
     Task<Guardian?> GetGuardianTrackedAsync(Guid swimmerId, Guid relationId, CancellationToken ct = default);
     Task AddGuardianAsync(Guardian guardian, CancellationToken ct = default);
+    Task<BodyMeasurementRow?> GetLatestBodyMeasurementAsync(Guid swimmerId, CancellationToken ct = default);
+    Task AddBodyMeasurementAsync(BodyMeasurement measurement, CancellationToken ct = default);
 }

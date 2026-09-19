@@ -15,4 +15,6 @@ public interface ISwimmerService
     Task<bool> DeleteExamAsync(Guid swimmerId, Guid examId, CancellationToken ct = default);
     Task<SwimmerGuardiansDto?> GetGuardiansAsync(Guid id, CancellationToken ct = default);
     Task<bool> UpsertGuardiansAsync(Guid id, UpsertGuardiansRequest request, CancellationToken ct = default);
+    Task<SwimmerBodyMeasurementDto?> GetBodyMeasurementAsync(Guid id, CancellationToken ct = default);
+    Task<bool> AddBodyMeasurementAsync(Guid id, CreateBodyMeasurementRequest request, CancellationToken ct = default);
 }

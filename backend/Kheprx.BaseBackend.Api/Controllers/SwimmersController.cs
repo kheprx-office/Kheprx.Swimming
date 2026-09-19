@@ -258,4 +258,44 @@ public sealed class SwimmersController : BaseApiController
     }
 
     #endregion
+
+    #region Body measurements — GET latest / POST api/swimmers/{id}/body-measurements
+
+    /// <summary>Returns a swimmer's latest body measurement (null when none recorded yet).</summary>
+    /// <response code="200">The latest body measurement (or empty).</response>
+    /// <response code="404">No swimmer with that id.</response>
+    [HttpGet("{id:guid}/body-measurements/latest")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<SwimmerBodyMeasurementDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<SwimmerBodyMeasurementDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<SwimmerBodyMeasurementDto>>> GetLatestBodyMeasurement(Guid id, CancellationToken ct)
+    {
+        var dto = await _service.GetBodyMeasurementAsync(id, ct);
+        if (dto is null)
+        {
+            var nf = ApiResponse<SwimmerBodyMeasurementDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<SwimmerBodyMeasurementDto>.Success(SwimmerMessages.Success.BodyMeasurementRetrieved(AppLanguage.Current), dto));
+    }
+
+    /// <summary>Records a new dated body measurement for a swimmer. Head Coach or Captain only.</summary>
+    /// <response code="200">Body measurement saved.</response>
+    /// <response code="404">No swimmer with that id.</response>
+    [HttpPost("{id:guid}/body-measurements")]
+    [Authorize(Roles = "head_coach,captain")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object>>> CreateBodyMeasurement(Guid id, CreateBodyMeasurementRequest request, CancellationToken ct)
+    {
+        var saved = await _service.AddBodyMeasurementAsync(id, request, ct);
+        if (!saved)
+        {
+            var nf = ApiResponse<object>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<object>.Success(SwimmerMessages.Success.BodyMeasurementSaved(AppLanguage.Current), null));
+    }
+
+    #endregion
 }

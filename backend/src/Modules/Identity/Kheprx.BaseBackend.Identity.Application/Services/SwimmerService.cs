@@ -238,4 +238,31 @@ internal sealed class SwimmerService : ISwimmerService
         else
             existing.Update(input.Name, input.NationalId, input.Phone);
     }
+
+    public async Task<SwimmerBodyMeasurementDto?> GetBodyMeasurementAsync(Guid id, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(id, ct);
+        if (profile is null) return null;
+
+        var row = await _swimmers.GetLatestBodyMeasurementAsync(id, ct);
+        return new SwimmerBodyMeasurementDto(MapBodyMeasurement(row));
+    }
+
+    private static BodyMeasurementDto? MapBodyMeasurement(Kheprx.BaseBackend.Identity.Domain.ReadModels.BodyMeasurementRow? r)
+        => r is null
+            ? null
+            : new BodyMeasurementDto(r.Id, r.MeasuredAt, r.RightArmCm, r.LeftArmCm, r.RightLegCm, r.LeftLegCm, r.TorsoCm, r.BustDiameterCm, r.WaistDiameterCm);
+
+    public async Task<bool> AddBodyMeasurementAsync(Guid id, CreateBodyMeasurementRequest request, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(id, ct);
+        if (profile is null) return false;
+
+        var measurement = new BodyMeasurement(id,
+            request.RightArmCm, request.LeftArmCm, request.RightLegCm, request.LeftLegCm,
+            request.TorsoCm, request.BustDiameterCm, request.WaistDiameterCm);
+        await _swimmers.AddBodyMeasurementAsync(measurement, ct);
+        await _swimmers.SaveChangesAsync(ct);
+        return true;
+    }
 }

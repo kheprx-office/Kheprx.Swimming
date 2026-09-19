@@ -46,7 +46,7 @@
       "championships": "البطولات",
       "feedback": "التقييمات"
     },
-    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية", "guardian": "بيانات ولي الأمر" },
+    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية", "guardian": "بيانات ولي الأمر", "physiological": "قياسات الجسم" },
     "guardian": {
       "fatherInfo": "بيانات الأب",
       "motherInfo": "بيانات الأم",
@@ -54,6 +54,17 @@
       "nationalId": "الرقم القومي",
       "phone": "الهاتف",
       "noRecord": "لا يوجد ولي أمر مسجل بعد."
+    },
+    "physiological": {
+      "rightArm": "الذراع اليمنى",
+      "leftArm": "الذراع اليسرى",
+      "leftLeg": "الساق اليسرى",
+      "rightLeg": "الساق اليمنى",
+      "torsoLength": "طول الجذع",
+      "bustDiameter": "محيط الصدر",
+      "waistDiameter": "محيط الخصر",
+      "cm": "سم",
+      "noRecord": "لا توجد قياسات مسجلة بعد."
     },
     "fields": {
       "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
@@ -76,7 +87,8 @@
       "examDeleted": "تم حذف الفحص",
       "saveFailed": "تعذّر الحفظ. حاول مرة أخرى.",
       "deleteFailed": "تعذّر الحذف. حاول مرة أخرى.",
-      "guardiansSaved": "تم حفظ بيانات ولي الأمر"
+      "guardiansSaved": "تم حفظ بيانات ولي الأمر",
+      "bodyMeasurementSaved": "تم حفظ قياسات الجسم"
     }
   },
   "shell": {

@@ -6,6 +6,7 @@ import { SwimmerProfileItemDtoRs, MedicalExamListDtoRs, DeleteExamItemDtoRs } fr
 import { UpdateIdentityDtoRq, UpdateIdentityItemDtoRs } from '@features/swimmer-profile/data/dto/update-identity.dto';
 import { CreateMedicalExamDtoRq, CreatedVitalsItemDtoRs } from '@features/swimmer-profile/data/dto/create-medical-exam.dto';
 import { GuardiansItemDtoRs, UpsertGuardiansDtoRq, UpsertGuardiansItemDtoRs } from '@features/swimmer-profile/data/dto/guardians.dto';
+import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasurementItemDtoRs } from '@features/swimmer-profile/data/dto/body-measurement.dto';
 
 @Injectable({ providedIn: 'root' })
 export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
@@ -34,5 +35,11 @@ export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
   }
   upsertGuardians(id: string, rq: UpsertGuardiansDtoRq): Promise<UpsertGuardiansItemDtoRs> {
     return this.http.put<UpsertGuardiansItemDtoRs>(`/api/swimmers/${id}/guardians`, { body: rq });
+  }
+  getBodyMeasurement(id: string): Promise<BodyMeasurementItemDtoRs> {
+    return this.http.get<BodyMeasurementItemDtoRs>(`/api/swimmers/${id}/body-measurements/latest`);
+  }
+  createBodyMeasurement(id: string, rq: CreateBodyMeasurementDtoRq): Promise<CreateBodyMeasurementItemDtoRs> {
+    return this.http.post<CreateBodyMeasurementItemDtoRs>(`/api/swimmers/${id}/body-measurements`, { body: rq });
   }
 }

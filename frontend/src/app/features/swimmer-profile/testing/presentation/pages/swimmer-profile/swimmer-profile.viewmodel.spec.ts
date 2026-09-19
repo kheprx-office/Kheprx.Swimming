@@ -11,6 +11,8 @@ import { LoadBloodTypesUseCase } from '@features/reference/domain/usecases/load-
 import { LoadFitnessAssessmentsUseCase } from '@features/reference/domain/usecases/load-fitness-assessments.use-case';
 import { GetSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-guardians.use-case';
 import { UpsertSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/upsert-swimmer-guardians.use-case';
+import { GetLatestBodyMeasurementUseCase } from '@features/swimmer-profile/domain/usecases/get-latest-body-measurement.use-case';
+import { CreateBodyMeasurementUseCase } from '@features/swimmer-profile/domain/usecases/create-body-measurement.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -20,7 +22,7 @@ const IDENTITY = { id: 's1', uid: 'SW-1', nameEn: 'Ahmed', nameAr: 'أحمد', d
 const VITALS = { id: 'e1', examDate: '2026-09-19', bloodType: null, hemoglobin: 14.8, heightCm: 182, weightKg: 74, internalMed: REF, heartAssess: REF, spineAssess: REF };
 const VITALS2 = { id: 'e2', examDate: '2024-01-01', bloodType: null, hemoglobin: 13, heightCm: 178, weightKg: 71, internalMed: REF, heartAssess: REF, spineAssess: REF };
 
-function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
+function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
   const getUc = { run: jest.fn().mockResolvedValue(over.profile ?? { ok: true, data: { identity: IDENTITY, vitals: VITALS } }) };
   const updateUc = { run: jest.fn().mockResolvedValue(over.update ?? { ok: true, data: undefined }) };
   const createUc = { run: jest.fn().mockResolvedValue(over.create ?? { ok: true, data: VITALS }) };
@@ -31,6 +33,8 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const fitnessUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [REF] }) };
   const getGuardiansUc = { run: jest.fn().mockResolvedValue(over.getGuardians ?? { ok: true, data: { father: null, mother: null } }) };
   const upsertGuardiansUc = { run: jest.fn().mockResolvedValue(over.upsertGuardians ?? { ok: true, data: undefined }) };
+  const getBodyMeasurementUc = { run: jest.fn().mockResolvedValue((over as any).getBodyMeasurement ?? { ok: true, data: null }) };
+  const createBodyMeasurementUc = { run: jest.fn().mockResolvedValue((over as any).createBodyMeasurement ?? { ok: true, data: undefined }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -47,11 +51,13 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: LoadFitnessAssessmentsUseCase, useValue: fitnessUc },
     { provide: GetSwimmerGuardiansUseCase, useValue: getGuardiansUc },
     { provide: UpsertSwimmerGuardiansUseCase, useValue: upsertGuardiansUc },
+    { provide: GetLatestBodyMeasurementUseCase, useValue: getBodyMeasurementUc },
+    { provide: CreateBodyMeasurementUseCase, useValue: createBodyMeasurementUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },
   ] });
-  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, notify };
+  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, getBodyMeasurementUc, createBodyMeasurementUc, notify };
 }
 
 describe('SwimmerProfileViewModel', () => {
@@ -190,6 +196,50 @@ describe('SwimmerProfileViewModel', () => {
       expect(vm.canSaveGuardians()).toBe(false); // mother national id invalid
       vm.gMotherNationalId.set('27505050123456');
       expect(vm.canSaveGuardians()).toBe(true);
+    });
+  });
+
+  describe('physiological tab', () => {
+    const M = { id: 'b1', measuredAt: '2026-09-19', rightArmCm: 78.5, leftArmCm: 78.2, rightLegCm: 96.2, leftLegCm: 96.0, torsoCm: 52.8, bustDiameterCm: 94.0, waistDiameterCm: 76.5 };
+
+    it('setTab("physiological") lazy-loads the measurement once', async () => {
+      const { vm, getBodyMeasurementUc } = build({ getBodyMeasurement: { ok: true, data: M } } as any);
+      await vm.load('s1');
+      vm.setTab('physiological');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('physiological');
+      expect(vm.bodyMeasurement()?.rightArmCm).toBe(78.5);
+      expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(1);
+      vm.setTab('identityVitals');
+      vm.setTab('physiological');
+      await Promise.resolve();
+      expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(1); // not reloaded
+    });
+
+    it('canSaveBodyMeasurement requires all seven positive, in-range numbers', () => {
+      const { vm } = build();
+      vm.startEditBodyMeasurement();
+      expect(vm.canSaveBodyMeasurement()).toBe(false);
+      vm.bmRightArm.set('78.5'); vm.bmLeftArm.set('78.2'); vm.bmRightLeg.set('96.2'); vm.bmLeftLeg.set('96');
+      vm.bmTorso.set('52.8'); vm.bmBustDiameter.set('94'); vm.bmWaistDiameter.set('1000'); // out of range
+      expect(vm.canSaveBodyMeasurement()).toBe(false);
+      vm.bmWaistDiameter.set('76.5');
+      expect(vm.canSaveBodyMeasurement()).toBe(true);
+      vm.bmRightArm.set('0'); // not positive
+      expect(vm.canSaveBodyMeasurement()).toBe(false);
+    });
+
+    it('saveBodyMeasurement posts, toasts success and reloads', async () => {
+      const { vm, createBodyMeasurementUc, getBodyMeasurementUc, notify } = build({ getBodyMeasurement: { ok: true, data: M } } as any);
+      await vm.load('s1');
+      vm.setTab('physiological');
+      await Promise.resolve(); await Promise.resolve();
+      vm.startEditBodyMeasurement();
+      await vm.saveBodyMeasurement();
+      expect(createBodyMeasurementUc.run).toHaveBeenCalled();
+      expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.bodyMeasurementSaved');
+      expect(vm.editingBodyMeasurement()).toBe(false);
+      expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(2); // initial tab open + reload after save
     });
   });
 });

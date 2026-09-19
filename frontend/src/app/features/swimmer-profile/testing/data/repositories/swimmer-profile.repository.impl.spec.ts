@@ -66,4 +66,17 @@ describe('SwimmerProfileRepositoryImpl', () => {
     await repo.upsertGuardians('sw1', rq);
     expect(http.put).toHaveBeenCalledWith('/api/swimmers/sw1/guardians', { body: rq });
   });
+
+  it('getBodyMeasurement GETs the latest endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ successStatus: true, data: { latest: null } });
+    await repo.getBodyMeasurement('sw1');
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/sw1/body-measurements/latest');
+  });
+
+  it('createBodyMeasurement POSTs to the collection endpoint with the body', async () => {
+    (http.post as jest.Mock).mockResolvedValue({ successStatus: true, data: null });
+    const rq = { rightArmCm: 78.5, leftArmCm: 78.2, rightLegCm: 96.2, leftLegCm: 96.0, torsoCm: 52.8, bustDiameterCm: 94.0, waistDiameterCm: 76.5 };
+    await repo.createBodyMeasurement('sw1', rq);
+    expect(http.post).toHaveBeenCalledWith('/api/swimmers/sw1/body-measurements', { body: rq });
+  });
 });

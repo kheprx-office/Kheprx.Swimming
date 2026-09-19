@@ -19,6 +19,7 @@ public sealed class IdentityDbContext : DbContext
     public DbSet<MedicalExam> MedicalExams => Set<MedicalExam>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
     public DbSet<GuardianRelation> GuardianRelations => Set<GuardianRelation>();
+    public DbSet<BodyMeasurement> BodyMeasurements => Set<BodyMeasurement>();
     public DbSet<ObservationCategory> ObservationCategories => Set<ObservationCategory>();
     public DbSet<Club> Clubs => Set<Club>();
     public DbSet<SwimmerSpecialization> SwimmerSpecializations => Set<SwimmerSpecialization>();

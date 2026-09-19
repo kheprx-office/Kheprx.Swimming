@@ -297,4 +297,63 @@ public class SwimmersControllerTests
         var nf = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
     }
+
+    [Fact]
+    public async Task GetLatestBodyMeasurement_returns_200_with_latest()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        var dto = new SwimmerBodyMeasurementDto(
+            new BodyMeasurementDto(Guid.NewGuid(), new DateOnly(2026, 9, 19), 78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m));
+        svc.Setup(s => s.GetBodyMeasurementAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(dto);
+
+        var result = await new SwimmersController(svc.Object).GetLatestBodyMeasurement(id, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<SwimmerBodyMeasurementDto>>(ok.Value);
+        Assert.True(body.SuccessStatus);
+        Assert.Equal(78.5m, body.Data!.Latest!.RightArmCm);
+    }
+
+    [Fact]
+    public async Task GetLatestBodyMeasurement_returns_404_when_service_returns_null()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        svc.Setup(s => s.GetBodyMeasurementAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((SwimmerBodyMeasurementDto?)null);
+
+        var result = await new SwimmersController(svc.Object).GetLatestBodyMeasurement(id, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateBodyMeasurement_returns_200_when_saved()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        svc.Setup(s => s.AddBodyMeasurementAsync(id, It.IsAny<CreateBodyMeasurementRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var req = new CreateBodyMeasurementRequest(78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m);
+
+        var result = await new SwimmersController(svc.Object).CreateBodyMeasurement(id, req, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<object>>(ok.Value);
+        Assert.True(body.SuccessStatus);
+    }
+
+    [Fact]
+    public async Task CreateBodyMeasurement_returns_404_when_service_returns_false()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        svc.Setup(s => s.AddBodyMeasurementAsync(id, It.IsAny<CreateBodyMeasurementRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        var req = new CreateBodyMeasurementRequest(78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m);
+
+        var result = await new SwimmersController(svc.Object).CreateBodyMeasurement(id, req, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
 }

@@ -146,6 +146,19 @@ internal sealed class SwimmerProfileRepository : ISwimmerProfileRepository
     public Task AddGuardianAsync(Guardian guardian, CancellationToken ct = default)
         => _db.Guardians.AddAsync(guardian, ct).AsTask();
 
+    public Task<BodyMeasurementRow?> GetLatestBodyMeasurementAsync(Guid swimmerId, CancellationToken ct = default)
+        => _db.BodyMeasurements.AsNoTracking()
+              .Where(m => m.SwimmerId == swimmerId)
+              .OrderByDescending(m => m.MeasuredAt).ThenByDescending(m => m.Id)
+              .Select(m => new BodyMeasurementRow(
+                  m.Id, m.MeasuredAt,
+                  m.RightArmCm, m.LeftArmCm, m.RightLegCm, m.LeftLegCm,
+                  m.TorsoCm, m.BustDiameterCm, m.WaistDiameterCm))
+              .FirstOrDefaultAsync(ct);
+
+    public Task AddBodyMeasurementAsync(BodyMeasurement measurement, CancellationToken ct = default)
+        => _db.BodyMeasurements.AddAsync(measurement, ct).AsTask();
+
     // exam LEFT-joined to blood_type, INNER-joined to fitness_assessment ×3
     private IQueryable<ExamJoin> ExamRows() =>
         from e in _db.MedicalExams.AsNoTracking()

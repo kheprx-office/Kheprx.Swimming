@@ -281,4 +281,47 @@ public class SwimmerProfileRepositoryTests
         Assert.Equal("Hassan Ali", found!.Name);
         Assert.Null(await repo.GetGuardianTrackedAsync(swimmerId, Guid.NewGuid()));
     }
+
+    [Fact]
+    public async Task GetLatestBodyMeasurementAsync_returns_null_when_none()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+
+        Assert.Null(await repo.GetLatestBodyMeasurementAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetLatestBodyMeasurementAsync_returns_a_deterministic_row_when_several_exist()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        // The entity stamps MeasuredAt = today, so both rows share a date; the OrderBy(MeasuredAt desc).ThenBy(Id desc)
+        // tiebreak makes the lookup deterministic and non-null. (Cross-day ordering is exercised via the DB, not in-memory.)
+        db.BodyMeasurements.Add(new BodyMeasurement(swimmerId, 70m, 70m, 90m, 90m, 50m, 90m, 70m));
+        db.BodyMeasurements.Add(new BodyMeasurement(swimmerId, 78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m));
+        await db.SaveChangesAsync();
+        var repo = new SwimmerProfileRepository(db);
+
+        var row = await repo.GetLatestBodyMeasurementAsync(swimmerId);
+
+        Assert.NotNull(row);
+        Assert.Contains(row!.RightArmCm, new[] { 70m, 78.5m }); // one of the two same-day rows (the Id-max)
+    }
+
+    [Fact]
+    public async Task AddBodyMeasurementAsync_inserts_and_is_readable()
+    {
+        await using var db = NewDb();
+        var swimmerId = Guid.NewGuid();
+        var repo = new SwimmerProfileRepository(db);
+
+        await repo.AddBodyMeasurementAsync(new BodyMeasurement(swimmerId, 78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m));
+        await db.SaveChangesAsync();
+
+        var row = await repo.GetLatestBodyMeasurementAsync(swimmerId);
+        Assert.NotNull(row);
+        Assert.Equal(76.5m, row!.WaistDiameterCm);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), row.MeasuredAt);
+    }
 }

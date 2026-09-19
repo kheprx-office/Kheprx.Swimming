@@ -3,6 +3,7 @@ import { SwimmerProfileItemDtoRs, MedicalExamListDtoRs, DeleteExamItemDtoRs } fr
 import { UpdateIdentityDtoRq, UpdateIdentityItemDtoRs } from '@features/swimmer-profile/data/dto/update-identity.dto';
 import { CreateMedicalExamDtoRq, CreatedVitalsItemDtoRs } from '@features/swimmer-profile/data/dto/create-medical-exam.dto';
 import { GuardiansItemDtoRs, UpsertGuardiansDtoRq, UpsertGuardiansItemDtoRs } from '@features/swimmer-profile/data/dto/guardians.dto';
+import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasurementItemDtoRs } from '@features/swimmer-profile/data/dto/body-measurement.dto';
 
 export interface ISwimmerProfileRepository {
   getProfile(id: string): Promise<SwimmerProfileItemDtoRs>;
@@ -13,6 +14,8 @@ export interface ISwimmerProfileRepository {
   deleteExam(id: string, examId: string): Promise<DeleteExamItemDtoRs>;
   getGuardians(id: string): Promise<GuardiansItemDtoRs>;
   upsertGuardians(id: string, rq: UpsertGuardiansDtoRq): Promise<UpsertGuardiansItemDtoRs>;
+  getBodyMeasurement(id: string): Promise<BodyMeasurementItemDtoRs>;
+  createBodyMeasurement(id: string, rq: CreateBodyMeasurementDtoRq): Promise<CreateBodyMeasurementItemDtoRs>;
 }
 
 export const SWIMMER_PROFILE_REPOSITORY = new InjectionToken<ISwimmerProfileRepository>('SWIMMER_PROFILE_REPOSITORY');

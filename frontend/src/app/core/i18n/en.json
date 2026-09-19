@@ -46,7 +46,7 @@
       "championships": "Championships",
       "feedback": "Feedback"
     },
-    "sections": { "identity": "Identity", "vitals": "Vitals", "guardian": "Guardian Details" },
+    "sections": { "identity": "Identity", "vitals": "Vitals", "guardian": "Guardian Details", "physiological": "Body Measurements" },
     "guardian": {
       "fatherInfo": "Father Info",
       "motherInfo": "Mother Info",
@@ -54,6 +54,17 @@
       "nationalId": "National ID",
       "phone": "Phone",
       "noRecord": "No guardian on record yet."
+    },
+    "physiological": {
+      "rightArm": "Right Arm",
+      "leftArm": "Left Arm",
+      "leftLeg": "Left Leg",
+      "rightLeg": "Right Leg",
+      "torsoLength": "Torso Length",
+      "bustDiameter": "Bust Diameter",
+      "waistDiameter": "Waist Diameter",
+      "cm": "cm",
+      "noRecord": "No measurements recorded yet."
     },
     "fields": {
       "fullName": "Full Name", "nameEn": "Full Name (EN)", "nameAr": "Full Name (AR)",
@@ -76,7 +87,8 @@
       "examDeleted": "Exam deleted",
       "saveFailed": "Couldn't save. Please try again.",
       "deleteFailed": "Couldn't delete. Please try again.",
-      "guardiansSaved": "Guardian details saved"
+      "guardiansSaved": "Guardian details saved",
+      "bodyMeasurementSaved": "Body measurements saved"
     }
   },
   "shell": {
