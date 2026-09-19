@@ -233,4 +233,68 @@ public class SwimmersControllerTests
         var nf = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
     }
+
+    [Fact]
+    public async Task GetGuardians_returns_200_with_guardians()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        var dto = new SwimmerGuardiansDto(
+            new GuardianDto(Guid.NewGuid(), "father", "Hassan Ali", "27001010123456", "+201009876543"),
+            new GuardianDto(Guid.NewGuid(), "mother", "Fatima Ibrahim", "27505050123456", "+201005554444"));
+        svc.Setup(s => s.GetGuardiansAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(dto);
+
+        var result = await new SwimmersController(svc.Object).GetGuardians(id, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<SwimmerGuardiansDto>>(ok.Value);
+        Assert.True(body.SuccessStatus);
+        Assert.Equal("Hassan Ali", body.Data!.Father!.Name);
+    }
+
+    [Fact]
+    public async Task GetGuardians_returns_404_when_service_returns_null()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        svc.Setup(s => s.GetGuardiansAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((SwimmerGuardiansDto?)null);
+
+        var result = await new SwimmersController(svc.Object).GetGuardians(id, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpsertGuardians_returns_200_when_saved()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        svc.Setup(s => s.UpsertGuardiansAsync(id, It.IsAny<UpsertGuardiansRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var req = new UpsertGuardiansRequest(
+            new GuardianInputDto("Hassan Ali", "27001010123456", "+201009876543"),
+            new GuardianInputDto("Fatima Ibrahim", "27505050123456", "+201005554444"));
+
+        var result = await new SwimmersController(svc.Object).UpsertGuardians(id, req, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<object>>(ok.Value);
+        Assert.True(body.SuccessStatus);
+    }
+
+    [Fact]
+    public async Task UpsertGuardians_returns_404_when_service_returns_false()
+    {
+        var svc = new Mock<ISwimmerService>();
+        var id = Guid.NewGuid();
+        svc.Setup(s => s.UpsertGuardiansAsync(id, It.IsAny<UpsertGuardiansRequest>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        var req = new UpsertGuardiansRequest(
+            new GuardianInputDto("Hassan Ali", "27001010123456", "+201009876543"),
+            new GuardianInputDto("Fatima Ibrahim", "27505050123456", "+201005554444"));
+
+        var result = await new SwimmersController(svc.Object).UpsertGuardians(id, req, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
 }

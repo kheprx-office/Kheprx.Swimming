@@ -24,126 +24,195 @@
       </div>
     </div>
 
-    <!-- Tab strip: only Identity & Vitals is enabled -->
+    <!-- Tab strip: Identity & Vitals and Guardian are enabled -->
     <div class="mb-6 flex flex-wrap gap-2 border-b border-border pb-2">
       @for (t of tabs; track t.key) {
-        <span class="rounded-md px-3 py-1.5 text-sm"
-              [class.bg-primary]="t.key === 'identityVitals'"
-              [class.text-white]="t.key === 'identityVitals'"
-              [class.text-text-secondary]="t.key !== 'identityVitals'"
-              [class.opacity-50]="t.key !== 'identityVitals'"
-              [attr.aria-disabled]="t.key !== 'identityVitals'">
+        <button type="button"
+                class="rounded-md px-3 py-1.5 text-sm"
+                [class.bg-primary]="t.key === vm.activeTab()"
+                [class.text-white]="t.key === vm.activeTab()"
+                [class.text-text-secondary]="t.key !== vm.activeTab()"
+                [class.opacity-50]="!isEnabled(t.key)"
+                [class.cursor-not-allowed]="!isEnabled(t.key)"
+                [disabled]="!isEnabled(t.key)"
+                [attr.aria-disabled]="!isEnabled(t.key)"
+                (click)="isEnabled(t.key) && vm.setTab($any(t.key))">
           {{ t.labelKey | translate }}
-        </span>
+        </button>
       }
     </div>
 
-    <!-- Identity section -->
-    <section class="mb-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
-      <div class="mb-4 flex items-center justify-between border-b border-border pb-2">
-        <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.sections.identity' | translate }}</h2>
-        @if (vm.canEdit() && !vm.editingIdentity()) {
-          <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditIdentity()">{{ 'swimmerProfile.edit' | translate }}</button>
-        }
-      </div>
-
-      @if (!vm.editingIdentity()) {
-        <dl class="grid grid-cols-1 gap-y-5 gap-x-10 md:grid-cols-3">
-          <div>
-            <dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.fullName' | translate }}</dt>
-            <dd class="text-ink">{{ displayName() }}</dd>
-          </div>
-          <div>
-            <dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.dob' | translate }}</dt>
-            <dd class="text-ink">{{ p.identity.dob ?? '—' }}</dd>
-          </div>
-          <div>
-            <dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.phone' | translate }}</dt>
-            <dd class="text-ink">{{ p.identity.phone ?? '—' }}</dd>
-          </div>
-        </dl>
-      } @else {
-        <form class="grid grid-cols-1 gap-5 md:grid-cols-2" (submit)="$event.preventDefault(); vm.saveIdentity()">
-          <app-text-field [label]="'swimmerProfile.fields.nameEn' | translate" [value]="vm.idNameEn()" (valueChange)="vm.idNameEn.set($event)"></app-text-field>
-          <app-text-field [label]="'swimmerProfile.fields.nameAr' | translate" [value]="vm.idNameAr()" (valueChange)="vm.idNameAr.set($event)"></app-text-field>
-          <label class="flex flex-col gap-1">
-            <span class="text-sm font-bold text-ink">{{ 'swimmerProfile.fields.dob' | translate }}</span>
-            <input type="date" class="h-10 rounded-md border border-input bg-card px-3 text-sm text-ink" [value]="vm.idDob()" (change)="vm.idDob.set($any($event.target).value)" />
-          </label>
-          <app-text-field [label]="'swimmerProfile.fields.phone' | translate" [value]="vm.idPhone()" (valueChange)="vm.idPhone.set($event)"></app-text-field>
-          <div class="flex items-end gap-2 md:col-span-2">
-            <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveIdentity() || vm.savingIdentity()">{{ 'common.save' | translate }}</button>
-            <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditIdentity()">{{ 'common.cancel' | translate }}</button>
-          </div>
-        </form>
-      }
-    </section>
-
-    <!-- Vitals section -->
-    <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
-        <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.sections.vitals' | translate }}</h2>
-        <div class="flex flex-wrap items-center gap-3">
-          @if (vm.exams().length > 0 && !vm.editingVitals()) {
-            <label class="flex items-center gap-2 text-sm text-text-secondary">
-              <span>{{ 'swimmerProfile.selectExam' | translate }}</span>
-              <select class="h-9 rounded-md border border-input bg-card px-2 text-sm text-ink"
-                      [value]="vm.selectedExamId()" (change)="vm.selectedExamId.set($any($event.target).value)">
-                @for (e of vm.exams(); track e.id; let i = $index) {
-                  <option [value]="e.id">{{ e.examDate }}{{ i === 0 ? ' (' + ('swimmerProfile.latest' | translate) + ')' : '' }}</option>
-                }
-              </select>
-            </label>
-          }
-          @if (vm.canEdit() && !vm.editingVitals()) {
-            @if (vm.confirmingDelete()) {
-              <span class="text-sm text-danger">{{ 'swimmerProfile.confirmDelete' | translate }}</span>
-              <button type="button" class="text-sm font-medium text-danger disabled:opacity-50" [disabled]="vm.deleting()" (click)="vm.confirmDeleteExam()">{{ 'swimmerProfile.confirmYes' | translate }}</button>
-              <button type="button" class="text-sm text-text-secondary" (click)="vm.cancelDelete()">{{ 'swimmerProfile.confirmNo' | translate }}</button>
-            } @else {
-              <button type="button" class="text-sm font-medium text-primary" (click)="vm.startNewExam()">{{ 'swimmerProfile.recordExam' | translate }}</button>
-              @if (vm.selectedExam()) {
-                <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditExam()">{{ 'swimmerProfile.editExam' | translate }}</button>
-                <button type="button" class="text-sm font-medium text-danger" (click)="vm.askDeleteExam()">{{ 'swimmerProfile.delete' | translate }}</button>
-              }
-            }
+    @if (vm.activeTab() === 'identityVitals') {
+      <!-- Identity section -->
+      <section class="mb-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 flex items-center justify-between border-b border-border pb-2">
+          <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.sections.identity' | translate }}</h2>
+          @if (vm.canEdit() && !vm.editingIdentity()) {
+            <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditIdentity()">{{ 'swimmerProfile.edit' | translate }}</button>
           }
         </div>
-      </div>
 
-      @if (vm.editingVitals()) {
-        <form class="grid grid-cols-1 gap-5 md:grid-cols-3" (submit)="$event.preventDefault(); vm.saveVitals()">
-          <p class="md:col-span-3 text-sm font-semibold text-ink">{{ (vm.editingExamId() ? 'swimmerProfile.editExam' : 'swimmerProfile.recordExam') | translate }}</p>
-          <label class="flex flex-col gap-1">
-            <span class="text-sm font-bold text-ink">{{ 'swimmerProfile.fields.examDate' | translate }}</span>
-            <input type="date" class="h-10 rounded-md border border-input bg-card px-3 text-sm text-ink" [value]="vm.vExamDate()" (change)="vm.vExamDate.set($any($event.target).value)" />
-          </label>
-          <app-select-field [label]="'swimmerProfile.fields.bloodType' | translate" [placeholder]="'swimmerProfile.placeholders.optional' | translate" [options]="vm.bloodTypes()" [value]="vm.vBloodTypeId()" (valueChange)="vm.vBloodTypeId.set($event)"></app-select-field>
-          <app-text-field [label]="'swimmerProfile.fields.hemoglobin' | translate" [value]="vm.vHemoglobin()" (valueChange)="vm.vHemoglobin.set($event)"></app-text-field>
-          <app-text-field [label]="'swimmerProfile.fields.height' | translate" [value]="vm.vHeightCm()" (valueChange)="vm.vHeightCm.set($event)"></app-text-field>
-          <app-text-field [label]="'swimmerProfile.fields.weight' | translate" [value]="vm.vWeightKg()" (valueChange)="vm.vWeightKg.set($event)"></app-text-field>
-          <app-select-field [label]="'swimmerProfile.fields.internalMed' | translate" [placeholder]="'swimmerProfile.placeholders.assessment' | translate" [options]="vm.fitnessAssessments()" [value]="vm.vInternalMedId()" (valueChange)="vm.vInternalMedId.set($event)"></app-select-field>
-          <app-select-field [label]="'swimmerProfile.fields.heart' | translate" [placeholder]="'swimmerProfile.placeholders.assessment' | translate" [options]="vm.fitnessAssessments()" [value]="vm.vHeartAssessId()" (valueChange)="vm.vHeartAssessId.set($event)"></app-select-field>
-          <app-select-field [label]="'swimmerProfile.fields.spine' | translate" [placeholder]="'swimmerProfile.placeholders.assessment' | translate" [options]="vm.fitnessAssessments()" [value]="vm.vSpineAssessId()" (valueChange)="vm.vSpineAssessId.set($event)"></app-select-field>
-          <div class="flex items-end gap-2 md:col-span-3">
-            <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveVitals() || vm.savingVitals()">{{ 'common.save' | translate }}</button>
-            <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditVitals()">{{ 'common.cancel' | translate }}</button>
+        @if (!vm.editingIdentity()) {
+          <dl class="grid grid-cols-1 gap-y-5 gap-x-10 md:grid-cols-3">
+            <div>
+              <dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.fullName' | translate }}</dt>
+              <dd class="text-ink">{{ displayName() }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.dob' | translate }}</dt>
+              <dd class="text-ink">{{ p.identity.dob ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.phone' | translate }}</dt>
+              <dd class="text-ink">{{ p.identity.phone ?? '—' }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <form class="grid grid-cols-1 gap-5 md:grid-cols-2" (submit)="$event.preventDefault(); vm.saveIdentity()">
+            <app-text-field [label]="'swimmerProfile.fields.nameEn' | translate" [value]="vm.idNameEn()" (valueChange)="vm.idNameEn.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.fields.nameAr' | translate" [value]="vm.idNameAr()" (valueChange)="vm.idNameAr.set($event)"></app-text-field>
+            <label class="flex flex-col gap-1">
+              <span class="text-sm font-bold text-ink">{{ 'swimmerProfile.fields.dob' | translate }}</span>
+              <input type="date" class="h-10 rounded-md border border-input bg-card px-3 text-sm text-ink" [value]="vm.idDob()" (change)="vm.idDob.set($any($event.target).value)" />
+            </label>
+            <app-text-field [label]="'swimmerProfile.fields.phone' | translate" [value]="vm.idPhone()" (valueChange)="vm.idPhone.set($event)"></app-text-field>
+            <div class="flex items-end gap-2 md:col-span-2">
+              <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveIdentity() || vm.savingIdentity()">{{ 'common.save' | translate }}</button>
+              <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditIdentity()">{{ 'common.cancel' | translate }}</button>
+            </div>
+          </form>
+        }
+      </section>
+
+      <!-- Vitals section -->
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
+          <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.sections.vitals' | translate }}</h2>
+          <div class="flex flex-wrap items-center gap-3">
+            @if (vm.exams().length > 0 && !vm.editingVitals()) {
+              <label class="flex items-center gap-2 text-sm text-text-secondary">
+                <span>{{ 'swimmerProfile.selectExam' | translate }}</span>
+                <select class="h-9 rounded-md border border-input bg-card px-2 text-sm text-ink"
+                        [value]="vm.selectedExamId()" (change)="vm.selectedExamId.set($any($event.target).value)">
+                  @for (e of vm.exams(); track e.id; let i = $index) {
+                    <option [value]="e.id">{{ e.examDate }}{{ i === 0 ? ' (' + ('swimmerProfile.latest' | translate) + ')' : '' }}</option>
+                  }
+                </select>
+              </label>
+            }
+            @if (vm.canEdit() && !vm.editingVitals()) {
+              @if (vm.confirmingDelete()) {
+                <span class="text-sm text-danger">{{ 'swimmerProfile.confirmDelete' | translate }}</span>
+                <button type="button" class="text-sm font-medium text-danger disabled:opacity-50" [disabled]="vm.deleting()" (click)="vm.confirmDeleteExam()">{{ 'swimmerProfile.confirmYes' | translate }}</button>
+                <button type="button" class="text-sm text-text-secondary" (click)="vm.cancelDelete()">{{ 'swimmerProfile.confirmNo' | translate }}</button>
+              } @else {
+                <button type="button" class="text-sm font-medium text-primary" (click)="vm.startNewExam()">{{ 'swimmerProfile.recordExam' | translate }}</button>
+                @if (vm.selectedExam()) {
+                  <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditExam()">{{ 'swimmerProfile.editExam' | translate }}</button>
+                  <button type="button" class="text-sm font-medium text-danger" (click)="vm.askDeleteExam()">{{ 'swimmerProfile.delete' | translate }}</button>
+                }
+              }
+            }
           </div>
-        </form>
-      } @else if (vm.selectedExam(); as v) {
-        <dl class="grid grid-cols-1 gap-y-5 gap-x-10 md:grid-cols-3">
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.bloodType' | translate }}</dt><dd class="text-ink">{{ refLabel(v.bloodType) }}</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.height' | translate }}</dt><dd class="text-ink">{{ v.heightCm }} cm</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.weight' | translate }}</dt><dd class="text-ink">{{ v.weightKg }} kg</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.hemoglobin' | translate }}</dt><dd class="text-ink">{{ v.hemoglobin }} g/dL</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.examDate' | translate }}</dt><dd class="text-ink">{{ v.examDate }}</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.internalMed' | translate }}</dt><dd class="text-ink">{{ refLabel(v.internalMed) }}</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.heart' | translate }}</dt><dd class="text-ink">{{ refLabel(v.heartAssess) }}</dd></div>
-          <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.spine' | translate }}</dt><dd class="text-ink">{{ refLabel(v.spineAssess) }}</dd></div>
-        </dl>
-      } @else {
-        <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.noExam' | translate }}</p>
-      }
-    </section>
+        </div>
+
+        @if (vm.editingVitals()) {
+          <form class="grid grid-cols-1 gap-5 md:grid-cols-3" (submit)="$event.preventDefault(); vm.saveVitals()">
+            <p class="md:col-span-3 text-sm font-semibold text-ink">{{ (vm.editingExamId() ? 'swimmerProfile.editExam' : 'swimmerProfile.recordExam') | translate }}</p>
+            <label class="flex flex-col gap-1">
+              <span class="text-sm font-bold text-ink">{{ 'swimmerProfile.fields.examDate' | translate }}</span>
+              <input type="date" class="h-10 rounded-md border border-input bg-card px-3 text-sm text-ink" [value]="vm.vExamDate()" (change)="vm.vExamDate.set($any($event.target).value)" />
+            </label>
+            <app-select-field [label]="'swimmerProfile.fields.bloodType' | translate" [placeholder]="'swimmerProfile.placeholders.optional' | translate" [options]="vm.bloodTypes()" [value]="vm.vBloodTypeId()" (valueChange)="vm.vBloodTypeId.set($event)"></app-select-field>
+            <app-text-field [label]="'swimmerProfile.fields.hemoglobin' | translate" [value]="vm.vHemoglobin()" (valueChange)="vm.vHemoglobin.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.fields.height' | translate" [value]="vm.vHeightCm()" (valueChange)="vm.vHeightCm.set($event)"></app-text-field>
+            <app-text-field [label]="'swimmerProfile.fields.weight' | translate" [value]="vm.vWeightKg()" (valueChange)="vm.vWeightKg.set($event)"></app-text-field>
+            <app-select-field [label]="'swimmerProfile.fields.internalMed' | translate" [placeholder]="'swimmerProfile.placeholders.assessment' | translate" [options]="vm.fitnessAssessments()" [value]="vm.vInternalMedId()" (valueChange)="vm.vInternalMedId.set($event)"></app-select-field>
+            <app-select-field [label]="'swimmerProfile.fields.heart' | translate" [placeholder]="'swimmerProfile.placeholders.assessment' | translate" [options]="vm.fitnessAssessments()" [value]="vm.vHeartAssessId()" (valueChange)="vm.vHeartAssessId.set($event)"></app-select-field>
+            <app-select-field [label]="'swimmerProfile.fields.spine' | translate" [placeholder]="'swimmerProfile.placeholders.assessment' | translate" [options]="vm.fitnessAssessments()" [value]="vm.vSpineAssessId()" (valueChange)="vm.vSpineAssessId.set($event)"></app-select-field>
+            <div class="flex items-end gap-2 md:col-span-3">
+              <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveVitals() || vm.savingVitals()">{{ 'common.save' | translate }}</button>
+              <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditVitals()">{{ 'common.cancel' | translate }}</button>
+            </div>
+          </form>
+        } @else if (vm.selectedExam(); as v) {
+          <dl class="grid grid-cols-1 gap-y-5 gap-x-10 md:grid-cols-3">
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.bloodType' | translate }}</dt><dd class="text-ink">{{ refLabel(v.bloodType) }}</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.height' | translate }}</dt><dd class="text-ink">{{ v.heightCm }} cm</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.weight' | translate }}</dt><dd class="text-ink">{{ v.weightKg }} kg</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.hemoglobin' | translate }}</dt><dd class="text-ink">{{ v.hemoglobin }} g/dL</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.examDate' | translate }}</dt><dd class="text-ink">{{ v.examDate }}</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.internalMed' | translate }}</dt><dd class="text-ink">{{ refLabel(v.internalMed) }}</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.heart' | translate }}</dt><dd class="text-ink">{{ refLabel(v.heartAssess) }}</dd></div>
+            <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.fields.spine' | translate }}</dt><dd class="text-ink">{{ refLabel(v.spineAssess) }}</dd></div>
+          </dl>
+        } @else {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.noExam' | translate }}</p>
+        }
+      </section>
+    }
+
+    @if (vm.activeTab() === 'guardian') {
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 flex items-center justify-between border-b border-border pb-2">
+          <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.sections.guardian' | translate }}</h2>
+          @if (vm.canEdit() && !vm.editingGuardians()) {
+            <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditGuardians()">{{ 'swimmerProfile.edit' | translate }}</button>
+          }
+        </div>
+
+        @if (vm.loadingGuardians()) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.loading' | translate }}</p>
+        } @else if (vm.editingGuardians()) {
+          <form class="grid grid-cols-1 gap-8 md:grid-cols-2" (submit)="$event.preventDefault(); vm.saveGuardians()">
+            <div class="space-y-4 rounded-xl border border-border p-4">
+              <h4 class="border-b border-border pb-2 text-sm font-semibold text-ink">{{ 'swimmerProfile.guardian.fatherInfo' | translate }}</h4>
+              <app-text-field [label]="'swimmerProfile.guardian.fullName' | translate" [value]="vm.gFatherName()" (valueChange)="vm.gFatherName.set($event)"></app-text-field>
+              <app-text-field [label]="'swimmerProfile.guardian.nationalId' | translate" [value]="vm.gFatherNationalId()" (valueChange)="vm.gFatherNationalId.set($event)"></app-text-field>
+              <app-text-field [label]="'swimmerProfile.guardian.phone' | translate" [value]="vm.gFatherPhone()" (valueChange)="vm.gFatherPhone.set($event)"></app-text-field>
+            </div>
+            <div class="space-y-4 rounded-xl border border-border p-4">
+              <h4 class="border-b border-border pb-2 text-sm font-semibold text-ink">{{ 'swimmerProfile.guardian.motherInfo' | translate }}</h4>
+              <app-text-field [label]="'swimmerProfile.guardian.fullName' | translate" [value]="vm.gMotherName()" (valueChange)="vm.gMotherName.set($event)"></app-text-field>
+              <app-text-field [label]="'swimmerProfile.guardian.nationalId' | translate" [value]="vm.gMotherNationalId()" (valueChange)="vm.gMotherNationalId.set($event)"></app-text-field>
+              <app-text-field [label]="'swimmerProfile.guardian.phone' | translate" [value]="vm.gMotherPhone()" (valueChange)="vm.gMotherPhone.set($event)"></app-text-field>
+            </div>
+            <div class="flex items-end gap-2 md:col-span-2">
+              <button type="submit" class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveGuardians() || vm.savingGuardians()">{{ 'common.save' | translate }}</button>
+              <button type="button" class="rounded-md px-5 py-2.5 text-sm text-text-secondary" (click)="vm.cancelEditGuardians()">{{ 'common.cancel' | translate }}</button>
+            </div>
+          </form>
+        } @else {
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <!-- Father slot -->
+            <div class="space-y-4 rounded-xl border border-border p-4">
+              <h4 class="border-b border-border pb-2 text-sm font-semibold text-ink">{{ 'swimmerProfile.guardian.fatherInfo' | translate }}</h4>
+              @if (vm.guardians()?.father; as g) {
+                <dl class="space-y-3">
+                  <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.guardian.fullName' | translate }}</dt><dd class="text-ink">{{ g.name }}</dd></div>
+                  <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.guardian.nationalId' | translate }}</dt><dd class="text-ink">{{ g.nationalId }}</dd></div>
+                  <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.guardian.phone' | translate }}</dt><dd class="text-ink">{{ g.phone }}</dd></div>
+                </dl>
+              } @else {
+                <p class="text-sm text-text-secondary">{{ 'swimmerProfile.guardian.noRecord' | translate }}</p>
+              }
+            </div>
+            <!-- Mother slot -->
+            <div class="space-y-4 rounded-xl border border-border p-4">
+              <h4 class="border-b border-border pb-2 text-sm font-semibold text-ink">{{ 'swimmerProfile.guardian.motherInfo' | translate }}</h4>
+              @if (vm.guardians()?.mother; as g) {
+                <dl class="space-y-3">
+                  <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.guardian.fullName' | translate }}</dt><dd class="text-ink">{{ g.name }}</dd></div>
+                  <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.guardian.nationalId' | translate }}</dt><dd class="text-ink">{{ g.nationalId }}</dd></div>
+                  <div><dt class="text-sm font-bold text-text-secondary">{{ 'swimmerProfile.guardian.phone' | translate }}</dt><dd class="text-ink">{{ g.phone }}</dd></div>
+                </dl>
+              } @else {
+                <p class="text-sm text-text-secondary">{{ 'swimmerProfile.guardian.noRecord' | translate }}</p>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
   }
 </div>

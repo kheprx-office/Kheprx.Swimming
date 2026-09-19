@@ -127,6 +127,25 @@ internal sealed class SwimmerProfileRepository : ISwimmerProfileRepository
 
     public void RemoveExam(MedicalExam exam) => _db.MedicalExams.Remove(exam);
 
+    public async Task<IReadOnlyList<GuardianRow>> ListGuardiansAsync(Guid swimmerId, CancellationToken ct = default)
+        => await (from g in _db.Guardians.AsNoTracking()
+                  where g.SwimmerId == swimmerId
+                  join r in _db.GuardianRelations.AsNoTracking() on g.RelationId equals r.Id
+                  select new GuardianRow(g.Id, r.Code, g.Name, g.NationalId, g.Phone))
+                 .ToListAsync(ct);
+
+    public Task<Guid?> GetGuardianRelationIdByCodeAsync(string code, CancellationToken ct = default)
+        => _db.GuardianRelations.AsNoTracking()
+              .Where(r => r.Code == code)
+              .Select(r => (Guid?)r.Id)
+              .FirstOrDefaultAsync(ct);
+
+    public Task<Guardian?> GetGuardianTrackedAsync(Guid swimmerId, Guid relationId, CancellationToken ct = default)
+        => _db.Guardians.FirstOrDefaultAsync(g => g.SwimmerId == swimmerId && g.RelationId == relationId, ct);
+
+    public Task AddGuardianAsync(Guardian guardian, CancellationToken ct = default)
+        => _db.Guardians.AddAsync(guardian, ct).AsTask();
+
     // exam LEFT-joined to blood_type, INNER-joined to fitness_assessment ×3
     private IQueryable<ExamJoin> ExamRows() =>
         from e in _db.MedicalExams.AsNoTracking()

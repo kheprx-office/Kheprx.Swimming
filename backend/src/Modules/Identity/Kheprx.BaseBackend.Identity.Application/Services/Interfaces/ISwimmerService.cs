@@ -13,4 +13,6 @@ public interface ISwimmerService
     Task<IReadOnlyList<SwimmerVitalsDto>?> ListExamsAsync(Guid swimmerId, CancellationToken ct = default);
     Task<SwimmerVitalsDto?> UpdateExamAsync(Guid swimmerId, Guid examId, CreateMedicalExamRequest request, CancellationToken ct = default);
     Task<bool> DeleteExamAsync(Guid swimmerId, Guid examId, CancellationToken ct = default);
+    Task<SwimmerGuardiansDto?> GetGuardiansAsync(Guid id, CancellationToken ct = default);
+    Task<bool> UpsertGuardiansAsync(Guid id, UpsertGuardiansRequest request, CancellationToken ct = default);
 }

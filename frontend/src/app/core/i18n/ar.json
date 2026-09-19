@@ -46,7 +46,15 @@
       "championships": "البطولات",
       "feedback": "التقييمات"
     },
-    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية" },
+    "sections": { "identity": "الهوية", "vitals": "المؤشرات الحيوية", "guardian": "بيانات ولي الأمر" },
+    "guardian": {
+      "fatherInfo": "بيانات الأب",
+      "motherInfo": "بيانات الأم",
+      "fullName": "الاسم الكامل",
+      "nationalId": "الرقم القومي",
+      "phone": "الهاتف",
+      "noRecord": "لا يوجد ولي أمر مسجل بعد."
+    },
     "fields": {
       "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
       "dob": "تاريخ الميلاد", "phone": "رقم الهاتف",
@@ -67,7 +75,8 @@
       "examUpdated": "تم تحديث الفحص",
       "examDeleted": "تم حذف الفحص",
       "saveFailed": "تعذّر الحفظ. حاول مرة أخرى.",
-      "deleteFailed": "تعذّر الحذف. حاول مرة أخرى."
+      "deleteFailed": "تعذّر الحذف. حاول مرة أخرى.",
+      "guardiansSaved": "تم حفظ بيانات ولي الأمر"
     }
   },
   "shell": {

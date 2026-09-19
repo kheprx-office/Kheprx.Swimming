@@ -232,4 +232,53 @@ public class SwimmerProfileRepositoryTests
 
         Assert.Equal(0, await db.MedicalExams.CountAsync());
     }
+
+    [Fact]
+    public async Task ListGuardiansAsync_returns_rows_joined_to_relation_code()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var swimmerId = Guid.NewGuid();
+        var father = new GuardianRelation("father", "Father", "الأب");
+        var mother = new GuardianRelation("mother", "Mother", "الأم");
+        db.GuardianRelations.AddRange(father, mother);
+        db.Guardians.Add(new Guardian(swimmerId, father.Id, "Hassan Ali", "27001010123456", "+201009876543"));
+        db.Guardians.Add(new Guardian(swimmerId, mother.Id, "Fatima Ibrahim", "27505050123456", "+201005554444"));
+        await db.SaveChangesAsync();
+
+        var rows = await repo.ListGuardiansAsync(swimmerId);
+
+        Assert.Equal(2, rows.Count);
+        Assert.Contains(rows, r => r.RelationCode == "father" && r.Name == "Hassan Ali" && r.NationalId == "27001010123456");
+        Assert.Contains(rows, r => r.RelationCode == "mother" && r.Name == "Fatima Ibrahim");
+    }
+
+    [Fact]
+    public async Task GetGuardianRelationIdByCodeAsync_resolves_seeded_code()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var father = new GuardianRelation("father", "Father", "الأب");
+        db.GuardianRelations.Add(father);
+        await db.SaveChangesAsync();
+
+        Assert.Equal(father.Id, await repo.GetGuardianRelationIdByCodeAsync("father"));
+        Assert.Null(await repo.GetGuardianRelationIdByCodeAsync("nonexistent"));
+    }
+
+    [Fact]
+    public async Task GetGuardianTrackedAsync_returns_existing_row_for_swimmer_and_relation()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var swimmerId = Guid.NewGuid();
+        var relationId = Guid.NewGuid();
+        db.Guardians.Add(new Guardian(swimmerId, relationId, "Hassan Ali", "27001010123456", "+201009876543"));
+        await db.SaveChangesAsync();
+
+        var found = await repo.GetGuardianTrackedAsync(swimmerId, relationId);
+        Assert.NotNull(found);
+        Assert.Equal("Hassan Ali", found!.Name);
+        Assert.Null(await repo.GetGuardianTrackedAsync(swimmerId, Guid.NewGuid()));
+    }
 }

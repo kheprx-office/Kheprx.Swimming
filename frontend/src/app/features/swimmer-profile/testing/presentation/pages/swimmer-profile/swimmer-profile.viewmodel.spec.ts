@@ -9,6 +9,8 @@ import { UpdateMedicalExamUseCase } from '@features/swimmer-profile/domain/useca
 import { DeleteMedicalExamUseCase } from '@features/swimmer-profile/domain/usecases/delete-medical-exam.use-case';
 import { LoadBloodTypesUseCase } from '@features/reference/domain/usecases/load-blood-types.use-case';
 import { LoadFitnessAssessmentsUseCase } from '@features/reference/domain/usecases/load-fitness-assessments.use-case';
+import { GetSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-guardians.use-case';
+import { UpsertSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/upsert-swimmer-guardians.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -18,7 +20,7 @@ const IDENTITY = { id: 's1', uid: 'SW-1', nameEn: 'Ahmed', nameAr: 'أحمد', d
 const VITALS = { id: 'e1', examDate: '2026-09-19', bloodType: null, hemoglobin: 14.8, heightCm: 182, weightKg: 74, internalMed: REF, heartAssess: REF, spineAssess: REF };
 const VITALS2 = { id: 'e2', examDate: '2024-01-01', bloodType: null, hemoglobin: 13, heightCm: 178, weightKg: 71, internalMed: REF, heartAssess: REF, spineAssess: REF };
 
-function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
+function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
   const getUc = { run: jest.fn().mockResolvedValue(over.profile ?? { ok: true, data: { identity: IDENTITY, vitals: VITALS } }) };
   const updateUc = { run: jest.fn().mockResolvedValue(over.update ?? { ok: true, data: undefined }) };
   const createUc = { run: jest.fn().mockResolvedValue(over.create ?? { ok: true, data: VITALS }) };
@@ -27,6 +29,8 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const deleteExamUc = { run: jest.fn().mockResolvedValue(over.deleteExam ?? { ok: true, data: undefined }) };
   const bloodUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
   const fitnessUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [REF] }) };
+  const getGuardiansUc = { run: jest.fn().mockResolvedValue(over.getGuardians ?? { ok: true, data: { father: null, mother: null } }) };
+  const upsertGuardiansUc = { run: jest.fn().mockResolvedValue(over.upsertGuardians ?? { ok: true, data: undefined }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -41,11 +45,13 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: DeleteMedicalExamUseCase, useValue: deleteExamUc },
     { provide: LoadBloodTypesUseCase, useValue: bloodUc },
     { provide: LoadFitnessAssessmentsUseCase, useValue: fitnessUc },
+    { provide: GetSwimmerGuardiansUseCase, useValue: getGuardiansUc },
+    { provide: UpsertSwimmerGuardiansUseCase, useValue: upsertGuardiansUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },
   ] });
-  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, notify };
+  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, notify };
 }
 
 describe('SwimmerProfileViewModel', () => {
@@ -139,5 +145,51 @@ describe('SwimmerProfileViewModel', () => {
     expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.examDeleted');
     expect(vm.confirmingDelete()).toBe(false);
     expect(listExamsUc.run).toHaveBeenCalledTimes(2); // initial load + after delete
+  });
+
+  describe('guardian tab', () => {
+    it('setTab("guardian") lazy-loads guardians once', async () => {
+      const { vm, getGuardiansUc } = build();
+      await vm.load('s1');
+      getGuardiansUc.run.mockResolvedValue({ ok: true, data: { father: null, mother: null } });
+      vm.setTab('guardian');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('guardian');
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(1);
+      vm.setTab('identityVitals');
+      vm.setTab('guardian');
+      await Promise.resolve();
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(1); // not reloaded
+    });
+
+    it('load() resets to Identity & Vitals and re-fetches guardians for a new swimmer', async () => {
+      const { vm, getGuardiansUc } = build();
+      await vm.load('s1');
+      vm.setTab('guardian');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('guardian');
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(1);
+
+      // Navigate to another swimmer (same persisted view-model instance).
+      await vm.load('s2');
+      expect(vm.activeTab()).toBe('identityVitals');       // Symptom B: default tab restored
+      expect(vm.guardians()).toBeNull();                   // stale data cleared
+
+      // Opening Guardian for the new swimmer must fetch again, not stay blocked by a stale flag.
+      vm.setTab('guardian');
+      await Promise.resolve(); await Promise.resolve();
+      expect(getGuardiansUc.run).toHaveBeenCalledTimes(2); // Symptom A: re-fetched for s2
+    });
+
+    it('canSaveGuardians requires all six fields and 14-digit national IDs', () => {
+      const { vm } = build();
+      vm.startEditGuardians();
+      expect(vm.canSaveGuardians()).toBe(false);
+      vm.gFatherName.set('Hassan'); vm.gFatherNationalId.set('27001010123456'); vm.gFatherPhone.set('+201009876543');
+      vm.gMotherName.set('Fatima'); vm.gMotherNationalId.set('123'); vm.gMotherPhone.set('+201005554444');
+      expect(vm.canSaveGuardians()).toBe(false); // mother national id invalid
+      vm.gMotherNationalId.set('27505050123456');
+      expect(vm.canSaveGuardians()).toBe(true);
+    });
   });
 });

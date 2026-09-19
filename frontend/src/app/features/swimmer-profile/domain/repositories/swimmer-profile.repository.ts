@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 import { SwimmerProfileItemDtoRs, MedicalExamListDtoRs, DeleteExamItemDtoRs } from '@features/swimmer-profile/data/dto/swimmer-profile.dto';
 import { UpdateIdentityDtoRq, UpdateIdentityItemDtoRs } from '@features/swimmer-profile/data/dto/update-identity.dto';
 import { CreateMedicalExamDtoRq, CreatedVitalsItemDtoRs } from '@features/swimmer-profile/data/dto/create-medical-exam.dto';
+import { GuardiansItemDtoRs, UpsertGuardiansDtoRq, UpsertGuardiansItemDtoRs } from '@features/swimmer-profile/data/dto/guardians.dto';
 
 export interface ISwimmerProfileRepository {
   getProfile(id: string): Promise<SwimmerProfileItemDtoRs>;
@@ -10,6 +11,8 @@ export interface ISwimmerProfileRepository {
   listExams(id: string): Promise<MedicalExamListDtoRs>;
   updateExam(id: string, examId: string, rq: CreateMedicalExamDtoRq): Promise<CreatedVitalsItemDtoRs>;
   deleteExam(id: string, examId: string): Promise<DeleteExamItemDtoRs>;
+  getGuardians(id: string): Promise<GuardiansItemDtoRs>;
+  upsertGuardians(id: string, rq: UpsertGuardiansDtoRq): Promise<UpsertGuardiansItemDtoRs>;
 }
 
 export const SWIMMER_PROFILE_REPOSITORY = new InjectionToken<ISwimmerProfileRepository>('SWIMMER_PROFILE_REPOSITORY');

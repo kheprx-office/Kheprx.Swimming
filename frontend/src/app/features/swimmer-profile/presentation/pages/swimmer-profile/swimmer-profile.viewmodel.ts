@@ -7,8 +7,11 @@ import { UpdateMedicalExamUseCase } from '@features/swimmer-profile/domain/useca
 import { DeleteMedicalExamUseCase } from '@features/swimmer-profile/domain/usecases/delete-medical-exam.use-case';
 import { LoadBloodTypesUseCase } from '@features/reference/domain/usecases/load-blood-types.use-case';
 import { LoadFitnessAssessmentsUseCase } from '@features/reference/domain/usecases/load-fitness-assessments.use-case';
+import { GetSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-guardians.use-case';
+import { UpsertSwimmerGuardiansUseCase } from '@features/swimmer-profile/domain/usecases/upsert-swimmer-guardians.use-case';
 import { LookupItem } from '@features/reference/domain/model/reference';
 import { SwimmerProfile, SwimmerVitals } from '@features/swimmer-profile/domain/model/swimmer-profile';
+import { SwimmerGuardians } from '@features/swimmer-profile/domain/model/swimmer-guardians';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -23,6 +26,8 @@ export class SwimmerProfileViewModel {
   private readonly deleteExamUc = inject(DeleteMedicalExamUseCase);
   private readonly loadBloodTypes = inject(LoadBloodTypesUseCase);
   private readonly loadFitness = inject(LoadFitnessAssessmentsUseCase);
+  private readonly getGuardiansUc = inject(GetSwimmerGuardiansUseCase);
+  private readonly upsertGuardiansUc = inject(UpsertSwimmerGuardiansUseCase);
   private readonly notify = inject(NotificationService);
   private readonly i18n = inject(TranslateService);
   private readonly session = inject(AuthSessionStore);
@@ -78,10 +83,37 @@ export class SwimmerProfileViewModel {
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
 
+  // Tab state — only the two built tabs are switchable.
+  readonly activeTab = signal<'identityVitals' | 'guardian'>('identityVitals');
+  private guardiansLoaded = false;
+
+  // Guardian state
+  readonly guardians = signal<SwimmerGuardians | null>(null);
+  readonly loadingGuardians = signal(false);
+  readonly editingGuardians = signal(false);
+  readonly savingGuardians = signal(false);
+  readonly gFatherName = signal(''); readonly gFatherNationalId = signal(''); readonly gFatherPhone = signal('');
+  readonly gMotherName = signal(''); readonly gMotherNationalId = signal(''); readonly gMotherPhone = signal('');
+
+  private static readonly NATIONAL_ID = /^\d{14}$/;
+  readonly canSaveGuardians = computed(() => {
+    const slotOk = (name: string, nid: string, phone: string) =>
+      name.trim().length > 0 && SwimmerProfileViewModel.NATIONAL_ID.test(nid.trim()) && phone.trim().length > 0;
+    return slotOk(this.gFatherName(), this.gFatherNationalId(), this.gFatherPhone())
+        && slotOk(this.gMotherName(), this.gMotherNationalId(), this.gMotherPhone());
+  });
+
   private swimmerId = '';
 
   async load(id: string): Promise<void> {
     this.swimmerId = id;
+    // The view-model instance persists across swimmer navigations (route-level provider),
+    // so reset per-swimmer tab + guardian state; otherwise the tab and stale guardian data
+    // carry over to the next swimmer (and the guardian tab never re-fetches).
+    this.activeTab.set('identityVitals');
+    this.guardiansLoaded = false;
+    this.guardians.set(null);
+    this.editingGuardians.set(false);
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
@@ -214,6 +246,48 @@ export class SwimmerProfileViewModel {
       await this.loadExams();
     } else {
       this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
+    }
+  }
+
+  setTab(key: 'identityVitals' | 'guardian'): void {
+    this.activeTab.set(key);
+    if (key === 'guardian' && !this.guardiansLoaded) void this.loadGuardians();
+  }
+
+  private async loadGuardians(): Promise<void> {
+    this.guardiansLoaded = true;
+    this.loadingGuardians.set(true);
+    const r = await this.getGuardiansUc.run(this.swimmerId);
+    this.loadingGuardians.set(false);
+    if (r.ok) this.guardians.set(r.data);
+    else { this.guardiansLoaded = false; this.guardians.set(null); }
+  }
+
+  startEditGuardians(): void {
+    const g = this.guardians();
+    this.gFatherName.set(g?.father?.name ?? ''); this.gFatherNationalId.set(g?.father?.nationalId ?? ''); this.gFatherPhone.set(g?.father?.phone ?? '');
+    this.gMotherName.set(g?.mother?.name ?? ''); this.gMotherNationalId.set(g?.mother?.nationalId ?? ''); this.gMotherPhone.set(g?.mother?.phone ?? '');
+    this.editingGuardians.set(true);
+  }
+
+  cancelEditGuardians(): void { this.editingGuardians.set(false); }
+
+  async saveGuardians(): Promise<void> {
+    if (!this.canSaveGuardians() || this.savingGuardians()) return;
+    this.savingGuardians.set(true);
+    const rq = {
+      father: { name: this.gFatherName().trim(), nationalId: this.gFatherNationalId().trim(), phone: this.gFatherPhone().trim() },
+      mother: { name: this.gMotherName().trim(), nationalId: this.gMotherNationalId().trim(), phone: this.gMotherPhone().trim() },
+    };
+    const r = await this.upsertGuardiansUc.run({ id: this.swimmerId, rq });
+    this.savingGuardians.set(false);
+    if (r.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.guardiansSaved'));
+      this.editingGuardians.set(false);
+      this.guardiansLoaded = false;
+      await this.loadGuardians();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.saveFailed'));
     }
   }
 }

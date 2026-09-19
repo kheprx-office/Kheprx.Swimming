@@ -19,7 +19,10 @@ export class SwimmerProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly language = inject(LanguageStore);
 
-  // Full tab strip for visual fidelity; only 'identityVitals' is enabled this pass.
+  // Full tab strip for visual fidelity; only 'identityVitals' and 'guardian' are enabled this pass.
+  protected readonly enabledTabs = new Set(['identityVitals', 'guardian']);
+  isEnabled(key: string): boolean { return this.enabledTabs.has(key); }
+
   protected readonly tabs: ProfileTab[] = [
     { key: 'identityVitals', labelKey: 'swimmerProfile.tabs.identityVitals' },
     { key: 'guardian', labelKey: 'swimmerProfile.tabs.guardian' },

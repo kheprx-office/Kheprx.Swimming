@@ -19,4 +19,8 @@ public interface ISwimmerProfileRepository
     Task<IReadOnlyList<MedicalExamRow>> ListExamsAsync(Guid swimmerId, CancellationToken ct = default);
     Task<MedicalExam?> GetExamTrackedAsync(Guid examId, CancellationToken ct = default);
     void RemoveExam(MedicalExam exam);
+    Task<IReadOnlyList<GuardianRow>> ListGuardiansAsync(Guid swimmerId, CancellationToken ct = default);
+    Task<Guid?> GetGuardianRelationIdByCodeAsync(string code, CancellationToken ct = default);
+    Task<Guardian?> GetGuardianTrackedAsync(Guid swimmerId, Guid relationId, CancellationToken ct = default);
+    Task AddGuardianAsync(Guardian guardian, CancellationToken ct = default);
 }

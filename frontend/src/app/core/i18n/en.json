@@ -46,7 +46,15 @@
       "championships": "Championships",
       "feedback": "Feedback"
     },
-    "sections": { "identity": "Identity", "vitals": "Vitals" },
+    "sections": { "identity": "Identity", "vitals": "Vitals", "guardian": "Guardian Details" },
+    "guardian": {
+      "fatherInfo": "Father Info",
+      "motherInfo": "Mother Info",
+      "fullName": "Full Name",
+      "nationalId": "National ID",
+      "phone": "Phone",
+      "noRecord": "No guardian on record yet."
+    },
     "fields": {
       "fullName": "Full Name", "nameEn": "Full Name (EN)", "nameAr": "Full Name (AR)",
       "dob": "Date of Birth", "phone": "Phone Number",
@@ -67,7 +75,8 @@
       "examUpdated": "Exam updated",
       "examDeleted": "Exam deleted",
       "saveFailed": "Couldn't save. Please try again.",
-      "deleteFailed": "Couldn't delete. Please try again."
+      "deleteFailed": "Couldn't delete. Please try again.",
+      "guardiansSaved": "Guardian details saved"
     }
   },
   "shell": {

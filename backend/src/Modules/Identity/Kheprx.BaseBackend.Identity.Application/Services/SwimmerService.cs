@@ -201,4 +201,41 @@ internal sealed class SwimmerService : ISwimmerService
         await _swimmers.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<SwimmerGuardiansDto?> GetGuardiansAsync(Guid id, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(id, ct);
+        if (profile is null) return null;
+
+        var rows = await _swimmers.ListGuardiansAsync(id, ct);
+        return new SwimmerGuardiansDto(
+            MapGuardian(rows.FirstOrDefault(r => r.RelationCode == "father")),
+            MapGuardian(rows.FirstOrDefault(r => r.RelationCode == "mother")));
+    }
+
+    private static GuardianDto? MapGuardian(Kheprx.BaseBackend.Identity.Domain.ReadModels.GuardianRow? r)
+        => r is null ? null : new GuardianDto(r.Id, r.RelationCode, r.Name, r.NationalId, r.Phone);
+
+    public async Task<bool> UpsertGuardiansAsync(Guid id, UpsertGuardiansRequest request, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByIdTrackedAsync(id, ct);
+        if (profile is null) return false;
+
+        await UpsertOne(id, "father", request.Father, ct);
+        await UpsertOne(id, "mother", request.Mother, ct);
+        await _swimmers.SaveChangesAsync(ct);
+        return true;
+    }
+
+    private async Task UpsertOne(Guid swimmerId, string relationCode, GuardianInputDto input, CancellationToken ct)
+    {
+        var relationId = await _swimmers.GetGuardianRelationIdByCodeAsync(relationCode, ct)
+            ?? throw new InvalidUserException($"Guardian relation '{relationCode}' is not configured.");
+
+        var existing = await _swimmers.GetGuardianTrackedAsync(swimmerId, relationId, ct);
+        if (existing is null)
+            await _swimmers.AddGuardianAsync(new Guardian(swimmerId, relationId, input.Name, input.NationalId, input.Phone), ct);
+        else
+            existing.Update(input.Name, input.NationalId, input.Phone);
+    }
 }

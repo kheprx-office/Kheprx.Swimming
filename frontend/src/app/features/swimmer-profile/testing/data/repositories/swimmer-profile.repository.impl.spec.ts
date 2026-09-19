@@ -50,4 +50,20 @@ describe('SwimmerProfileRepositoryImpl', () => {
     await repo.deleteExam('s1', 'e1');
     expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/swimmers/s1/medical-exams/e1');
   });
+
+  it('getGuardians GETs the guardians endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ successStatus: true, data: { father: null, mother: null } });
+    await repo.getGuardians('sw1');
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/sw1/guardians');
+  });
+
+  it('upsertGuardians PUTs to the guardians endpoint', async () => {
+    const rq = {
+      father: { name: 'Hassan Ali', nationalId: '27001010123456', phone: '+201009876543' },
+      mother: { name: 'Fatima Ibrahim', nationalId: '27505050123456', phone: '+201005554444' },
+    };
+    (http.put as jest.Mock).mockResolvedValue({ successStatus: true, data: null });
+    await repo.upsertGuardians('sw1', rq);
+    expect(http.put).toHaveBeenCalledWith('/api/swimmers/sw1/guardians', { body: rq });
+  });
 });
