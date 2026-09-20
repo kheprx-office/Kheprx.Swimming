@@ -86,6 +86,18 @@
       "noReadings": "لا توجد قياسات مسجلة بعد.",
       "readingsCount": "قياس مسجل"
     },
+    "records": {
+      "intro": "بيانات مسجّلة، مجمّعة حسب الفئة.",
+      "field": "الحقل",
+      "value": "القيمة",
+      "date": "التاريخ",
+      "category": "الفئة",
+      "edit": "تحرير",
+      "remove": "حذف",
+      "confirmDelete": "حذف هذا السجل؟",
+      "noRecords": "لا توجد سجلات بعد.",
+      "uncategorized": "غير مصنّف"
+    },
     "fields": {
       "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
       "dob": "تاريخ الميلاد", "phone": "رقم الهاتف",
@@ -110,7 +122,9 @@
       "guardiansSaved": "تم حفظ بيانات ولي الأمر",
       "bodyMeasurementSaved": "تم حفظ قياسات الجسم",
       "readingSaved": "تم حفظ القياس",
-      "readingDeleted": "تم حذف القياس"
+      "readingDeleted": "تم حذف القياس",
+      "recordSaved": "تم حفظ السجل",
+      "recordRemoved": "تم حذف السجل"
     }
   },
   "shell": {

@@ -5,6 +5,7 @@ import { CreateMedicalExamDtoRq, CreatedVitalsItemDtoRs } from '@features/swimme
 import { GuardiansItemDtoRs, UpsertGuardiansDtoRq, UpsertGuardiansItemDtoRs } from '@features/swimmer-profile/data/dto/guardians.dto';
 import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasurementItemDtoRs } from '@features/swimmer-profile/data/dto/body-measurement.dto';
 import { InBodyReadingListDtoRs, InBodyReadingItemDtoRs, DeleteInBodyReadingItemDtoRs, CreateInBodyReadingDtoRq } from '@features/swimmer-profile/data/dto/inbody-reading.dto';
+import { RecordListDtoRs, RecordItemDtoRs, DeleteRecordItemDtoRs, UpdateRecordDtoRq } from '@features/swimmer-profile/data/dto/record.dto';
 
 export interface ISwimmerProfileRepository {
   getProfile(id: string): Promise<SwimmerProfileItemDtoRs>;
@@ -21,6 +22,9 @@ export interface ISwimmerProfileRepository {
   createInBodyReading(id: string, rq: CreateInBodyReadingDtoRq): Promise<InBodyReadingItemDtoRs>;
   updateInBodyReading(id: string, readingId: string, rq: CreateInBodyReadingDtoRq): Promise<InBodyReadingItemDtoRs>;
   deleteInBodyReading(id: string, readingId: string): Promise<DeleteInBodyReadingItemDtoRs>;
+  listRecords(id: string): Promise<RecordListDtoRs>;
+  updateRecord(recordId: string, rq: UpdateRecordDtoRq): Promise<RecordItemDtoRs>;
+  deleteRecord(recordId: string): Promise<DeleteRecordItemDtoRs>;
 }
 
 export const SWIMMER_PROFILE_REPOSITORY = new InjectionToken<ISwimmerProfileRepository>('SWIMMER_PROFILE_REPOSITORY');

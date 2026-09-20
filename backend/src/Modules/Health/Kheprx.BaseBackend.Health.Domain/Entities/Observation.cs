@@ -22,4 +22,11 @@ public sealed class Observation
         ObservedDate = DateTime.UtcNow;
         RecordedBy = recordedBy;
     }
+
+    public void Update(Guid categoryId, string fieldLabel, string value)
+    {
+        CategoryId = categoryId;
+        FieldLabel = fieldLabel.Trim();
+        Value = value.Trim();
+    }
 }

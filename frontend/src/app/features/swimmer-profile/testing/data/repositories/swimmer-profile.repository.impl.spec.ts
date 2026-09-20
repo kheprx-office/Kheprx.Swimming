@@ -105,4 +105,23 @@ describe('SwimmerProfileRepositoryImpl', () => {
     await repo.deleteInBodyReading('sw1', 'r1');
     expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/swimmers/sw1/inbody-readings/r1');
   });
+
+  it('listRecords GETs /api/observations with swimmerId query', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ successStatus: true, data: [] });
+    await repo.listRecords('s1');
+    expect(http.get).toHaveBeenCalledWith('/api/observations?swimmerId=s1');
+  });
+
+  it('updateRecord PUTs /api/observations/{recordId} with the body', async () => {
+    (http.put as jest.Mock).mockResolvedValue({ successStatus: true, data: {} });
+    const rq = { categoryId: 'c1', fieldLabel: 'Penicillin', value: 'Severe' };
+    await repo.updateRecord('o1', rq);
+    expect(http.put).toHaveBeenCalledWith('/api/observations/o1', { body: rq });
+  });
+
+  it('deleteRecord DELETEs /api/observations/{recordId}', async () => {
+    ((http as unknown as { delete: jest.Mock }).delete) = jest.fn().mockResolvedValue({ successStatus: true, data: null });
+    await repo.deleteRecord('o1');
+    expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/observations/o1');
+  });
 });

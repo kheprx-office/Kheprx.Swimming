@@ -16,3 +16,9 @@ public sealed record ObservationDto(
     string Value,
     DateTime ObservedDate,
     Guid RecordedBy);
+
+/// <summary>Payload to edit a swimmer data field (PUT /api/observations/{id}).</summary>
+public sealed record UpdateObservationRequest(
+    Guid CategoryId,
+    string FieldLabel,
+    string Value);

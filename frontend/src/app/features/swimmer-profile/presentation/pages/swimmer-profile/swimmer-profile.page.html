@@ -347,5 +347,71 @@
         }
       </section>
     }
+
+    @if (vm.activeTab() === 'records') {
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 border-b border-border pb-3">
+          <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.tabs.records' | translate }}</h2>
+          <p class="mt-0.5 text-sm text-text-secondary">{{ 'swimmerProfile.records.intro' | translate }}</p>
+        </div>
+
+        @if (vm.loadingRecords()) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.loading' | translate }}</p>
+        } @else if (vm.recordGroups().length === 0) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.records.noRecords' | translate }}</p>
+        } @else {
+          <div class="space-y-6">
+            @for (group of vm.recordGroups(); track group.categoryId) {
+              <div>
+                <h3 class="mb-2 flex items-center gap-2 text-base font-semibold text-ink">
+                  <span>{{ group.category ? refLabel(group.category) : ('swimmerProfile.records.uncategorized' | translate) }}</span>
+                  <span class="text-xs font-normal text-text-secondary">({{ group.rows.length }})</span>
+                </h3>
+                <ul class="divide-y divide-border rounded-lg border border-border">
+                  @for (rec of group.rows; track rec.id) {
+                    <li class="px-4 py-3 text-sm">
+                      @if (vm.editingRecordId() === rec.id) {
+                        <form class="grid grid-cols-1 gap-3 md:grid-cols-4" (submit)="$event.preventDefault(); vm.saveRecord()">
+                          <label class="flex flex-col gap-1">
+                            <span class="text-xs font-bold text-text-secondary">{{ 'swimmerProfile.records.category' | translate }}</span>
+                            <select class="h-10 rounded-md border border-input bg-card px-2 text-sm text-ink" [value]="vm.recCategoryId()" (change)="vm.recCategoryId.set($any($event.target).value)">
+                              @for (c of vm.recordCategories(); track c.id) { <option [value]="c.id">{{ refLabel(c) }}</option> }
+                            </select>
+                          </label>
+                          <app-text-field [label]="'swimmerProfile.records.field' | translate" [value]="vm.recLabel()" (valueChange)="vm.recLabel.set($event)"></app-text-field>
+                          <app-text-field [label]="'swimmerProfile.records.value' | translate" [value]="vm.recValue()" (valueChange)="vm.recValue.set($event)"></app-text-field>
+                          <div class="flex items-end gap-2">
+                            <button type="submit" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" [disabled]="!vm.canSaveRecord() || vm.savingRecord()">{{ 'common.save' | translate }}</button>
+                            <button type="button" class="rounded-md px-4 py-2 text-sm text-text-secondary" (click)="vm.cancelEditRecord()">{{ 'common.cancel' | translate }}</button>
+                          </div>
+                        </form>
+                      } @else {
+                        <div class="flex flex-wrap items-center gap-3">
+                          <div class="min-w-0 flex-1">
+                            <p class="font-medium text-ink">{{ rec.fieldLabel }}</p>
+                            <p class="text-text-secondary">{{ rec.value }}</p>
+                          </div>
+                          <span class="text-xs text-text-secondary">{{ fmtDate(rec.observedDate) }}</span>
+                          @if (vm.canEdit()) {
+                            @if (vm.confirmingRecordDeleteId() === rec.id) {
+                              <span class="text-sm text-danger">{{ 'swimmerProfile.records.confirmDelete' | translate }}</span>
+                              <button type="button" class="text-sm font-medium text-danger disabled:opacity-50" [disabled]="vm.deletingRecord()" (click)="vm.confirmDeleteRecord()">{{ 'swimmerProfile.confirmYes' | translate }}</button>
+                              <button type="button" class="text-sm text-text-secondary" (click)="vm.cancelDeleteRecord()">{{ 'swimmerProfile.confirmNo' | translate }}</button>
+                            } @else {
+                              <button type="button" class="text-sm font-medium text-primary" (click)="vm.startEditRecord(rec)">{{ 'swimmerProfile.records.edit' | translate }}</button>
+                              <button type="button" class="text-sm font-medium text-danger" (click)="vm.askDeleteRecord(rec.id)">{{ 'swimmerProfile.records.remove' | translate }}</button>
+                            }
+                          }
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
   }
 </div>

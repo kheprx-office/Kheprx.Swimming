@@ -18,6 +18,32 @@ internal sealed class ObservationService : IObservationService
         return ToDto(observation);
     }
 
+    public async Task<IReadOnlyList<ObservationDto>> ListBySwimmerAsync(Guid swimmerId, CancellationToken ct = default)
+    {
+        var rows = await _observations.ListBySwimmerAsync(swimmerId, ct);
+        return rows.Select(ToDto).ToList();
+    }
+
+    public async Task<ObservationDto?> UpdateAsync(Guid id, UpdateObservationRequest request, CancellationToken ct = default)
+    {
+        var o = await _observations.GetTrackedAsync(id, ct);
+        if (o is null) return null;
+
+        o.Update(request.CategoryId, request.FieldLabel, request.Value);
+        await _observations.SaveChangesAsync(ct);
+        return ToDto(o);
+    }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        var o = await _observations.GetTrackedAsync(id, ct);
+        if (o is null) return false;
+
+        _observations.Remove(o);
+        await _observations.SaveChangesAsync(ct);
+        return true;
+    }
+
     private static ObservationDto ToDto(Observation o) =>
         new(o.Id, o.SwimmerId, o.CategoryId, o.FieldLabel, o.Value, o.ObservedDate, o.RecordedBy);
 }

@@ -15,6 +15,11 @@ import { ListInBodyReadingsUseCase } from '@features/swimmer-profile/domain/usec
 import { CreateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/create-inbody-reading.use-case';
 import { UpdateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/update-inbody-reading.use-case';
 import { DeleteInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/delete-inbody-reading.use-case';
+import { ListRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-records.use-case';
+import { UpdateRecordUseCase } from '@features/swimmer-profile/domain/usecases/update-record.use-case';
+import { DeleteRecordUseCase } from '@features/swimmer-profile/domain/usecases/delete-record.use-case';
+import { LoadObservationCategoriesUseCase } from '@features/reference/domain/usecases/load-observation-categories.use-case';
+import { RecordEntry } from '@features/swimmer-profile/domain/model/record-entry';
 import { InBodyReading } from '@features/swimmer-profile/domain/model/inbody-reading';
 import { LookupItem } from '@features/reference/domain/model/reference';
 import { BodyMeasurement } from '@features/swimmer-profile/domain/model/body-measurement';
@@ -42,6 +47,10 @@ export class SwimmerProfileViewModel {
   private readonly createInBodyUc = inject(CreateInBodyReadingUseCase);
   private readonly updateInBodyUc = inject(UpdateInBodyReadingUseCase);
   private readonly deleteInBodyUc = inject(DeleteInBodyReadingUseCase);
+  private readonly listRecordsUc = inject(ListRecordsUseCase);
+  private readonly updateRecordUc = inject(UpdateRecordUseCase);
+  private readonly deleteRecordUc = inject(DeleteRecordUseCase);
+  private readonly loadObservationCategories = inject(LoadObservationCategoriesUseCase);
   private readonly notify = inject(NotificationService);
   private readonly i18n = inject(TranslateService);
   private readonly session = inject(AuthSessionStore);
@@ -98,10 +107,11 @@ export class SwimmerProfileViewModel {
   readonly deleting = signal(false);
 
   // Tab state — only the two built tabs are switchable.
-  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody'>('identityVitals');
+  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records'>('identityVitals');
   private guardiansLoaded = false;
   private bodyMeasurementLoaded = false;
   private inbodyLoaded = false;
+  private recordsLoaded = false;
 
   // Guardian state
   readonly guardians = signal<SwimmerGuardians | null>(null);
@@ -173,6 +183,39 @@ export class SwimmerProfileViewModel {
     };
   });
 
+  // Records state
+  readonly records = signal<RecordEntry[]>([]);
+  readonly recordCategories = signal<LookupItem[]>([]);
+  readonly loadingRecords = signal(false);
+  readonly editingRecordId = signal<string | null>(null);
+  readonly confirmingRecordDeleteId = signal<string | null>(null);
+  readonly savingRecord = signal(false);
+  readonly deletingRecord = signal(false);
+  readonly recCategoryId = signal(''); readonly recLabel = signal(''); readonly recValue = signal('');
+
+  readonly canSaveRecord = computed(() => {
+    const label = this.recLabel().trim(), value = this.recValue().trim();
+    return this.recCategoryId().length > 0
+      && label.length > 0 && label.length <= 200
+      && value.length > 0 && value.length <= 500;
+  });
+
+  readonly recordGroups = computed(() => {
+    const cats = this.recordCategories();
+    const byId = new Map(cats.map((c) => [c.id, c]));
+    const order = new Map(cats.map((c, i) => [c.id, i]));
+    const groups = new Map<string, { category: LookupItem | null; rows: RecordEntry[] }>();
+    for (const rec of this.records()) {
+      let g = groups.get(rec.categoryId);
+      if (!g) { g = { category: byId.get(rec.categoryId) ?? null, rows: [] }; groups.set(rec.categoryId, g); }
+      g.rows.push(rec);
+    }
+    const result = [...groups.entries()].map(([categoryId, g]) => ({ categoryId, category: g.category, rows: g.rows }));
+    for (const g of result) g.rows.sort((a, b) => b.observedDate.localeCompare(a.observedDate)); // newest first
+    result.sort((a, b) => (order.get(a.categoryId) ?? 999) - (order.get(b.categoryId) ?? 999));   // seeded category order
+    return result;
+  });
+
   private static readonly NATIONAL_ID = /^\d{14}$/;
   readonly canSaveGuardians = computed(() => {
     const slotOk = (name: string, nid: string, phone: string) =>
@@ -199,6 +242,11 @@ export class SwimmerProfileViewModel {
     this.inbodyReadings.set([]);
     this.editingInBody.set(false);
     this.confirmingInBodyDelete.set(false);
+    this.recordsLoaded = false;
+    this.records.set([]);
+    this.recordCategories.set([]);
+    this.editingRecordId.set(null);
+    this.confirmingRecordDeleteId.set(null);
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
@@ -334,11 +382,12 @@ export class SwimmerProfileViewModel {
     }
   }
 
-  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody'): void {
+  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records'): void {
     this.activeTab.set(key);
     if (key === 'guardian' && !this.guardiansLoaded) void this.loadGuardians();
     if (key === 'physiological' && !this.bodyMeasurementLoaded) void this.loadBodyMeasurement();
     if (key === 'inbody' && !this.inbodyLoaded) void this.loadInBody();
+    if (key === 'records' && !this.recordsLoaded) void this.loadRecords();
   }
 
   private async loadGuardians(): Promise<void> {
@@ -494,6 +543,69 @@ export class SwimmerProfileViewModel {
       this.notify.success(this.i18n.t('swimmerProfile.toasts.readingDeleted'));
       this.confirmingInBodyDelete.set(false);
       await this.loadInBody();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
+    }
+  }
+
+  private async loadRecords(): Promise<void> {
+    this.recordsLoaded = true;
+    this.loadingRecords.set(true);
+    const [recRes, catRes] = await Promise.all([
+      this.listRecordsUc.run(this.swimmerId),
+      this.loadObservationCategories.run(),
+    ]);
+    this.loadingRecords.set(false);
+    if (catRes.ok) this.recordCategories.set(catRes.data);
+    if (recRes.ok) {
+      this.records.set(recRes.data);
+    } else {
+      this.recordsLoaded = false;
+      this.records.set([]);
+    }
+  }
+
+  startEditRecord(rec: RecordEntry): void {
+    this.confirmingRecordDeleteId.set(null);
+    this.editingRecordId.set(rec.id);
+    this.recCategoryId.set(rec.categoryId);
+    this.recLabel.set(rec.fieldLabel);
+    this.recValue.set(rec.value);
+  }
+
+  cancelEditRecord(): void { this.editingRecordId.set(null); }
+
+  async saveRecord(): Promise<void> {
+    const recordId = this.editingRecordId();
+    if (!recordId || !this.canSaveRecord() || this.savingRecord()) return;
+    this.savingRecord.set(true);
+    const rq = { categoryId: this.recCategoryId(), fieldLabel: this.recLabel().trim(), value: this.recValue().trim() };
+    const r = await this.updateRecordUc.run({ recordId, rq });
+    this.savingRecord.set(false);
+    if (r.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.recordSaved'));
+      this.editingRecordId.set(null);
+      this.recordsLoaded = false;
+      await this.loadRecords();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.saveFailed'));
+    }
+  }
+
+  askDeleteRecord(recordId: string): void { this.editingRecordId.set(null); this.confirmingRecordDeleteId.set(recordId); }
+  cancelDeleteRecord(): void { this.confirmingRecordDeleteId.set(null); }
+
+  async confirmDeleteRecord(): Promise<void> {
+    const recordId = this.confirmingRecordDeleteId();
+    if (!recordId || this.deletingRecord()) return;
+    this.deletingRecord.set(true);
+    const res = await this.deleteRecordUc.run({ recordId });
+    this.deletingRecord.set(false);
+    if (res.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.recordRemoved'));
+      this.confirmingRecordDeleteId.set(null);
+      this.recordsLoaded = false;
+      await this.loadRecords();
     } else {
       this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
     }

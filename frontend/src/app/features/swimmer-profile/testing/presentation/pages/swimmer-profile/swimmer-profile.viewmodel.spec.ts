@@ -17,6 +17,10 @@ import { ListInBodyReadingsUseCase } from '@features/swimmer-profile/domain/usec
 import { CreateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/create-inbody-reading.use-case';
 import { UpdateInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/update-inbody-reading.use-case';
 import { DeleteInBodyReadingUseCase } from '@features/swimmer-profile/domain/usecases/delete-inbody-reading.use-case';
+import { ListRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-records.use-case';
+import { UpdateRecordUseCase } from '@features/swimmer-profile/domain/usecases/update-record.use-case';
+import { DeleteRecordUseCase } from '@features/swimmer-profile/domain/usecases/delete-record.use-case';
+import { LoadObservationCategoriesUseCase } from '@features/reference/domain/usecases/load-observation-categories.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -45,6 +49,15 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const createInBodyUc = { run: jest.fn().mockResolvedValue((over as any).createInBody ?? { ok: true, data: R2 }) };
   const updateInBodyUc = { run: jest.fn().mockResolvedValue((over as any).updateInBody ?? { ok: true, data: R2 }) };
   const deleteInBodyUc = { run: jest.fn().mockResolvedValue((over as any).deleteInBody ?? { ok: true, data: undefined }) };
+  const CAT_A = { id: 'c1', code: 'allergy', nameEn: 'Allergy', nameAr: 'حساسية' };
+  const CAT_B = { id: 'c2', code: 'surgery', nameEn: 'Surgery', nameAr: 'جراحة' };
+  const REC1 = { id: 'o1', swimmerId: 's1', categoryId: 'c1', fieldLabel: 'Penicillin', value: 'Severe', observedDate: '2026-09-10T10:00:00Z' };
+  const REC2 = { id: 'o2', swimmerId: 's1', categoryId: 'c1', fieldLabel: 'Pollen', value: 'Mild', observedDate: '2026-09-20T10:00:00Z' };
+  const REC3 = { id: 'o3', swimmerId: 's1', categoryId: 'c2', fieldLabel: 'Knee', value: '2019', observedDate: '2026-09-15T10:00:00Z' };
+  const listRecordsUc = { run: jest.fn().mockResolvedValue((over as any).listRecords ?? { ok: true, data: [REC2, REC3, REC1] }) };
+  const updateRecordUc = { run: jest.fn().mockResolvedValue((over as any).updateRecord ?? { ok: true, data: REC2 }) };
+  const deleteRecordUc = { run: jest.fn().mockResolvedValue((over as any).deleteRecord ?? { ok: true, data: undefined }) };
+  const loadObsCatsUc = { run: jest.fn().mockResolvedValue((over as any).categories ?? { ok: true, data: [CAT_A, CAT_B] }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -67,11 +80,15 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: CreateInBodyReadingUseCase, useValue: createInBodyUc },
     { provide: UpdateInBodyReadingUseCase, useValue: updateInBodyUc },
     { provide: DeleteInBodyReadingUseCase, useValue: deleteInBodyUc },
+    { provide: ListRecordsUseCase, useValue: listRecordsUc },
+    { provide: UpdateRecordUseCase, useValue: updateRecordUc },
+    { provide: DeleteRecordUseCase, useValue: deleteRecordUc },
+    { provide: LoadObservationCategoriesUseCase, useValue: loadObsCatsUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },
   ] });
-  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, getBodyMeasurementUc, createBodyMeasurementUc, listInBodyUc, createInBodyUc, updateInBodyUc, deleteInBodyUc, notify };
+  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, getBodyMeasurementUc, createBodyMeasurementUc, listInBodyUc, createInBodyUc, updateInBodyUc, deleteInBodyUc, notify, listRecordsUc, updateRecordUc, deleteRecordUc, loadObsCatsUc };
 }
 
 describe('SwimmerProfileViewModel', () => {
@@ -254,6 +271,65 @@ describe('SwimmerProfileViewModel', () => {
       expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.bodyMeasurementSaved');
       expect(vm.editingBodyMeasurement()).toBe(false);
       expect(getBodyMeasurementUc.run).toHaveBeenCalledTimes(2); // initial tab open + reload after save
+    });
+  });
+
+  describe('records tab', () => {
+    const R = (id: string, cat: string, date: string) => ({ id, swimmerId: 's1', categoryId: cat, fieldLabel: 'L', value: 'V', observedDate: date });
+
+    it('setTab("records") lazy-loads records + categories once and groups newest-first', async () => {
+      const { vm, listRecordsUc, loadObsCatsUc } = build();
+      await vm.load('s1');
+      vm.setTab('records');
+      await Promise.resolve(); await Promise.resolve();
+      expect(vm.activeTab()).toBe('records');
+      expect(listRecordsUc.run).toHaveBeenCalledTimes(1);
+      expect(loadObsCatsUc.run).toHaveBeenCalledTimes(1);
+      const groups = vm.recordGroups();
+      expect(groups).toHaveLength(2);                        // c1 + c2
+      expect(groups[0].categoryId).toBe('c1');              // seeded order
+      expect(groups[0].rows.map((r) => r.id)).toEqual(['o2', 'o1']); // newest first
+      vm.setTab('identityVitals');
+      vm.setTab('records');
+      await Promise.resolve();
+      expect(listRecordsUc.run).toHaveBeenCalledTimes(1);   // not reloaded
+    });
+
+    it('canSaveRecord requires category + label + value', async () => {
+      const { vm } = build();
+      await vm.load('s1');
+      vm.startEditRecord(R('o1', 'c1', '2026-09-10T10:00:00Z'));
+      expect(vm.canSaveRecord()).toBe(true);
+      vm.recValue.set('');
+      expect(vm.canSaveRecord()).toBe(false);
+    });
+
+    it('saveRecord updates, toasts and reloads', async () => {
+      const { vm, updateRecordUc, listRecordsUc, notify } = build();
+      await vm.load('s1');
+      vm.setTab('records');
+      await Promise.resolve(); await Promise.resolve();
+      vm.startEditRecord(R('o1', 'c1', '2026-09-10T10:00:00Z'));
+      vm.recLabel.set('Penicillin'); vm.recValue.set('Moderate');
+      await vm.saveRecord();
+      expect(updateRecordUc.run).toHaveBeenCalledWith({ recordId: 'o1', rq: { categoryId: 'c1', fieldLabel: 'Penicillin', value: 'Moderate' } });
+      expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.recordSaved');
+      expect(vm.editingRecordId()).toBeNull();
+      expect(listRecordsUc.run).toHaveBeenCalledTimes(2);
+    });
+
+    it('delete flow confirms, deletes, toasts and reloads', async () => {
+      const { vm, deleteRecordUc, listRecordsUc, notify } = build();
+      await vm.load('s1');
+      vm.setTab('records');
+      await Promise.resolve(); await Promise.resolve();
+      vm.askDeleteRecord('o1');
+      expect(vm.confirmingRecordDeleteId()).toBe('o1');
+      await vm.confirmDeleteRecord();
+      expect(deleteRecordUc.run).toHaveBeenCalledWith({ recordId: 'o1' });
+      expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.recordRemoved');
+      expect(vm.confirmingRecordDeleteId()).toBeNull();
+      expect(listRecordsUc.run).toHaveBeenCalledTimes(2);
     });
   });
 

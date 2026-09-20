@@ -20,7 +20,7 @@ export class SwimmerProfilePage implements OnInit {
   private readonly language = inject(LanguageStore);
 
   // Full tab strip for visual fidelity; only 'identityVitals', 'guardian', 'physiological', and 'inbody' are enabled this pass.
-  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody']);
+  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records']);
   isEnabled(key: string): boolean { return this.enabledTabs.has(key); }
 
   protected readonly tabs: ProfileTab[] = [
@@ -45,6 +45,8 @@ export class SwimmerProfilePage implements OnInit {
     if (!i) return '';
     return this.language.lang() === 'ar' ? (i.nameAr ?? i.nameEn) : i.nameEn;
   }
+
+  fmtDate(iso: string): string { return iso ? iso.slice(0, 10) : '—'; }
 
   refLabel(ref: { nameEn: string; nameAr: string | null } | null | undefined): string {
     if (!ref) return '—';
