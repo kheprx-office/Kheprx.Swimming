@@ -180,6 +180,11 @@ const SCHEMA = [
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"code",t:"varchar",k:"",n:false,note:"technique | endurance | attitude | punctuality | other"},
    {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"attendance_status",note:"attendance status lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"present | late | absent | excused"},
+   {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true}]}
  ]},
  {schema:"identity",color:"--identity",tables:[
@@ -298,20 +303,15 @@ const SCHEMA = [
    {c:"entry_date",t:"date",k:"",n:false}]}
  ]},
  {schema:"attendance",color:"--attendance",tables:[
-  {name:"attendance_session",note:"training session for a club on a date",cols:[
+  {name:"attendance_record",note:"per-swimmer attendance for a training day",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"club_id",t:"uuid",k:"FK",fk:"reference.club.id",n:false},
-   {c:"session_date",t:"date",k:"",n:false},
-   {c:"stroke_id",t:"uuid",k:"FK",fk:"reference.stroke.id",n:true},
-   {c:"coach_id",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
-  {name:"attendance_record",note:"per-swimmer attendance status for a session",cols:[
-   {c:"id",t:"uuid",k:"PK",n:false},
-   {c:"session_id",t:"uuid",k:"FK",fk:"attendance.attendance_session.id",n:false},
    {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
-   {c:"status",t:"attendance_status",k:"",n:false,note:"present | late | absent | excused"},
+   {c:"session_date",t:"date",k:"",n:false},
+   {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
+   {c:"status_id",t:"uuid",k:"FK",fk:"reference.attendance_status.id",n:false},
    {c:"coach_note_en",t:"text",k:"",n:true},
    {c:"coach_note_ar",t:"text",k:"",n:true},
-   {c:"(session_id, swimmer_id)",t:"—",k:"U",n:false,note:"one record per swimmer per session"}]}
+   {c:"(swimmer_id, session_date)",t:"—",k:"U",n:false,note:"one attendance per swimmer per training day"}]}
  ]},
  {schema:"championships",color:"--championships",tables:[
   {name:"competition_event",note:"a championship event spanning multiple days",cols:[
@@ -378,9 +378,7 @@ const RELATIONSHIPS = [
  {from:"reference.observation_category",to:"health.observation",card:"1-N",label:"categorizes"},
  {from:"reference.feedback_category",to:"health.feedback_entry",card:"1-N",label:"categorizes"},
  {from:"identity.swimmer_profile",to:"health.feedback_entry",card:"1-N",label:"receives"},
- {from:"reference.club",to:"attendance.attendance_session",card:"1-N",label:"holds"},
- {from:"reference.stroke",to:"attendance.attendance_session",card:"1-N",label:"grouped by"},
- {from:"attendance.attendance_session",to:"attendance.attendance_record",card:"1-N",label:"includes"},
+ {from:"reference.attendance_status",to:"attendance.attendance_record",card:"1-N",label:"classifies"},
  {from:"identity.swimmer_profile",to:"attendance.attendance_record",card:"1-N",label:"attends"},
  {from:"championships.competition_event",to:"championships.championship_enrollment",card:"1-N",label:"enrolls"},
  {from:"identity.swimmer_profile",to:"championships.championship_enrollment",card:"1-N",label:"enrolled in"},
