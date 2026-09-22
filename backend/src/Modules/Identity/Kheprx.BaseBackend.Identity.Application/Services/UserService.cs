@@ -77,6 +77,17 @@ internal sealed class UserService : IUserService
 
     #endregion
 
+    #region GetDisplayNamesAsync — batch id → display name lookup
+
+    public async Task<IReadOnlyDictionary<Guid, UserNameDto>> GetDisplayNamesAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids is null || ids.Count == 0) return new Dictionary<Guid, UserNameDto>();
+        var users = await _users.GetByIdsAsync(ids, ct);
+        return users.ToDictionary(u => u.Id, u => new UserNameDto(u.Id, u.NameEn, u.NameAr));
+    }
+
+    #endregion
+
     #region UpdateAsync — update user profile, optional password
 
     public async Task<UserDto?> UpdateAsync(Guid id, UpdateUserRequest request, CancellationToken ct = default)

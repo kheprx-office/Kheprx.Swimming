@@ -83,4 +83,15 @@ public sealed class ReferenceController : BaseApiController
             ReferenceMessages.Success.FitnessAssessmentsListed(AppLanguage.Current), data);
         return Ok(body);
     }
+
+    /// <summary>Lists all feedback categories (coach evaluation categories).</summary>
+    [HttpGet("feedback-categories")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CodedLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CodedLookupDto>>>> FeedbackCategories(CancellationToken ct)
+    {
+        var data = await _service.GetFeedbackCategoriesAsync(ct);
+        var body = ApiResponse<IReadOnlyList<CodedLookupDto>>.Success(
+            ReferenceMessages.Success.FeedbackCategoriesListed(AppLanguage.Current), data);
+        return Ok(body);
+    }
 }

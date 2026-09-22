@@ -12,11 +12,13 @@ public class ReferenceServiceTests
         IClubRepository? clubs = null, IBloodTypeRepository? blood = null,
         IStrokeRepository? strokes = null, IGenderRepository? genders = null,
         IObservationCategoryRepository? categories = null,
-        IFitnessAssessmentRepository? fitness = null)
+        IFitnessAssessmentRepository? fitness = null,
+        IFeedbackCategoryRepository? feedbackCategories = null)
         => new(clubs ?? Mock.Of<IClubRepository>(), blood ?? Mock.Of<IBloodTypeRepository>(),
                strokes ?? Mock.Of<IStrokeRepository>(), genders ?? Mock.Of<IGenderRepository>(),
                categories ?? Mock.Of<IObservationCategoryRepository>(),
-               fitness ?? Mock.Of<IFitnessAssessmentRepository>());
+               fitness ?? Mock.Of<IFitnessAssessmentRepository>(),
+               feedbackCategories ?? Mock.Of<IFeedbackCategoryRepository>());
 
     [Fact]
     public async Task GetStrokes_maps_entities_to_coded_dtos()

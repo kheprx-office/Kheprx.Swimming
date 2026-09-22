@@ -89,6 +89,18 @@ internal sealed class UserRepository : IUserRepository
 
     #endregion
 
+    #region GetByIdsAsync — read-only batch fetch by id set (author/actor name resolution)
+
+    // Read-only users whose id is in the given set (author/actor name resolution).
+    public async Task<IReadOnlyList<AppUser>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids is null || ids.Count == 0) return Array.Empty<AppUser>();
+        var idSet = ids.Distinct().ToList();
+        return await _db.Users.AsNoTracking().Where(u => idSet.Contains(u.Id)).ToListAsync(ct);
+    }
+
+    #endregion
+
     #region AddAsync — stage a new user for insert
 
     // Stages a new user for insert (written on the next SaveChanges).

@@ -66,4 +66,18 @@ public class ReferenceControllerTests
         var body = Assert.IsType<ApiResponse<IReadOnlyList<CodedLookupDto>>>(ok.Value);
         Assert.Equal("fit", body.Data![0].Code);
     }
+
+    [Fact]
+    public async Task FeedbackCategories_returns_200_with_coded_lookups()
+    {
+        var svc = new Mock<IReferenceService>();
+        svc.Setup(s => s.GetFeedbackCategoriesAsync(It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new List<CodedLookupDto> { new(Guid.NewGuid(), "technique", "Technique", "الأداء الفني") });
+
+        var result = await new ReferenceController(svc.Object).FeedbackCategories(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<IReadOnlyList<CodedLookupDto>>>(ok.Value);
+        Assert.Equal("technique", body.Data![0].Code);
+    }
 }

@@ -8,6 +8,7 @@ export interface IReferenceRepository {
   getStrokes(): Promise<CodedLookupListDtoRs>;
   getGenders(): Promise<CodedLookupListDtoRs>;
   getObservationCategories(): Promise<CodedLookupListDtoRs>;
+  getFeedbackCategories(): Promise<CodedLookupListDtoRs>;
   getFitnessAssessments(): Promise<CodedLookupListDtoRs>;
 }
 

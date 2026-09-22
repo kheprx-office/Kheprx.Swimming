@@ -11,6 +11,7 @@ public sealed class HealthDbContext : DbContext
     public DbSet<HealthReading> HealthReadings => Set<HealthReading>();
     public DbSet<Observation> Observations => Set<Observation>();
     public DbSet<InBodyReading> InBodyReadings => Set<InBodyReading>();
+    public DbSet<FeedbackEntry> FeedbackEntries => Set<FeedbackEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

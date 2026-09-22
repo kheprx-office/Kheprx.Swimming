@@ -124,4 +124,30 @@ describe('SwimmerProfileRepositoryImpl', () => {
     await repo.deleteRecord('o1');
     expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/observations/o1');
   });
+
+  it('getFeedbackEntries GETs /api/swimmers/{id}/feedback-entries', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ data: [] });
+    await repo.getFeedbackEntries('s1');
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/s1/feedback-entries');
+  });
+
+  it('createFeedbackEntry POSTs to /api/swimmers/{id}/feedback-entries with the body', async () => {
+    (http.post as jest.Mock).mockResolvedValue({ data: {} });
+    const rq = { rating: 5, categoryId: 'c1', comment: 'x' };
+    await repo.createFeedbackEntry('s1', rq);
+    expect(http.post).toHaveBeenCalledWith('/api/swimmers/s1/feedback-entries', { body: rq });
+  });
+
+  it('updateFeedbackEntry PUTs to /api/swimmers/{id}/feedback-entries/{entryId} with the body', async () => {
+    (http.put as jest.Mock).mockResolvedValue({ data: {} });
+    const rq = { rating: 4, categoryId: 'c1', comment: 'y' };
+    await repo.updateFeedbackEntry('s1', 'f1', rq);
+    expect(http.put).toHaveBeenCalledWith('/api/swimmers/s1/feedback-entries/f1', { body: rq });
+  });
+
+  it('deleteFeedbackEntry DELETEs /api/swimmers/{id}/feedback-entries/{entryId}', async () => {
+    ((http as unknown as { delete: jest.Mock }).delete) = jest.fn().mockResolvedValue({ data: null });
+    await repo.deleteFeedbackEntry('s1', 'f1');
+    expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/swimmers/s1/feedback-entries/f1');
+  });
 });

@@ -23,6 +23,7 @@ public static class IdentitySeeder
         await EnsureFitnessAssessments(db, ct);
         await EnsureGuardianRelations(db, ct);
         await EnsureObservationCategories(db, ct);
+        await EnsureFeedbackCategories(db, ct);
         await EnsureClubs(db, ct);
         await db.SaveChangesAsync(ct);
 
@@ -156,6 +157,21 @@ public static class IdentitySeeder
         foreach (var (code, en, ar) in rows)
             if (!await db.ObservationCategories.AnyAsync(c => c.Code == code, ct))
                 await db.ObservationCategories.AddAsync(new ObservationCategory(code, en, ar), ct);
+    }
+
+    private static async Task EnsureFeedbackCategories(IdentityDbContext db, CancellationToken ct)
+    {
+        var rows = new (string Code, string En, string Ar)[]
+        {
+            ("technique", "Technique", "الأداء الفني"),
+            ("endurance", "Endurance", "التحمل"),
+            ("attitude", "Attitude", "السلوك"),
+            ("punctuality", "Punctuality", "الالتزام بالمواعيد"),
+            ("other", "Other", "أخرى"),
+        };
+        foreach (var (code, en, ar) in rows)
+            if (!await db.FeedbackCategories.AnyAsync(c => c.Code == code, ct))
+                await db.FeedbackCategories.AddAsync(new FeedbackCategory(code, en, ar), ct);
     }
 
     private static async Task EnsureClubs(IdentityDbContext db, CancellationToken ct)

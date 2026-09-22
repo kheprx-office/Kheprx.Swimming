@@ -8,6 +8,7 @@ public interface IUserRepository
     Task<AppUser?> GetByUsernameAsync(string username, CancellationToken ct = default);
     Task<AppUser?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<AppUser>> ListAsync(string? search = null, CancellationToken ct = default);
+    Task<IReadOnlyList<AppUser>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
     Task<string?> GetGenderCodeAsync(Guid? genderId, CancellationToken ct = default);
     Task AddAsync(AppUser user, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);

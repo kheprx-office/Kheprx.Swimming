@@ -40,3 +40,6 @@ public sealed record CreateUserRequest(
 public sealed record UpdateUserRequest(
     string NameEn, string Role, string? NameAr, string? Email,
     string? Password, string? Phone, Guid? GenderId, DateOnly? Dob);
+
+/// <summary>A user's display names, for resolving author/actor ids to names.</summary>
+public sealed record UserNameDto(Guid Id, string NameEn, string? NameAr);

@@ -9,6 +9,7 @@ import { GuardiansItemDtoRs, UpsertGuardiansDtoRq, UpsertGuardiansItemDtoRs } fr
 import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasurementItemDtoRs } from '@features/swimmer-profile/data/dto/body-measurement.dto';
 import { InBodyReadingListDtoRs, InBodyReadingItemDtoRs, DeleteInBodyReadingItemDtoRs, CreateInBodyReadingDtoRq } from '@features/swimmer-profile/data/dto/inbody-reading.dto';
 import { RecordListDtoRs, RecordItemDtoRs, DeleteRecordItemDtoRs, UpdateRecordDtoRq } from '@features/swimmer-profile/data/dto/record.dto';
+import { FeedbackEntryListDtoRs, FeedbackEntryItemDtoRs, DeleteFeedbackEntryItemDtoRs, CreateFeedbackEntryDtoRq } from '@features/swimmer-profile/data/dto/feedback-entry.dto';
 
 @Injectable({ providedIn: 'root' })
 export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
@@ -64,5 +65,17 @@ export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
   }
   deleteRecord(recordId: string): Promise<DeleteRecordItemDtoRs> {
     return this.http.delete<DeleteRecordItemDtoRs>(`/api/observations/${recordId}`);
+  }
+  getFeedbackEntries(id: string): Promise<FeedbackEntryListDtoRs> {
+    return this.http.get<FeedbackEntryListDtoRs>(`/api/swimmers/${id}/feedback-entries`);
+  }
+  createFeedbackEntry(id: string, rq: CreateFeedbackEntryDtoRq): Promise<FeedbackEntryItemDtoRs> {
+    return this.http.post<FeedbackEntryItemDtoRs>(`/api/swimmers/${id}/feedback-entries`, { body: rq });
+  }
+  updateFeedbackEntry(id: string, entryId: string, rq: CreateFeedbackEntryDtoRq): Promise<FeedbackEntryItemDtoRs> {
+    return this.http.put<FeedbackEntryItemDtoRs>(`/api/swimmers/${id}/feedback-entries/${entryId}`, { body: rq });
+  }
+  deleteFeedbackEntry(id: string, entryId: string): Promise<DeleteFeedbackEntryItemDtoRs> {
+    return this.http.delete<DeleteFeedbackEntryItemDtoRs>(`/api/swimmers/${id}/feedback-entries/${entryId}`);
   }
 }

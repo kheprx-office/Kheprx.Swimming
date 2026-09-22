@@ -11,5 +11,6 @@ public static class ReferenceMessages
         public static string GendersListed(string lang) => lang switch { "ar" => "الأنواع", _ => "Genders" };
         public static string ObservationCategoriesListed(string lang) => lang switch { "ar" => "فئات البيانات", _ => "Observation categories" };
         public static string FitnessAssessmentsListed(string lang) => lang switch { "ar" => "تقييمات اللياقة", _ => "Fitness assessments" };
+        public static string FeedbackCategoriesListed(string lang) => lang switch { "ar" => "فئات التقييم", _ => "Feedback categories" };
     }
 }
