@@ -21,6 +21,14 @@ import { ListRecordsUseCase } from '@features/swimmer-profile/domain/usecases/li
 import { UpdateRecordUseCase } from '@features/swimmer-profile/domain/usecases/update-record.use-case';
 import { DeleteRecordUseCase } from '@features/swimmer-profile/domain/usecases/delete-record.use-case';
 import { LoadObservationCategoriesUseCase } from '@features/reference/domain/usecases/load-observation-categories.use-case';
+import { ListHealthReadingsUseCase } from '@features/health-readings/domain/usecases/list-health-readings.use-case';
+import { UpdateHealthReadingUseCase } from '@features/health-readings/domain/usecases/update-health-reading.use-case';
+import { DeleteHealthReadingUseCase } from '@features/health-readings/domain/usecases/delete-health-reading.use-case';
+import { ListFeedbackEntriesUseCase } from '@features/swimmer-profile/domain/usecases/list-feedback-entries.use-case';
+import { CreateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/create-feedback-entry.use-case';
+import { UpdateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/update-feedback-entry.use-case';
+import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/delete-feedback-entry.use-case';
+import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -30,7 +38,7 @@ const IDENTITY = { id: 's1', uid: 'SW-1', nameEn: 'Ahmed', nameAr: 'أحمد', d
 const VITALS = { id: 'e1', examDate: '2026-09-19', bloodType: null, hemoglobin: 14.8, heightCm: 182, weightKg: 74, internalMed: REF, heartAssess: REF, spineAssess: REF };
 const VITALS2 = { id: 'e2', examDate: '2024-01-01', bloodType: null, hemoglobin: 13, heightCm: 178, weightKg: 71, internalMed: REF, heartAssess: REF, spineAssess: REF };
 
-function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | null } = {}) {
+function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | null; listHealthReadings?: unknown; updateHealthReading?: unknown; deleteHealthReading?: unknown; listFeedback?: unknown; createFeedback?: unknown; updateFeedback?: unknown; deleteFeedback?: unknown; feedbackCategories?: unknown } = {}) {
   const getUc = { run: jest.fn().mockResolvedValue(over.profile ?? { ok: true, data: { identity: IDENTITY, vitals: VITALS } }) };
   const updateUc = { run: jest.fn().mockResolvedValue(over.update ?? { ok: true, data: undefined }) };
   const createUc = { run: jest.fn().mockResolvedValue(over.create ?? { ok: true, data: VITALS }) };
@@ -58,6 +66,16 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const updateRecordUc = { run: jest.fn().mockResolvedValue((over as any).updateRecord ?? { ok: true, data: REC2 }) };
   const deleteRecordUc = { run: jest.fn().mockResolvedValue((over as any).deleteRecord ?? { ok: true, data: undefined }) };
   const loadObsCatsUc = { run: jest.fn().mockResolvedValue((over as any).categories ?? { ok: true, data: [CAT_A, CAT_B] }) };
+  const HR1 = { id: 'h1', medicalTestId: 't1', testNameEn: 'Hemoglobin', testNameAr: 'هيموجلوبين', unit: 'g/dL', value: 14.8, lowerBound: 13.5, upperBound: 17.5, readingDate: '2023-10-12T00:00:00Z', status: 'normal' };
+  const HR2 = { id: 'h2', medicalTestId: 't2', testNameEn: 'Ferritin', testNameAr: 'فيريتين', unit: 'ng/mL', value: 22, lowerBound: 30, upperBound: 400, readingDate: '2023-07-15T00:00:00Z', status: 'out' };
+  const listHealthReadingsUc = { run: jest.fn().mockResolvedValue((over as any).listHealthReadings ?? { ok: true, data: [HR1, HR2] }) }; // newest first
+  const updateHealthReadingUc = { run: jest.fn().mockResolvedValue((over as any).updateHealthReading ?? { ok: true, data: { ...HR2, value: 35, status: 'normal' } }) };
+  const deleteHealthReadingUc = { run: jest.fn().mockResolvedValue((over as any).deleteHealthReading ?? { ok: true, data: undefined }) };
+  const listFeedbackUc = { run: jest.fn().mockResolvedValue((over as any).listFeedback ?? { ok: true, data: [] }) };
+  const createFeedbackUc = { run: jest.fn().mockResolvedValue((over as any).createFeedback ?? { ok: true, data: undefined }) };
+  const updateFeedbackUc = { run: jest.fn().mockResolvedValue((over as any).updateFeedback ?? { ok: true, data: undefined }) };
+  const deleteFeedbackUc = { run: jest.fn().mockResolvedValue((over as any).deleteFeedback ?? { ok: true, data: undefined }) };
+  const loadFeedbackCategoriesUc = { run: jest.fn().mockResolvedValue((over as any).feedbackCategories ?? { ok: true, data: [] }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -84,11 +102,19 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: UpdateRecordUseCase, useValue: updateRecordUc },
     { provide: DeleteRecordUseCase, useValue: deleteRecordUc },
     { provide: LoadObservationCategoriesUseCase, useValue: loadObsCatsUc },
+    { provide: ListHealthReadingsUseCase, useValue: listHealthReadingsUc },
+    { provide: UpdateHealthReadingUseCase, useValue: updateHealthReadingUc },
+    { provide: DeleteHealthReadingUseCase, useValue: deleteHealthReadingUc },
+    { provide: ListFeedbackEntriesUseCase, useValue: listFeedbackUc },
+    { provide: CreateFeedbackEntryUseCase, useValue: createFeedbackUc },
+    { provide: UpdateFeedbackEntryUseCase, useValue: updateFeedbackUc },
+    { provide: DeleteFeedbackEntryUseCase, useValue: deleteFeedbackUc },
+    { provide: LoadFeedbackCategoriesUseCase, useValue: loadFeedbackCategoriesUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },
   ] });
-  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, getBodyMeasurementUc, createBodyMeasurementUc, listInBodyUc, createInBodyUc, updateInBodyUc, deleteInBodyUc, notify, listRecordsUc, updateRecordUc, deleteRecordUc, loadObsCatsUc };
+  return { vm: TestBed.inject(SwimmerProfileViewModel), getUc, updateUc, createUc, listExamsUc, updateExamUc, deleteExamUc, getGuardiansUc, upsertGuardiansUc, getBodyMeasurementUc, createBodyMeasurementUc, listInBodyUc, createInBodyUc, updateInBodyUc, deleteInBodyUc, notify, listRecordsUc, updateRecordUc, deleteRecordUc, loadObsCatsUc, listHealthReadingsUc, updateHealthReadingUc, deleteHealthReadingUc, listFeedbackUc, createFeedbackUc, updateFeedbackUc, deleteFeedbackUc, loadFeedbackCategoriesUc };
 }
 
 describe('SwimmerProfileViewModel', () => {
@@ -394,5 +420,84 @@ describe('SwimmerProfileViewModel', () => {
       expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.readingDeleted');
       expect(listInBodyUc.run).toHaveBeenCalledTimes(3);     // reload after delete
     });
+  });
+});
+
+describe('SwimmerProfileViewModel — Health Monitoring', () => {
+  it('setTab loads health readings once (lazy)', async () => {
+    const { vm, listHealthReadingsUc } = build();
+    await vm.load('s1');
+    vm.setTab('healthMonitoring');
+    await Promise.resolve(); await Promise.resolve();
+    expect(listHealthReadingsUc.run).toHaveBeenCalledTimes(1);
+    vm.setTab('inbody');
+    vm.setTab('healthMonitoring');
+    expect(listHealthReadingsUc.run).toHaveBeenCalledTimes(1); // not reloaded
+    expect(vm.healthReadings()).toHaveLength(2);
+  });
+
+  it('healthReadingRows filters by From/To (inclusive)', async () => {
+    const { vm } = build();
+    await vm.load('s1');
+    vm.setTab('healthMonitoring');
+    await Promise.resolve(); await Promise.resolve();
+    vm.hmFrom.set('2023-10-01');
+    expect(vm.healthReadingRows().map((r) => r.id)).toEqual(['h1']); // h2 is 2023-07-15, excluded
+    vm.hmFrom.set('');
+    vm.hmTo.set('2023-08-01');
+    expect(vm.healthReadingRows().map((r) => r.id)).toEqual(['h2']);
+  });
+
+  it('canSaveHealthReading requires a positive number', async () => {
+    const { vm } = build();
+    await vm.load('s1');
+    vm.hrValue.set('0'); expect(vm.canSaveHealthReading()).toBe(false);
+    vm.hrValue.set('abc'); expect(vm.canSaveHealthReading()).toBe(false);
+    vm.hrValue.set('12.3'); expect(vm.canSaveHealthReading()).toBe(true);
+  });
+
+  it('saveHealthReading updates, toasts, and reloads', async () => {
+    const { vm, updateHealthReadingUc, listHealthReadingsUc, notify } = build();
+    await vm.load('s1');
+    vm.setTab('healthMonitoring');
+    await Promise.resolve(); await Promise.resolve();
+    vm.startEditHealthReading({ id: 'h2', medicalTestId: 't2', testNameEn: 'Ferritin', testNameAr: 'فيريتين', unit: 'ng/mL', value: 22, lowerBound: 30, upperBound: 400, readingDate: '2023-07-15T00:00:00Z', status: 'out' });
+    vm.hrValue.set('35');
+    await vm.saveHealthReading();
+    expect(updateHealthReadingUc.run).toHaveBeenCalledWith({ id: 'h2', rq: { value: 35 } });
+    expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.healthReadingUpdated');
+    expect(listHealthReadingsUc.run).toHaveBeenCalledTimes(2); // initial + reload
+    expect(vm.editingHealthReadingId()).toBeNull();
+  });
+
+  it('confirmDeleteHealthReading deletes, toasts, and reloads', async () => {
+    const { vm, deleteHealthReadingUc, notify } = build();
+    await vm.load('s1');
+    vm.setTab('healthMonitoring');
+    await Promise.resolve(); await Promise.resolve();
+    vm.askDeleteHealthReading('h1');
+    await vm.confirmDeleteHealthReading();
+    expect(deleteHealthReadingUc.run).toHaveBeenCalledWith({ id: 'h1' });
+    expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.healthReadingRemoved');
+    expect(vm.confirmingHealthReadingDeleteId()).toBeNull();
+  });
+});
+
+describe('SwimmerProfileViewModel — Feedback', () => {
+  it('loads feedback + categories on setTab("feedback") and filters by date range', async () => {
+    const { vm } = build({
+      listFeedback: { ok: true, data: [
+        { id: 'f1', rating: 5, categoryId: 'c1', comment: 'a', authorNameEn: 'Coach', authorNameAr: null, entryDate: '2024-10-22' },
+        { id: 'f2', rating: 3, categoryId: 'c1', comment: 'b', authorNameEn: 'Coach', authorNameAr: null, entryDate: '2024-09-01' },
+      ] },
+      feedbackCategories: { ok: true, data: [{ id: 'c1', code: 'technique', nameEn: 'Technique', nameAr: null }] },
+    });
+    await vm.load('s1');
+    vm.setTab('feedback');
+    await Promise.resolve(); await Promise.resolve();
+
+    expect(vm.feedbackEntries().length).toBe(2);
+    vm.fbFrom.set('2024-10-01');
+    expect(vm.feedbackRows().length).toBe(1); // only f1 is in range
   });
 });

@@ -19,7 +19,17 @@ import { ListRecordsUseCase } from '@features/swimmer-profile/domain/usecases/li
 import { UpdateRecordUseCase } from '@features/swimmer-profile/domain/usecases/update-record.use-case';
 import { DeleteRecordUseCase } from '@features/swimmer-profile/domain/usecases/delete-record.use-case';
 import { LoadObservationCategoriesUseCase } from '@features/reference/domain/usecases/load-observation-categories.use-case';
+import { ListHealthReadingsUseCase } from '@features/health-readings/domain/usecases/list-health-readings.use-case';
+import { UpdateHealthReadingUseCase } from '@features/health-readings/domain/usecases/update-health-reading.use-case';
+import { DeleteHealthReadingUseCase } from '@features/health-readings/domain/usecases/delete-health-reading.use-case';
+import { ListFeedbackEntriesUseCase } from '@features/swimmer-profile/domain/usecases/list-feedback-entries.use-case';
+import { CreateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/create-feedback-entry.use-case';
+import { UpdateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/update-feedback-entry.use-case';
+import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/delete-feedback-entry.use-case';
+import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
+import { HealthReadingListItem } from '@features/health-readings/domain/model/health-reading-list-item';
 import { RecordEntry } from '@features/swimmer-profile/domain/model/record-entry';
+import { FeedbackEntry } from '@features/swimmer-profile/domain/model/feedback-entry';
 import { InBodyReading } from '@features/swimmer-profile/domain/model/inbody-reading';
 import { LookupItem } from '@features/reference/domain/model/reference';
 import { BodyMeasurement } from '@features/swimmer-profile/domain/model/body-measurement';
@@ -51,6 +61,14 @@ export class SwimmerProfileViewModel {
   private readonly updateRecordUc = inject(UpdateRecordUseCase);
   private readonly deleteRecordUc = inject(DeleteRecordUseCase);
   private readonly loadObservationCategories = inject(LoadObservationCategoriesUseCase);
+  private readonly listHealthReadingsUc = inject(ListHealthReadingsUseCase);
+  private readonly updateHealthReadingUc = inject(UpdateHealthReadingUseCase);
+  private readonly deleteHealthReadingUc = inject(DeleteHealthReadingUseCase);
+  private readonly listFeedbackUc = inject(ListFeedbackEntriesUseCase);
+  private readonly createFeedbackUc = inject(CreateFeedbackEntryUseCase);
+  private readonly updateFeedbackUc = inject(UpdateFeedbackEntryUseCase);
+  private readonly deleteFeedbackUc = inject(DeleteFeedbackEntryUseCase);
+  private readonly loadFeedbackCategories = inject(LoadFeedbackCategoriesUseCase);
   private readonly notify = inject(NotificationService);
   private readonly i18n = inject(TranslateService);
   private readonly session = inject(AuthSessionStore);
@@ -106,12 +124,14 @@ export class SwimmerProfileViewModel {
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
 
-  // Tab state — only the two built tabs are switchable.
-  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records'>('identityVitals');
+  // Tab state — enabled tabs (see page enabledTabs) are switchable.
+  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'feedback'>('identityVitals');
   private guardiansLoaded = false;
   private bodyMeasurementLoaded = false;
   private inbodyLoaded = false;
   private recordsLoaded = false;
+  private healthReadingsLoaded = false;
+  private feedbackLoaded = false;
 
   // Guardian state
   readonly guardians = signal<SwimmerGuardians | null>(null);
@@ -200,6 +220,64 @@ export class SwimmerProfileViewModel {
       && value.length > 0 && value.length <= 500;
   });
 
+  // Health Monitoring state
+  readonly healthReadings = signal<HealthReadingListItem[]>([]);
+  readonly loadingHealthReadings = signal(false);
+  readonly hmFrom = signal('');
+  readonly hmTo = signal('');
+  readonly editingHealthReadingId = signal<string | null>(null);
+  readonly hrValue = signal('');
+  readonly savingHealthReading = signal(false);
+  readonly confirmingHealthReadingDeleteId = signal<string | null>(null);
+  readonly deletingHealthReading = signal(false);
+
+  readonly canSaveHealthReading = computed(() => {
+    const v = this.hrValue().trim();
+    return v.length > 0 && Number.isFinite(Number(v)) && Number(v) > 0;
+  });
+
+  readonly healthReadingRows = computed(() => {
+    const from = this.hmFrom();
+    const to = this.hmTo();
+    const inRange = (iso: string) => {
+      const d = iso.slice(0, 10);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    };
+    return this.healthReadings().filter((r) => inRange(r.readingDate)); // server already returns newest-first
+  });
+
+  // Feedback state
+  readonly feedbackEntries = signal<FeedbackEntry[]>([]);
+  readonly feedbackCategories = signal<LookupItem[]>([]);
+  readonly loadingFeedback = signal(false);
+  readonly fbFrom = signal('');
+  readonly fbTo = signal('');
+  readonly editingFeedbackId = signal<string | null>(null); // null = not editing; 'new' = add form
+  readonly fbRating = signal(0);
+  readonly fbCategoryId = signal('');
+  readonly fbComment = signal('');
+  readonly savingFeedback = signal(false);
+  readonly confirmingFeedbackDeleteId = signal<string | null>(null);
+  readonly deletingFeedback = signal(false);
+
+  readonly canSaveFeedback = computed(() =>
+    this.fbRating() >= 1 && this.fbRating() <= 5
+    && this.fbCategoryId().length > 0
+    && this.fbComment().trim().length > 0 && this.fbComment().trim().length <= 1000);
+
+  readonly feedbackRows = computed(() => {
+    const from = this.fbFrom(); const to = this.fbTo();
+    const inRange = (iso: string) => {
+      const d = iso.slice(0, 10);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    };
+    return this.feedbackEntries().filter((e) => inRange(e.entryDate)); // server returns newest-first
+  });
+
   readonly recordGroups = computed(() => {
     const cats = this.recordCategories();
     const byId = new Map(cats.map((c) => [c.id, c]));
@@ -247,6 +325,18 @@ export class SwimmerProfileViewModel {
     this.recordCategories.set([]);
     this.editingRecordId.set(null);
     this.confirmingRecordDeleteId.set(null);
+    this.healthReadingsLoaded = false;
+    this.healthReadings.set([]);
+    this.editingHealthReadingId.set(null);
+    this.confirmingHealthReadingDeleteId.set(null);
+    this.hmFrom.set('');
+    this.hmTo.set('');
+    this.feedbackLoaded = false;
+    this.feedbackEntries.set([]);
+    this.feedbackCategories.set([]);
+    this.editingFeedbackId.set(null);
+    this.confirmingFeedbackDeleteId.set(null);
+    this.fbFrom.set(''); this.fbTo.set('');
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
@@ -382,12 +472,14 @@ export class SwimmerProfileViewModel {
     }
   }
 
-  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records'): void {
+  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'feedback'): void {
     this.activeTab.set(key);
     if (key === 'guardian' && !this.guardiansLoaded) void this.loadGuardians();
     if (key === 'physiological' && !this.bodyMeasurementLoaded) void this.loadBodyMeasurement();
     if (key === 'inbody' && !this.inbodyLoaded) void this.loadInBody();
     if (key === 'records' && !this.recordsLoaded) void this.loadRecords();
+    if (key === 'healthMonitoring' && !this.healthReadingsLoaded) void this.loadHealthReadings();
+    if (key === 'feedback' && !this.feedbackLoaded) void this.loadFeedback();
   }
 
   private async loadGuardians(): Promise<void> {
@@ -606,6 +698,138 @@ export class SwimmerProfileViewModel {
       this.confirmingRecordDeleteId.set(null);
       this.recordsLoaded = false;
       await this.loadRecords();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
+    }
+  }
+
+  private async loadHealthReadings(): Promise<void> {
+    this.healthReadingsLoaded = true;
+    this.loadingHealthReadings.set(true);
+    const r = await this.listHealthReadingsUc.run(this.swimmerId);
+    this.loadingHealthReadings.set(false);
+    if (r.ok) {
+      this.healthReadings.set(r.data);
+    } else {
+      this.healthReadingsLoaded = false;
+      this.healthReadings.set([]);
+    }
+  }
+
+  startEditHealthReading(row: HealthReadingListItem): void {
+    this.confirmingHealthReadingDeleteId.set(null);
+    this.editingHealthReadingId.set(row.id);
+    this.hrValue.set(String(row.value));
+  }
+
+  cancelEditHealthReading(): void { this.editingHealthReadingId.set(null); }
+
+  async saveHealthReading(): Promise<void> {
+    const id = this.editingHealthReadingId();
+    if (!id || !this.canSaveHealthReading() || this.savingHealthReading()) return;
+    this.savingHealthReading.set(true);
+    const r = await this.updateHealthReadingUc.run({ id, rq: { value: Number(this.hrValue()) } });
+    this.savingHealthReading.set(false);
+    if (r.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.healthReadingUpdated'));
+      this.editingHealthReadingId.set(null);
+      this.healthReadingsLoaded = false;
+      await this.loadHealthReadings();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.saveFailed'));
+    }
+  }
+
+  askDeleteHealthReading(id: string): void {
+    this.editingHealthReadingId.set(null);
+    this.confirmingHealthReadingDeleteId.set(id);
+  }
+  cancelDeleteHealthReading(): void { this.confirmingHealthReadingDeleteId.set(null); }
+
+  async confirmDeleteHealthReading(): Promise<void> {
+    const id = this.confirmingHealthReadingDeleteId();
+    if (!id || this.deletingHealthReading()) return;
+    this.deletingHealthReading.set(true);
+    const res = await this.deleteHealthReadingUc.run({ id });
+    this.deletingHealthReading.set(false);
+    if (res.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.healthReadingRemoved'));
+      this.confirmingHealthReadingDeleteId.set(null);
+      this.healthReadingsLoaded = false;
+      await this.loadHealthReadings();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
+    }
+  }
+
+  private async loadFeedback(): Promise<void> {
+    this.feedbackLoaded = true;
+    this.loadingFeedback.set(true);
+    const [listRes, catRes] = await Promise.all([
+      this.listFeedbackUc.run(this.swimmerId),
+      this.loadFeedbackCategories.run(),
+    ]);
+    this.loadingFeedback.set(false);
+    if (catRes.ok) this.feedbackCategories.set(catRes.data);
+    if (listRes.ok) {
+      this.feedbackEntries.set(listRes.data);
+    } else {
+      this.feedbackLoaded = false;
+      this.feedbackEntries.set([]);
+    }
+  }
+
+  startAddFeedback(): void {
+    this.confirmingFeedbackDeleteId.set(null);
+    this.editingFeedbackId.set('new');
+    this.fbRating.set(0);
+    this.fbCategoryId.set(this.feedbackCategories()[0]?.id ?? '');
+    this.fbComment.set('');
+  }
+
+  startEditFeedback(entry: FeedbackEntry): void {
+    this.confirmingFeedbackDeleteId.set(null);
+    this.editingFeedbackId.set(entry.id);
+    this.fbRating.set(entry.rating);
+    this.fbCategoryId.set(entry.categoryId);
+    this.fbComment.set(entry.comment);
+  }
+
+  cancelEditFeedback(): void { this.editingFeedbackId.set(null); }
+
+  async saveFeedback(): Promise<void> {
+    const editing = this.editingFeedbackId();
+    if (!editing || !this.canSaveFeedback() || this.savingFeedback()) return;
+    this.savingFeedback.set(true);
+    const rq = { rating: this.fbRating(), categoryId: this.fbCategoryId(), comment: this.fbComment().trim() };
+    const r = editing === 'new'
+      ? await this.createFeedbackUc.run({ id: this.swimmerId, rq })
+      : await this.updateFeedbackUc.run({ id: this.swimmerId, entryId: editing, rq });
+    this.savingFeedback.set(false);
+    if (r.ok) {
+      this.notify.success(this.i18n.t(editing === 'new' ? 'swimmerProfile.toasts.feedbackSaved' : 'swimmerProfile.toasts.feedbackUpdated'));
+      this.editingFeedbackId.set(null);
+      this.feedbackLoaded = false;
+      await this.loadFeedback();
+    } else {
+      this.notify.error(this.i18n.t('swimmerProfile.toasts.saveFailed'));
+    }
+  }
+
+  askDeleteFeedback(entryId: string): void { this.editingFeedbackId.set(null); this.confirmingFeedbackDeleteId.set(entryId); }
+  cancelDeleteFeedback(): void { this.confirmingFeedbackDeleteId.set(null); }
+
+  async confirmDeleteFeedback(): Promise<void> {
+    const entryId = this.confirmingFeedbackDeleteId();
+    if (!entryId || this.deletingFeedback()) return;
+    this.deletingFeedback.set(true);
+    const res = await this.deleteFeedbackUc.run({ id: this.swimmerId, entryId });
+    this.deletingFeedback.set(false);
+    if (res.ok) {
+      this.notify.success(this.i18n.t('swimmerProfile.toasts.feedbackRemoved'));
+      this.confirmingFeedbackDeleteId.set(null);
+      this.feedbackLoaded = false;
+      await this.loadFeedback();
     } else {
       this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
     }

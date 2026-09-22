@@ -19,8 +19,8 @@ export class SwimmerProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly language = inject(LanguageStore);
 
-  // Full tab strip for visual fidelity; only 'identityVitals', 'guardian', 'physiological', and 'inbody' are enabled this pass.
-  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records']);
+  // Full tab strip for visual fidelity; identityVitals, guardian, physiological, inbody, records, healthMonitoring, and feedback are enabled.
+  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records', 'healthMonitoring', 'feedback']);
   isEnabled(key: string): boolean { return this.enabledTabs.has(key); }
 
   protected readonly tabs: ProfileTab[] = [
@@ -51,6 +51,17 @@ export class SwimmerProfilePage implements OnInit {
   refLabel(ref: { nameEn: string; nameAr: string | null } | null | undefined): string {
     if (!ref) return '—';
     return this.language.lang() === 'ar' ? (ref.nameAr ?? ref.nameEn) : ref.nameEn;
+  }
+
+  testName(r: { testNameEn: string; testNameAr: string }): string {
+    return this.language.lang() === 'ar' ? (r.testNameAr || r.testNameEn) : r.testNameEn;
+  }
+
+  protected readonly starScale = [1, 2, 3, 4, 5];
+
+  feedbackCategoryName(categoryId: string): string {
+    const c = this.vm.feedbackCategories().find((x) => x.id === categoryId);
+    return this.refLabel(c ?? null);
   }
 
   initials(): string {

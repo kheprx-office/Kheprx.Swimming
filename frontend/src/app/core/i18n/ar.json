@@ -98,6 +98,21 @@
       "noRecords": "لا توجد سجلات بعد.",
       "uncategorized": "غير مصنّف"
     },
+    "healthMonitoring": {
+      "title": "نتائج الاختبارات",
+      "subtitle": "كل نتيجة اختبار مسجلة، مقارنة بالنطاق الطبيعي المحدد لها.",
+      "from": "من",
+      "to": "إلى",
+      "value": "القيمة",
+      "inRange": "ضمن النطاق",
+      "watch": "تحذير",
+      "unknown": "غير معروف",
+      "edit": "تعديل",
+      "remove": "حذف",
+      "confirmDelete": "حذف هذه القراءة؟",
+      "noReadings": "لا توجد قراءات بعد.",
+      "noneInRange": "لا توجد قراءات ضمن النطاق الزمني المحدد."
+    },
     "fields": {
       "fullName": "الاسم الكامل", "nameEn": "الاسم (بالإنجليزية)", "nameAr": "الاسم (بالعربية)",
       "dob": "تاريخ الميلاد", "phone": "رقم الهاتف",
@@ -124,7 +139,31 @@
       "readingSaved": "تم حفظ القياس",
       "readingDeleted": "تم حذف القياس",
       "recordSaved": "تم حفظ السجل",
-      "recordRemoved": "تم حذف السجل"
+      "recordRemoved": "تم حذف السجل",
+      "healthReadingUpdated": "تم تحديث القراءة",
+      "healthReadingRemoved": "تم حذف القراءة",
+      "feedbackSaved": "تم حفظ التقييم",
+      "feedbackUpdated": "تم تحديث التقييم",
+      "feedbackRemoved": "تم حذف التقييم"
+    },
+    "feedback": {
+      "title": "التقييمات",
+      "subtitle": "تقييمات أداء المدرب لهذا السباح.",
+      "add": "إضافة تقييم",
+      "rating": "تقييم الأداء",
+      "category": "الفئة",
+      "comment": "التعليق",
+      "commentPlaceholder": "اكتب تعليقك...",
+      "save": "حفظ التقييم",
+      "history": "سجل التقييمات",
+      "from": "من",
+      "to": "إلى",
+      "clear": "مسح",
+      "noneYet": "لا توجد تقييمات بعد",
+      "noneInRange": "لا تقييمات في هذه الفترة",
+      "edit": "تعديل",
+      "remove": "حذف",
+      "confirmDelete": "حذف هذا التقييم؟"
     }
   },
   "shell": {

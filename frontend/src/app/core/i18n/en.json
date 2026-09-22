@@ -98,6 +98,21 @@
       "noRecords": "No records yet.",
       "uncategorized": "Uncategorized"
     },
+    "healthMonitoring": {
+      "title": "Test results",
+      "subtitle": "Every logged test result, measured against its defined normal range.",
+      "from": "From",
+      "to": "To",
+      "value": "Value",
+      "inRange": "In range",
+      "watch": "Watch",
+      "unknown": "Unknown",
+      "edit": "Edit",
+      "remove": "Remove",
+      "confirmDelete": "Remove this reading?",
+      "noReadings": "No test readings yet.",
+      "noneInRange": "No readings in the selected date range."
+    },
     "fields": {
       "fullName": "Full Name", "nameEn": "Full Name (EN)", "nameAr": "Full Name (AR)",
       "dob": "Date of Birth", "phone": "Phone Number",
@@ -124,7 +139,31 @@
       "readingSaved": "Reading saved",
       "readingDeleted": "Reading deleted",
       "recordSaved": "Record saved",
-      "recordRemoved": "Record removed"
+      "recordRemoved": "Record removed",
+      "healthReadingUpdated": "Reading updated",
+      "healthReadingRemoved": "Reading removed",
+      "feedbackSaved": "Feedback saved",
+      "feedbackUpdated": "Feedback updated",
+      "feedbackRemoved": "Feedback removed"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "subtitle": "Coach performance evaluations for this swimmer.",
+      "add": "Add Feedback",
+      "rating": "Performance Rating",
+      "category": "Category",
+      "comment": "Comment",
+      "commentPlaceholder": "Write your comment...",
+      "save": "Save Feedback",
+      "history": "Feedback History",
+      "from": "From",
+      "to": "To",
+      "clear": "Clear",
+      "noneYet": "No feedback yet",
+      "noneInRange": "No feedback in this date range",
+      "edit": "Edit",
+      "remove": "Remove",
+      "confirmDelete": "Delete this feedback?"
     }
   },
   "shell": {
