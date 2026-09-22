@@ -15,3 +15,19 @@ public sealed record HealthReadingDto(
     DateTime ReadingDate,
     Guid RecordedBy,
     string Status);
+
+/// <summary>Payload to edit a health reading (PUT /api/health-readings/{id}). Value only.</summary>
+public sealed record UpdateHealthReadingRequest(decimal Value);
+
+/// <summary>An enriched health reading row (test name/unit/bounds + derived status).</summary>
+public sealed record HealthReadingListItemDto(
+    Guid Id,
+    Guid MedicalTestId,
+    string TestNameEn,
+    string TestNameAr,
+    string Unit,
+    decimal Value,
+    decimal LowerBound,
+    decimal UpperBound,
+    DateTime ReadingDate,
+    string Status);

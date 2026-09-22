@@ -10,14 +10,25 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kheprx.BaseBackend.Api.Controllers;
 
 [Route("api/health-readings")]
-[Authorize(Roles = "head_coach,captain")]
+[Authorize]
 public sealed class HealthReadingsController : BaseApiController
 {
     private readonly IHealthReadingService _service;
     public HealthReadingsController(IHealthReadingService service) => _service = service;
 
+    /// <summary>Lists a swimmer's readings (newest first), enriched with test details + status.</summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<HealthReadingListItemDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<HealthReadingListItemDto>>>> List([FromQuery] Guid swimmerId, CancellationToken ct)
+    {
+        var list = await _service.ListBySwimmerAsync(swimmerId, ct);
+        return Ok(ApiResponse<IReadOnlyList<HealthReadingListItemDto>>.Success(
+            HealthReadingMessages.Success.Listed(AppLanguage.Current), list));
+    }
+
     /// <summary>Logs a swimmer's test reading. Head Coach or Captain only.</summary>
     [HttpPost]
+    [Authorize(Roles = "head_coach,captain")]
     [ProducesResponseType(typeof(ApiResponse<HealthReadingDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<HealthReadingDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<HealthReadingDto>>> Create(CreateHealthReadingRequest request, CancellationToken ct)
@@ -33,5 +44,40 @@ public sealed class HealthReadingsController : BaseApiController
         var body = ApiResponse<HealthReadingDto>.Success(
             HealthReadingMessages.Success.Logged(AppLanguage.Current), created);
         return StatusCode(StatusCodes.Status201Created, body);
+    }
+
+    /// <summary>Edits a reading's value. Head Coach or Captain only.</summary>
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "head_coach,captain")]
+    [ProducesResponseType(typeof(ApiResponse<HealthReadingListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<HealthReadingListItemDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HealthReadingListItemDto>>> Update(Guid id, UpdateHealthReadingRequest request, CancellationToken ct)
+    {
+        var updated = await _service.UpdateAsync(id, request, ct);
+        if (updated is null)
+        {
+            var nf = ApiResponse<HealthReadingListItemDto>.Failure(
+                HealthReadingMessages.Errors.NotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<HealthReadingListItemDto>.Success(
+            HealthReadingMessages.Success.Updated(AppLanguage.Current), updated));
+    }
+
+    /// <summary>Deletes a reading. Head Coach or Captain only.</summary>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "head_coach,captain")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id, CancellationToken ct)
+    {
+        var deleted = await _service.DeleteAsync(id, ct);
+        if (!deleted)
+        {
+            var nf = ApiResponse<object>.Failure(
+                HealthReadingMessages.Errors.NotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<object>.Success(HealthReadingMessages.Success.Deleted(AppLanguage.Current), null));
     }
 }

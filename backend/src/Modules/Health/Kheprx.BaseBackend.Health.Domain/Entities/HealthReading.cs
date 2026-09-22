@@ -20,4 +20,6 @@ public sealed class HealthReading
         ReadingDate = DateTime.UtcNow;
         RecordedBy = recordedBy;
     }
+
+    public void Update(decimal value) => Value = value;
 }

@@ -21,4 +21,22 @@ public class HealthReadingTests
         Assert.Equal(recordedBy, r.RecordedBy);
         Assert.NotEqual(default, r.ReadingDate);
     }
+
+    [Fact]
+    public void Update_changes_value_only_and_preserves_other_fields()
+    {
+        var swimmerId = Guid.NewGuid();
+        var testId = Guid.NewGuid();
+        var recordedBy = Guid.NewGuid();
+        var r = new HealthReading(swimmerId, testId, 95.5m, recordedBy);
+        var originalDate = r.ReadingDate;
+
+        r.Update(120m);
+
+        Assert.Equal(120m, r.Value);
+        Assert.Equal(swimmerId, r.SwimmerId);
+        Assert.Equal(testId, r.MedicalTestId);
+        Assert.Equal(recordedBy, r.RecordedBy);
+        Assert.Equal(originalDate, r.ReadingDate);
+    }
 }
