@@ -1,5 +1,122 @@
-<div class="mx-auto max-w-3xl">
-  <header class="mb-8">
-    <h1 class="font-heading text-3xl text-ink">{{ 'shell.nav.championships' | translate }}</h1>
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+  <header class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-heading text-3xl text-ink">{{ 'championships.title' | translate }}</h1>
+      <p class="mt-1 text-text-secondary">{{ 'championships.subtitle' | translate }}</p>
+    </div>
+    @if (vm.canManage() && !vm.showForm()) {
+      <button type="button" (click)="vm.openForm()"
+              class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+        <span aria-hidden="true">+</span>
+        {{ 'championships.create' | translate }}
+      </button>
+    }
   </header>
+
+  <!-- New Championship form (Head Coach / Captain only) -->
+  @if (vm.showForm()) {
+    <div class="mb-6 rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <h2 class="mb-4 font-heading text-xl text-ink">{{ 'championships.form.title' | translate }}</h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="lg:col-span-2">
+          <label for="champ-name" class="mb-1 block text-xs text-text-secondary">{{ 'championships.form.name' | translate }}</label>
+          <input id="champ-name" type="text" [ngModel]="vm.newName()" (ngModelChange)="vm.setNewName($event)"
+                 class="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+        </div>
+        <div>
+          <label for="champ-start" class="mb-1 block text-xs text-text-secondary">{{ 'championships.form.start' | translate }}</label>
+          <input id="champ-start" type="date" [ngModel]="vm.newStart()" (ngModelChange)="vm.setNewStart($event)"
+                 class="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+        </div>
+        <div>
+          <label for="champ-end" class="mb-1 block text-xs text-text-secondary">{{ 'championships.form.end' | translate }}</label>
+          <input id="champ-end" type="date" [ngModel]="vm.newEnd()" (ngModelChange)="vm.setNewEnd($event)"
+                 [attr.min]="vm.newStart() || null"
+                 class="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+        </div>
+        <div class="lg:col-span-2">
+          <label for="champ-location" class="mb-1 block text-xs text-text-secondary">{{ 'championships.form.location' | translate }}</label>
+          <input id="champ-location" type="text" [ngModel]="vm.newLocation()" (ngModelChange)="vm.setNewLocation($event)"
+                 class="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+        </div>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button type="button" (click)="vm.save()" [disabled]="!vm.formValid() || vm.saving()"
+                class="inline-flex h-10 items-center rounded-lg bg-primary px-5 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
+          {{ 'championships.form.save' | translate }}
+        </button>
+        <button type="button" (click)="vm.cancelForm()"
+                class="inline-flex h-10 items-center rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink hover:bg-muted/40">
+          {{ 'championships.form.cancel' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="rounded-2xl border border-border bg-surface shadow-sm">
+    <!-- Period filter -->
+    <div class="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-end">
+      <div>
+        <label for="champ-from" class="mb-1 block text-xs text-text-secondary">{{ 'championships.fromDate' | translate }}</label>
+        <input id="champ-from" type="date" [ngModel]="vm.filterFrom()" (ngModelChange)="vm.setFrom($event)"
+               class="h-9 rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+      </div>
+      <div>
+        <label for="champ-to" class="mb-1 block text-xs text-text-secondary">{{ 'championships.toDate' | translate }}</label>
+        <input id="champ-to" type="date" [ngModel]="vm.filterTo()" (ngModelChange)="vm.setTo($event)"
+               class="h-9 rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+      </div>
+      @if (vm.hasFilter()) {
+        <button type="button" (click)="vm.clearFilter()"
+                class="h-9 rounded-lg border border-border bg-surface px-3 text-sm text-text-secondary hover:text-ink">
+          {{ 'championships.showAll' | translate }}
+        </button>
+      }
+      @if (!vm.loading()) {
+        <span class="text-xs text-text-secondary sm:ms-auto">
+          {{ vm.count() }} {{ (vm.count() === 1 ? 'championships.countOne' : 'championships.count') | translate }}
+        </span>
+      }
+    </div>
+
+    <!-- States -->
+    @if (vm.loading()) {
+      <div class="px-5 py-10 text-center text-sm text-text-secondary">{{ 'championships.loading' | translate }}</div>
+    } @else if (vm.error()) {
+      <div class="px-5 py-10 text-center text-sm text-danger">{{ 'championships.error' | translate }}</div>
+    } @else if (vm.count() === 0) {
+      <div class="px-5 py-12 text-center">
+        <p class="text-sm font-medium text-ink">{{ 'championships.empty' | translate }}</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-start">
+          <thead class="border-b border-border">
+            <tr>
+              <th class="px-5 py-3 text-start text-xs font-medium text-text-secondary">{{ 'championships.col.championship' | translate }}</th>
+              <th class="py-3 text-start text-xs font-medium text-text-secondary">{{ 'championships.col.date' | translate }}</th>
+              <th class="py-3 text-start text-xs font-medium text-text-secondary">{{ 'championships.col.location' | translate }}</th>
+              <th class="px-5 py-3 text-start text-xs font-medium text-text-secondary">{{ 'championships.col.status' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            @for (e of vm.filtered(); track e.id) {
+              <tr class="hover:bg-muted/40">
+                <td class="px-5 py-3.5">
+                  <span class="text-sm font-medium text-ink">{{ vm.name(e) }}</span>
+                </td>
+                <td class="py-3.5 text-sm text-text-secondary whitespace-nowrap">{{ vm.dateRange(e) }}</td>
+                <td class="py-3.5 text-sm text-text-secondary">{{ vm.location(e) }}</td>
+                <td class="px-5 py-3.5">
+                  <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold" [class]="vm.statusBadgeClass(e)">
+                    {{ vm.statusLabel(e) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
 </div>

@@ -105,4 +105,15 @@ public sealed class ReferenceController : BaseApiController
             ReferenceMessages.Success.AttendanceStatusesListed(AppLanguage.Current), data);
         return Ok(body);
     }
+
+    /// <summary>Lists all competition statuses (upcoming / completed).</summary>
+    [HttpGet("competition-statuses")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CodedLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CodedLookupDto>>>> CompetitionStatuses(CancellationToken ct)
+    {
+        var data = await _service.GetCompetitionStatusesAsync(ct);
+        var body = ApiResponse<IReadOnlyList<CodedLookupDto>>.Success(
+            ReferenceMessages.Success.CompetitionStatusesListed(AppLanguage.Current), data);
+        return Ok(body);
+    }
 }

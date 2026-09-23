@@ -185,6 +185,11 @@ const SCHEMA = [
    {c:"id",t:"uuid",k:"PK",n:false},
    {c:"code",t:"varchar",k:"",n:false,note:"present | late | absent | excused"},
    {c:"name_en",t:"varchar",k:"",n:false},
+   {c:"name_ar",t:"varchar",k:"",n:true}]},
+  {name:"competition_status",note:"championship event status lookup",cols:[
+   {c:"id",t:"uuid",k:"PK",n:false},
+   {c:"code",t:"varchar",k:"",n:false,note:"upcoming | completed"},
+   {c:"name_en",t:"varchar",k:"",n:false},
    {c:"name_ar",t:"varchar",k:"",n:true}]}
  ]},
  {schema:"identity",color:"--identity",tables:[
@@ -322,7 +327,7 @@ const SCHEMA = [
    {c:"end_date",t:"date",k:"",n:false},
    {c:"location_en",t:"varchar",k:"",n:false},
    {c:"location_ar",t:"varchar",k:"",n:true},
-   {c:"status",t:"competition_status",k:"",n:false,note:"upcoming | completed"},
+   {c:"status_id",t:"uuid",k:"FK",fk:"reference.competition_status.id",n:false},
    {c:"created_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false}]},
   {name:"championship_enrollment",note:"swimmer enrolled in a competition event",cols:[
    {c:"id",t:"uuid",k:"PK",n:false},
@@ -380,6 +385,7 @@ const RELATIONSHIPS = [
  {from:"identity.swimmer_profile",to:"health.feedback_entry",card:"1-N",label:"receives"},
  {from:"reference.attendance_status",to:"attendance.attendance_record",card:"1-N",label:"classifies"},
  {from:"identity.swimmer_profile",to:"attendance.attendance_record",card:"1-N",label:"attends"},
+ {from:"reference.competition_status",to:"championships.competition_event",card:"1-N",label:"classifies"},
  {from:"championships.competition_event",to:"championships.championship_enrollment",card:"1-N",label:"enrolls"},
  {from:"identity.swimmer_profile",to:"championships.championship_enrollment",card:"1-N",label:"enrolled in"},
  {from:"championships.competition_event",to:"championships.competition_day",card:"1-N",label:"spans"},
@@ -456,7 +462,8 @@ const IMPLEMENTED = new Set([
   "athlete.medical_exam",
   "athlete.body_measurement","athlete.guardian",
   "reference.feedback_category","health.feedback_entry",
-  "reference.attendance_status","attendance.attendance_record"
+  "reference.attendance_status","attendance.attendance_record",
+  "reference.competition_status","championships.competition_event"
 ]);
 const isImplemented = key => IMPLEMENTED.has(key);
 function statusDot(key){

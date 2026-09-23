@@ -25,6 +25,7 @@ public static class IdentitySeeder
         await EnsureObservationCategories(db, ct);
         await EnsureFeedbackCategories(db, ct);
         await EnsureAttendanceStatuses(db, ct);
+        await EnsureCompetitionStatuses(db, ct);
         await EnsureClubs(db, ct);
         await db.SaveChangesAsync(ct);
 
@@ -187,6 +188,18 @@ public static class IdentitySeeder
         foreach (var (code, en, ar) in rows)
             if (!await db.AttendanceStatuses.AnyAsync(s => s.Code == code, ct))
                 await db.AttendanceStatuses.AddAsync(new AttendanceStatus(code, en, ar), ct);
+    }
+
+    private static async Task EnsureCompetitionStatuses(IdentityDbContext db, CancellationToken ct)
+    {
+        var rows = new (string Code, string En, string Ar)[]
+        {
+            ("upcoming", "Upcoming", "قادمة"),
+            ("completed", "Completed", "مكتملة"),
+        };
+        foreach (var (code, en, ar) in rows)
+            if (!await db.CompetitionStatuses.AnyAsync(s => s.Code == code, ct))
+                await db.CompetitionStatuses.AddAsync(new CompetitionStatus(code, en, ar), ct);
     }
 
     private static async Task EnsureClubs(IdentityDbContext db, CancellationToken ct)

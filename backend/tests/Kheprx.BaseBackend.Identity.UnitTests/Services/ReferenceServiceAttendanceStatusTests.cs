@@ -19,7 +19,7 @@ public class ReferenceServiceAttendanceStatusTests
             Mock.Of<IClubRepository>(), Mock.Of<IBloodTypeRepository>(), Mock.Of<IStrokeRepository>(),
             Mock.Of<IGenderRepository>(), Mock.Of<IObservationCategoryRepository>(),
             Mock.Of<IFitnessAssessmentRepository>(), Mock.Of<IFeedbackCategoryRepository>(),
-            attendance.Object);
+            attendance.Object, Mock.Of<ICompetitionStatusRepository>());
 
         var result = await svc.GetAttendanceStatusesAsync();
 

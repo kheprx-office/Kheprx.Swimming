@@ -23,6 +23,7 @@ public sealed class IdentityDbContext : DbContext
     public DbSet<ObservationCategory> ObservationCategories => Set<ObservationCategory>();
     public DbSet<FeedbackCategory> FeedbackCategories => Set<FeedbackCategory>();
     public DbSet<AttendanceStatus> AttendanceStatuses => Set<AttendanceStatus>();
+    public DbSet<CompetitionStatus> CompetitionStatuses => Set<CompetitionStatus>();
     public DbSet<Club> Clubs => Set<Club>();
     public DbSet<SwimmerSpecialization> SwimmerSpecializations => Set<SwimmerSpecialization>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

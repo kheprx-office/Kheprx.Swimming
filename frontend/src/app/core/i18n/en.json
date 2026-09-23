@@ -36,6 +36,31 @@
     "empty": { "title": "No swimmers found", "desc": "Try adjusting your search or filter." },
     "error": "Couldn't load swimmers. Please try again."
   },
+  "championships": {
+    "title": "Championships",
+    "subtitle": "Explore races, events, and results",
+    "fromDate": "From date",
+    "toDate": "To date",
+    "showAll": "Show all",
+    "count": "championships",
+    "countOne": "championship",
+    "col": { "championship": "Championship", "date": "Date", "location": "Location", "status": "Status" },
+    "loading": "Loading championships…",
+    "error": "Couldn't load championships.",
+    "empty": "No championships in this period",
+    "create": "Create Championship",
+    "saved": "Championship created",
+    "saveFailed": "Couldn't create the championship.",
+    "form": {
+      "title": "New Championship",
+      "name": "Event Name",
+      "start": "Start Date",
+      "end": "End Date",
+      "location": "Location",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
   "swimmerProfile": {
     "years": "years",
     "registeredClub": "Registered Club",

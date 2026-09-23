@@ -5,6 +5,7 @@ using Kheprx.BaseBackend.Api.Extensions.Security;
 using Kheprx.BaseBackend.Api.Extensions.Swagger;
 using Kheprx.BaseBackend.Api.Extensions.Validation;
 using Kheprx.BaseBackend.Attendance.Infrastructure.Extensions;
+using Kheprx.BaseBackend.Championships.Infrastructure.Extensions;
 using Kheprx.BaseBackend.Health.Infrastructure.Extensions;
 using Kheprx.BaseBackend.Identity.Infrastructure.Extensions;
 using Serilog;
@@ -21,6 +22,7 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddHealthModule(builder.Configuration);
 builder.Services.AddAttendanceModule(builder.Configuration);
+builder.Services.AddChampionshipsModule(builder.Configuration);
 
 // Cross-cutting concerns
 builder.Services.AddMvcConfiguration();
@@ -34,6 +36,7 @@ var app = builder.Build();
 await app.ApplyIdentityMigrationsAsync();
 await app.ApplyHealthMigrationsAsync();
 await app.ApplyAttendanceMigrationsAsync();
+await app.ApplyChampionshipsMigrationsAsync();
 
 // ========================================
 // Configure Middleware Pipeline

@@ -1,12 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@core/i18n';
+import { ChampionshipsViewModel } from './championships.viewmodel';
 
-// Placeholder page — renders through the shared app shell (sidebar + header) so the
-// Championships nav item is fully navigable. Feature content is intentionally not built yet.
 @Component({
   selector: 'app-championships-page',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './championships.page.html',
 })
-export class ChampionshipsPage {}
+export class ChampionshipsPage implements OnInit {
+  readonly vm = inject(ChampionshipsViewModel);
+  ngOnInit(): void { void this.vm.load(); }
+}
