@@ -47,4 +47,17 @@ public class CompetitionEventRepositoryTests
         Assert.Equal(sid, list[0].StatusId);
         Assert.Equal(cid, list[0].CreatedBy);
     }
+
+    [Fact]
+    public async Task GetByIdAsync_returns_the_event_or_null()
+    {
+        await using var db = NewDb();
+        var ev = new CompetitionEvent("Nov", null, new DateOnly(2023, 11, 15), new DateOnly(2023, 11, 16), "Cairo", null, Guid.NewGuid(), Guid.NewGuid());
+        db.CompetitionEvents.Add(ev);
+        await db.SaveChangesAsync();
+        var repo = new CompetitionEventRepository(db);
+
+        Assert.Equal("Nov", (await repo.GetByIdAsync(ev.Id))!.NameEn);
+        Assert.Null(await repo.GetByIdAsync(Guid.NewGuid()));
+    }
 }

@@ -59,6 +59,28 @@
       "location": "الموقع",
       "save": "حفظ",
       "cancel": "إلغاء"
+    },
+    "detail": {
+      "back": "العودة",
+      "comingSoon": "قريبًا",
+      "loading": "جارٍ تحميل البطولة…",
+      "notFound": "البطولة غير موجودة.",
+      "error": "تعذّر تحميل هذه البطولة.",
+      "tabs": {
+        "enrollment": "التسجيل",
+        "days": "أيام البطولة",
+        "finished": "سباقات منتهية",
+        "results": "النتائج"
+      }
+    },
+    "enrollment": {
+      "title": "تسجيل السباحين",
+      "search": "بحث عن سباحين…",
+      "save": "حفظ",
+      "saved": "تم حفظ التسجيل",
+      "saveFailed": "تعذّر حفظ التسجيل.",
+      "emptyRoster": "لا يوجد سباحون للتسجيل بعد.",
+      "years": "سنة"
     }
   },
   "swimmerProfile": {

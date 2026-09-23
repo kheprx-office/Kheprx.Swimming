@@ -20,4 +20,7 @@ internal sealed class CompetitionEventRepository : ICompetitionEventRepository
         _db.CompetitionEvents.Add(competitionEvent);
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task<CompetitionEvent?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => await _db.CompetitionEvents.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
 }

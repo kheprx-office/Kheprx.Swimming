@@ -29,3 +29,6 @@ public sealed record CreateCompetitionEventCommand(
     string? LocationAr,
     Guid StatusId,
     Guid CreatedBy);
+
+/// <summary>Replace-the-whole-set request for an event's swimmer enrollment.</summary>
+public sealed record SetEnrollmentsRequest(IReadOnlyList<Guid> SwimmerIds);

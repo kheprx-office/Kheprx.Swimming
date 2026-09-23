@@ -168,4 +168,101 @@ public class ChampionshipsControllerTests
             CultureInfo.CurrentUICulture = prev;
         }
     }
+
+    [Fact]
+    public async Task GetById_returns_200_and_resolves_status()
+    {
+        var id = Guid.NewGuid();
+        var statusId = Guid.NewGuid();
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new CompetitionEventDto(id, "Nats", null, new DateOnly(2023, 11, 15),
+               new DateOnly(2023, 11, 16), "Cairo", null, statusId, "", "", null));
+        var reference = new Mock<IReferenceService>();
+        reference.Setup(r => r.GetCompetitionStatusesAsync(It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(new[] { new CodedLookupDto(statusId, "upcoming", "Upcoming", "قادمة") });
+
+        var result = await NewController(svc.Object, reference.Object).GetById(id, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<CompetitionEventDto>>(ok.Value);
+        Assert.Equal("upcoming", body.Data!.StatusCode);
+        Assert.Equal("Upcoming", body.Data!.StatusNameEn);
+    }
+
+    [Fact]
+    public async Task GetById_returns_404_when_missing()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((CompetitionEventDto?)null);
+        var reference = new Mock<IReferenceService>();
+
+        var result = await NewController(svc.Object, reference.Object).GetById(Guid.NewGuid(), CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetEnrollments_returns_200_with_ids()
+    {
+        var eventId = Guid.NewGuid();
+        var s1 = Guid.NewGuid();
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetEnrolledSwimmerIdsAsync(eventId, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { s1 });
+
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).GetEnrollments(eventId, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<IReadOnlyList<Guid>>>(ok.Value);
+        Assert.Equal(new[] { s1 }, body.Data!);
+    }
+
+    [Fact]
+    public async Task GetEnrollments_returns_404_when_event_missing()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetEnrolledSwimmerIdsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((IReadOnlyList<Guid>?)null);
+
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).GetEnrollments(Guid.NewGuid(), CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetEnrollments_returns_200_when_replaced()
+    {
+        var eventId = Guid.NewGuid();
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.SetEnrollmentsAsync(eventId, It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var request = new SetEnrollmentsRequest(new[] { Guid.NewGuid() });
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).SetEnrollments(eventId, request, CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task SetEnrollments_returns_404_when_event_missing()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.SetEnrollmentsAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var request = new SetEnrollmentsRequest(Array.Empty<Guid>());
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).SetEnrollments(Guid.NewGuid(), request, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public void SetEnrollments_is_restricted_to_head_coach_and_captain()
+    {
+        var attr = typeof(ChampionshipsController).GetMethod(nameof(ChampionshipsController.SetEnrollments))!
+            .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), false)
+            .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()
+            .Single();
+        Assert.Equal("head_coach,captain", attr.Roles);
+    }
 }

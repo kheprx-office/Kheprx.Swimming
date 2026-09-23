@@ -59,6 +59,28 @@
       "location": "Location",
       "save": "Save",
       "cancel": "Cancel"
+    },
+    "detail": {
+      "back": "Back",
+      "comingSoon": "Coming soon",
+      "loading": "Loading championship…",
+      "notFound": "Championship not found.",
+      "error": "Couldn't load this championship.",
+      "tabs": {
+        "enrollment": "Enrollment",
+        "days": "Competition Days",
+        "finished": "Finished races",
+        "results": "Results"
+      }
+    },
+    "enrollment": {
+      "title": "Swimmer Enrollment",
+      "search": "Search swimmers…",
+      "save": "Save",
+      "saved": "Enrollment saved",
+      "saveFailed": "Couldn't save the enrollment.",
+      "emptyRoster": "No swimmers to enroll yet.",
+      "years": "yrs"
     }
   },
   "swimmerProfile": {

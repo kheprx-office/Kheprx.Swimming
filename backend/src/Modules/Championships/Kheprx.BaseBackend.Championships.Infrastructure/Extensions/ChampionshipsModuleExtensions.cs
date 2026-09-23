@@ -17,6 +17,7 @@ public static class ChampionshipsModuleExtensions
             options.UseNpgsql(configuration.GetConnectionString("Postgres")));
 
         services.AddScoped<ICompetitionEventRepository, CompetitionEventRepository>();
+        services.AddScoped<IChampionshipEnrollmentRepository, ChampionshipEnrollmentRepository>();
         services.AddScoped<IChampionshipService, ChampionshipService>();
         return services;
     }

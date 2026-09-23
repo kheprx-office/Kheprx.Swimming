@@ -103,7 +103,7 @@
             @for (e of vm.filtered(); track e.id) {
               <tr class="hover:bg-muted/40">
                 <td class="px-5 py-3.5">
-                  <span class="text-sm font-medium text-ink">{{ vm.name(e) }}</span>
+                  <a [routerLink]="['/championships', e.id]" class="text-sm font-medium text-primary hover:underline">{{ vm.name(e) }}</a>
                 </td>
                 <td class="py-3.5 text-sm text-text-secondary whitespace-nowrap">{{ vm.dateRange(e) }}</td>
                 <td class="py-3.5 text-sm text-text-secondary">{{ vm.location(e) }}</td>

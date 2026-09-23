@@ -8,7 +8,13 @@ namespace Kheprx.BaseBackend.Championships.Application.Services;
 internal sealed class ChampionshipService : IChampionshipService
 {
     private readonly ICompetitionEventRepository _events;
-    public ChampionshipService(ICompetitionEventRepository events) => _events = events;
+    private readonly IChampionshipEnrollmentRepository _enrollments;
+
+    public ChampionshipService(ICompetitionEventRepository events, IChampionshipEnrollmentRepository enrollments)
+    {
+        _events = events;
+        _enrollments = enrollments;
+    }
 
     public async Task<IReadOnlyList<CompetitionEventDto>> ListAsync(CancellationToken ct = default)
     {
@@ -21,6 +27,27 @@ internal sealed class ChampionshipService : IChampionshipService
         var e = new CompetitionEvent(c.NameEn, c.NameAr, c.StartDate, c.EndDate, c.LocationEn, c.LocationAr, c.StatusId, c.CreatedBy);
         await _events.AddAsync(e, ct);
         return ToDto(e);
+    }
+
+    public async Task<CompetitionEventDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var e = await _events.GetByIdAsync(id, ct);
+        return e is null ? null : ToDto(e);
+    }
+
+    public async Task<IReadOnlyList<Guid>?> GetEnrolledSwimmerIdsAsync(Guid eventId, CancellationToken ct = default)
+    {
+        var e = await _events.GetByIdAsync(eventId, ct);
+        if (e is null) return null;
+        return await _enrollments.ListSwimmerIdsAsync(eventId, ct);
+    }
+
+    public async Task<bool> SetEnrollmentsAsync(Guid eventId, IReadOnlyList<Guid> swimmerIds, CancellationToken ct = default)
+    {
+        var e = await _events.GetByIdAsync(eventId, ct);
+        if (e is null) return false;
+        await _enrollments.ReplaceAsync(eventId, swimmerIds, ct);
+        return true;
     }
 
     private static CompetitionEventDto ToDto(CompetitionEvent e) =>

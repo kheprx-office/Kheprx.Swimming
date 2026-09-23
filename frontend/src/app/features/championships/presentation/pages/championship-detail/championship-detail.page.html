@@ -1,0 +1,94 @@
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+  <a routerLink="/championships" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-primary">
+    <span aria-hidden="true">←</span> {{ 'championships.detail.back' | translate }}
+  </a>
+
+  @if (vm.loading()) {
+    <p class="text-text-secondary">{{ 'championships.detail.loading' | translate }}</p>
+  } @else if (vm.notFound()) {
+    <p class="text-danger">{{ 'championships.detail.notFound' | translate }}</p>
+  } @else if (vm.error() && !vm.championship()) {
+    <p class="text-danger">{{ 'championships.detail.error' | translate }}</p>
+  } @else if (vm.championship(); as c) {
+    <!-- Event header -->
+    <div class="mb-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
+      <h1 class="font-heading text-2xl text-ink">{{ vm.name() }}</h1>
+      <p class="mt-1 text-sm text-text-secondary">{{ vm.dateRange() }} · {{ vm.location() }}</p>
+    </div>
+
+    <!-- Tab strip: only Enrollment enabled -->
+    <div class="mb-6 flex flex-wrap gap-2 border-b border-border pb-2">
+      @for (t of tabs; track t.key) {
+        <button type="button"
+                class="rounded-md px-3 py-1.5 text-sm"
+                [class.bg-primary]="t.key === vm.activeTab()"
+                [class.text-white]="t.key === vm.activeTab()"
+                [class.text-text-secondary]="t.key !== vm.activeTab()"
+                [class.opacity-50]="!isEnabled(t.key)"
+                [class.cursor-not-allowed]="!isEnabled(t.key)"
+                [disabled]="!isEnabled(t.key)"
+                [attr.aria-disabled]="!isEnabled(t.key)"
+                [attr.title]="!isEnabled(t.key) ? ('championships.detail.comingSoon' | translate) : null"
+                (click)="isEnabled(t.key) && vm.setTab(t.key)">
+          {{ t.labelKey | translate }}
+        </button>
+      }
+    </div>
+
+    @if (vm.activeTab() === 'enrollment') {
+      <section class="rounded-2xl border border-border bg-surface shadow-sm">
+        @if (vm.enrollmentsLoaded()) {
+          <!-- Header: counter + Save -->
+          <div class="flex flex-col gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="font-heading text-xl text-ink">{{ 'championships.enrollment.title' | translate }}</h2>
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-text-secondary">
+                <span class="font-bold text-primary">{{ vm.enrolledCount() }}</span> / {{ vm.total() }}
+              </span>
+              @if (vm.canManage()) {
+                <button type="button" (click)="vm.save()" [disabled]="!vm.dirty() || vm.saving()"
+                        class="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
+                  {{ 'championships.enrollment.save' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="border-b border-border p-4">
+            <input type="text" [ngModel]="vm.search()" (ngModelChange)="vm.setSearch($event)"
+                   [placeholder]="'championships.enrollment.search' | translate"
+                   class="h-10 w-full max-w-md rounded-lg border border-border bg-surface px-3 text-sm text-ink" />
+          </div>
+
+          <!-- Roster -->
+          @if (vm.filtered().length === 0) {
+            <p class="p-6 text-center text-sm text-text-secondary">{{ 'championships.enrollment.emptyRoster' | translate }}</p>
+          } @else {
+            <ul class="divide-y divide-border">
+              @for (s of vm.filtered(); track s.id) {
+                <li class="flex items-center gap-4 p-4" [class.bg-primary]="vm.isEnrolled(s.id)" [class.bg-opacity-5]="vm.isEnrolled(s.id)">
+                  <input type="checkbox" [checked]="vm.isEnrolled(s.id)" [disabled]="!vm.canManage()"
+                         (change)="vm.toggle(s.id)"
+                         [attr.aria-label]="vm.swimmerName(s)"
+                         class="h-5 w-5 rounded border-border text-primary" />
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-xs font-bold text-text-secondary">
+                    {{ vm.initials(s) }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-ink">{{ vm.swimmerName(s) }}</p>
+                    <p class="text-xs text-text-secondary">
+                      {{ vm.club(s) }}@if (s.age !== null) { · {{ s.age }} {{ 'championships.enrollment.years' | translate }} }
+                    </p>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        } @else {
+          <p class="p-6 text-center text-sm text-danger">{{ 'championships.detail.error' | translate }}</p>
+        }
+      </section>
+    }
+  }
+</div>

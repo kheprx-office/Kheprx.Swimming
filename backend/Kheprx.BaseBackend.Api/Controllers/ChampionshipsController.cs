@@ -79,4 +79,56 @@ public sealed class ChampionshipsController : BaseApiController
         return StatusCode(StatusCodes.Status201Created,
             ApiResponse<CompetitionEventDto>.Success(ChampionshipMessages.Success.Created(lang), enriched));
     }
+
+    /// <summary>Returns a single championship event with its status resolved. 404 when unknown.</summary>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<CompetitionEventDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CompetitionEventDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CompetitionEventDto>>> GetById(Guid id, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var dto = await _service.GetByIdAsync(id, ct);
+        if (dto is null)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<CompetitionEventDto>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found"));
+
+        var statuses = await _reference.GetCompetitionStatusesAsync(ct);
+        var s = statuses.FirstOrDefault(x => x.Id == dto.StatusId);
+        var enriched = s is null ? dto
+            : dto with { StatusCode = s.Code, StatusNameEn = s.NameEn, StatusNameAr = s.NameAr };
+
+        return Ok(ApiResponse<CompetitionEventDto>.Success(ChampionshipMessages.Success.Listed(lang), enriched));
+    }
+
+    /// <summary>Lists the swimmer ids enrolled in an event. 404 when the event is unknown.</summary>
+    [HttpGet("{eventId:guid}/enrollments")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<Guid>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<Guid>>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<Guid>>>> GetEnrollments(Guid eventId, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var ids = await _service.GetEnrolledSwimmerIdsAsync(eventId, ct);
+        if (ids is null)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<IReadOnlyList<Guid>>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found"));
+
+        return Ok(ApiResponse<IReadOnlyList<Guid>>.Success(ChampionshipMessages.EnrollmentSuccess.Retrieved(lang), ids));
+    }
+
+    /// <summary>Replaces the whole enrolled-swimmer set for an event. Head Coach or Captain only.</summary>
+    [HttpPut("{eventId:guid}/enrollments")]
+    [Authorize(Roles = "head_coach,captain")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object>>> SetEnrollments(Guid eventId, SetEnrollmentsRequest request, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var swimmerIds = request.SwimmerIds ?? new List<Guid>();
+        var ok = await _service.SetEnrollmentsAsync(eventId, swimmerIds, ct);
+        if (!ok)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<object>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found"));
+
+        return Ok(ApiResponse<object>.Success(ChampionshipMessages.EnrollmentSuccess.Saved(lang), null));
+    }
 }

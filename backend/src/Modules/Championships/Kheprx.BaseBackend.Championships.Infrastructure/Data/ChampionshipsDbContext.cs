@@ -8,6 +8,7 @@ public sealed class ChampionshipsDbContext : DbContext
     public ChampionshipsDbContext(DbContextOptions<ChampionshipsDbContext> options) : base(options) { }
 
     public DbSet<CompetitionEvent> CompetitionEvents => Set<CompetitionEvent>();
+    public DbSet<ChampionshipEnrollment> Enrollments => Set<ChampionshipEnrollment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
