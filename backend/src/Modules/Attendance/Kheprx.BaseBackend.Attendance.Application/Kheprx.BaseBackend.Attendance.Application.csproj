@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kheprx.BaseBackend.Attendance.Domain\Kheprx.BaseBackend.Attendance.Domain.csproj" />
+    <ProjectReference Include="..\..\..\SharedKernel\Kheprx.BaseBackend.SharedKernel\Kheprx.BaseBackend.SharedKernel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Kheprx.BaseBackend.Attendance.Infrastructure" />
+    <InternalsVisibleTo Include="Kheprx.BaseBackend.Attendance.UnitTests" />
+  </ItemGroup>
+</Project>

@@ -85,6 +85,34 @@ namespace Kheprx.BaseBackend.Identity.Infrastructure.Migrations
                     b.ToTable("app_user", "identity");
                 });
 
+            modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.AttendanceStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("attendance_status", "reference");
+                });
+
             modelBuilder.Entity("Kheprx.BaseBackend.Identity.Domain.Entities.BloodType", b =>
                 {
                     b.Property<Guid>("Id")

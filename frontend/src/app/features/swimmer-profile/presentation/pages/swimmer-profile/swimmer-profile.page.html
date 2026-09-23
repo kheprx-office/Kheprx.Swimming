@@ -480,6 +480,91 @@
         }
       </section>
     }
+    @if (vm.activeTab() === 'attendance') {
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 border-b border-border pb-3">
+          <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.tabs.attendance' | translate }}</h2>
+          <p class="mt-0.5 text-sm text-text-secondary">{{ 'swimmerProfile.attendance.subtitle' | translate }}</p>
+        </div>
+
+        @if (vm.loadingAttendance()) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.loading' | translate }}</p>
+        } @else if (vm.attendanceRecords().length === 0) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.attendance.noRecords' | translate }}</p>
+        } @else {
+          <!-- Rate + legend -->
+          <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p class="font-heading text-3xl text-success">{{ vm.attendanceRate() }}%</p>
+              <p class="text-sm text-text-secondary">{{ 'swimmerProfile.attendance.rate' | translate }}</p>
+            </div>
+            <div class="flex flex-wrap gap-3 text-xs text-text-secondary">
+              @for (code of ['present', 'late', 'absent', 'excused']; track code) {
+                <span class="flex items-center gap-1.5">
+                  <span class="h-2.5 w-2.5 rounded-full" [class]="attDotClass(code)"></span>
+                  {{ ('swimmerProfile.attendance.legend.' + code) | translate }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Month picker -->
+          <div class="mb-4 flex items-center gap-3">
+            <span class="text-sm font-semibold text-ink">{{ 'swimmerProfile.attendance.monthly' | translate }}</span>
+            <select class="h-9 rounded-md border border-border bg-surface px-2 text-sm text-ink"
+                    [value]="vm.selectedMonth()"
+                    (change)="vm.selectAttendanceMonth($any($event.target).value)">
+              @for (m of vm.attendanceMonths(); track m) { <option [value]="m">{{ monthLabel(m) }}</option> }
+            </select>
+          </div>
+
+          <!-- Calendar grid -->
+          <div class="grid grid-cols-7 gap-1.5">
+            @for (d of ['S','M','T','W','T','F','S']; track $index) {
+              <div class="py-1 text-center text-xs font-medium text-text-secondary">{{ d }}</div>
+            }
+            @for (week of vm.attendanceWeeks(); track $index) {
+              @for (cell of week; track $index) {
+                @if (cell === null) {
+                  <div class="aspect-square"></div>
+                } @else {
+                  <button type="button"
+                          class="relative flex aspect-square items-center justify-center rounded-md text-xs font-medium"
+                          [class]="attCellClass(cell.code)"
+                          [class.ring-2]="vm.selectedAttendanceDay() === cell.dateIso"
+                          [class.ring-primary]="vm.selectedAttendanceDay() === cell.dateIso"
+                          [disabled]="cell.code === null"
+                          (click)="vm.selectAttendanceDay(cell.dateIso)">
+                    {{ cell.day }}
+                    @if (cell.hasNote) { <span class="absolute bottom-1 h-1 w-1 rounded-full bg-current opacity-70"></span> }
+                  </button>
+                }
+              }
+            }
+          </div>
+
+          <!-- Selected-day detail -->
+          @if (vm.selectedAttendanceDetail(); as detail) {
+            <div class="mt-5 rounded-xl border border-border bg-card p-4">
+              <div class="flex items-center gap-3">
+                <span class="font-heading text-lg text-ink">{{ fmtDate(detail.dateIso) }}</span>
+                @if (detail.status) {
+                  <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [class]="attCellClass(detail.status.code ?? null)">
+                    {{ refLabel(detail.status) }}
+                  </span>
+                }
+              </div>
+              @if ((language.lang() === 'ar' ? detail.record.coachNoteAr : detail.record.coachNoteEn); as note) {
+                <p class="mt-2 text-sm text-ink">{{ note }}</p>
+                <p class="mt-1 text-xs text-text-secondary">{{ language.lang() === 'ar' ? (detail.record.recordedByNameAr || detail.record.recordedByNameEn) : detail.record.recordedByNameEn }}</p>
+              } @else {
+                <p class="mt-2 text-sm text-text-secondary">{{ 'swimmerProfile.attendance.noNote' | translate }}</p>
+              }
+            </div>
+          }
+        }
+      </section>
+    }
     @if (vm.activeTab() === 'feedback') {
       <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <div class="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">

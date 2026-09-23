@@ -10,6 +10,7 @@ export interface IReferenceRepository {
   getObservationCategories(): Promise<CodedLookupListDtoRs>;
   getFeedbackCategories(): Promise<CodedLookupListDtoRs>;
   getFitnessAssessments(): Promise<CodedLookupListDtoRs>;
+  getAttendanceStatuses(): Promise<CodedLookupListDtoRs>;
 }
 
 export const REFERENCE_REPOSITORY = new InjectionToken<IReferenceRepository>('REFERENCE_REPOSITORY');

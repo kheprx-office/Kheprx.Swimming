@@ -94,4 +94,15 @@ public sealed class ReferenceController : BaseApiController
             ReferenceMessages.Success.FeedbackCategoriesListed(AppLanguage.Current), data);
         return Ok(body);
     }
+
+    /// <summary>Lists all attendance statuses (present / late / absent / excused).</summary>
+    [HttpGet("attendance-statuses")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CodedLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CodedLookupDto>>>> AttendanceStatuses(CancellationToken ct)
+    {
+        var data = await _service.GetAttendanceStatusesAsync(ct);
+        var body = ApiResponse<IReadOnlyList<CodedLookupDto>>.Success(
+            ReferenceMessages.Success.AttendanceStatusesListed(AppLanguage.Current), data);
+        return Ok(body);
+    }
 }

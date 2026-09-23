@@ -1,3 +1,4 @@
+using Kheprx.BaseBackend.Attendance.Infrastructure.Data;
 using Kheprx.BaseBackend.Health.Infrastructure.Data;
 using Kheprx.BaseBackend.Identity.Application.Abstractions;
 using Kheprx.BaseBackend.Identity.Infrastructure.Data;
@@ -22,5 +23,12 @@ public static class MigrationExtensions
         var db = scope.ServiceProvider.GetRequiredService<HealthDbContext>();
         await db.Database.MigrateAsync();
         await HealthSeeder.SeedAsync(db);
+    }
+
+    public static async Task ApplyAttendanceMigrationsAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AttendanceDbContext>();
+        await db.Database.MigrateAsync();
     }
 }

@@ -17,5 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\src\Modules\Identity\Kheprx.BaseBackend.Identity.Infrastructure\Kheprx.BaseBackend.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\src\Modules\Health\Kheprx.BaseBackend.Health.Infrastructure\Kheprx.BaseBackend.Health.Infrastructure.csproj" />
+    <ProjectReference Include="..\src\Modules\Attendance\Kheprx.BaseBackend.Attendance.Application\Kheprx.BaseBackend.Attendance.Application.csproj" />
+    <ProjectReference Include="..\src\Modules\Attendance\Kheprx.BaseBackend.Attendance.Infrastructure\Kheprx.BaseBackend.Attendance.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

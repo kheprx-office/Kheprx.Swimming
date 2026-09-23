@@ -10,6 +10,7 @@ import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasure
 import { InBodyReadingListDtoRs, InBodyReadingItemDtoRs, DeleteInBodyReadingItemDtoRs, CreateInBodyReadingDtoRq } from '@features/swimmer-profile/data/dto/inbody-reading.dto';
 import { RecordListDtoRs, RecordItemDtoRs, DeleteRecordItemDtoRs, UpdateRecordDtoRq } from '@features/swimmer-profile/data/dto/record.dto';
 import { FeedbackEntryListDtoRs, FeedbackEntryItemDtoRs, DeleteFeedbackEntryItemDtoRs, CreateFeedbackEntryDtoRq } from '@features/swimmer-profile/data/dto/feedback-entry.dto';
+import { AttendanceRecordListDtoRs } from '@features/swimmer-profile/data/dto/attendance-record.dto';
 
 @Injectable({ providedIn: 'root' })
 export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
@@ -77,5 +78,8 @@ export class SwimmerProfileRepositoryImpl implements ISwimmerProfileRepository {
   }
   deleteFeedbackEntry(id: string, entryId: string): Promise<DeleteFeedbackEntryItemDtoRs> {
     return this.http.delete<DeleteFeedbackEntryItemDtoRs>(`/api/swimmers/${id}/feedback-entries/${entryId}`);
+  }
+  getAttendanceRecords(id: string): Promise<AttendanceRecordListDtoRs> {
+    return this.http.get<AttendanceRecordListDtoRs>(`/api/attendance-records?swimmerId=${id}`);
   }
 }

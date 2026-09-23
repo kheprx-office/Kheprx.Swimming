@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Modules\Attendance\Kheprx.BaseBackend.Attendance.Domain\Kheprx.BaseBackend.Attendance.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Attendance\Kheprx.BaseBackend.Attendance.Application\Kheprx.BaseBackend.Attendance.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Attendance\Kheprx.BaseBackend.Attendance.Infrastructure\Kheprx.BaseBackend.Attendance.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\SharedKernel\Kheprx.BaseBackend.SharedKernel\Kheprx.BaseBackend.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

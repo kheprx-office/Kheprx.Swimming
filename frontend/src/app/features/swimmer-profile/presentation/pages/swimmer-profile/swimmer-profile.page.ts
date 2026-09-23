@@ -17,10 +17,10 @@ interface ProfileTab { key: string; labelKey: string; }
 export class SwimmerProfilePage implements OnInit {
   protected readonly vm = inject(SwimmerProfileViewModel);
   private readonly route = inject(ActivatedRoute);
-  private readonly language = inject(LanguageStore);
+  protected readonly language = inject(LanguageStore);
 
-  // Full tab strip for visual fidelity; identityVitals, guardian, physiological, inbody, records, healthMonitoring, and feedback are enabled.
-  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records', 'healthMonitoring', 'feedback']);
+  // Full tab strip for visual fidelity; identityVitals, guardian, physiological, inbody, records, healthMonitoring, attendance, and feedback are enabled.
+  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records', 'healthMonitoring', 'attendance', 'feedback']);
   isEnabled(key: string): boolean { return this.enabledTabs.has(key); }
 
   protected readonly tabs: ProfileTab[] = [
@@ -62,6 +62,34 @@ export class SwimmerProfilePage implements OnInit {
   feedbackCategoryName(categoryId: string): string {
     const c = this.vm.feedbackCategories().find((x) => x.id === categoryId);
     return this.refLabel(c ?? null);
+  }
+
+  monthLabel(ym: string): string {
+    if (!ym) return '';
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1, 1);
+    return d.toLocaleDateString(this.language.lang() === 'ar' ? 'ar-EG' : 'en-US', { month: 'long', year: 'numeric' });
+  }
+
+  // Calendar cell tint by status code (present=blue, late=amber, absent=red, excused=blue/info).
+  attCellClass(code: string | null): string {
+    switch (code) {
+      case 'present': return 'bg-blue-500/10 text-blue-600';
+      case 'late': return 'bg-amber-500/10 text-amber-600';
+      case 'absent': return 'bg-red-500/10 text-red-600';
+      case 'excused': return 'bg-blue-500/10 text-blue-600';
+      default: return 'text-text-secondary';
+    }
+  }
+
+  attDotClass(code: string): string {
+    switch (code) {
+      case 'present': return 'bg-blue-500';
+      case 'late': return 'bg-amber-500';
+      case 'absent': return 'bg-red-500';
+      case 'excused': return 'bg-blue-500';
+      default: return 'bg-border';
+    }
   }
 
   initials(): string {

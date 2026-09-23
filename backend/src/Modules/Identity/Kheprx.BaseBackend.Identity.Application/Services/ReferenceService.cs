@@ -13,13 +13,15 @@ internal sealed class ReferenceService : IReferenceService
     private readonly IObservationCategoryRepository _categories;
     private readonly IFitnessAssessmentRepository _fitness;
     private readonly IFeedbackCategoryRepository _feedbackCategories;
+    private readonly IAttendanceStatusRepository _attendanceStatuses;
 
     public ReferenceService(
         IClubRepository clubs, IBloodTypeRepository bloodTypes,
         IStrokeRepository strokes, IGenderRepository genders,
         IObservationCategoryRepository categories,
         IFitnessAssessmentRepository fitness,
-        IFeedbackCategoryRepository feedbackCategories)
+        IFeedbackCategoryRepository feedbackCategories,
+        IAttendanceStatusRepository attendanceStatuses)
     {
         _clubs = clubs;
         _bloodTypes = bloodTypes;
@@ -28,6 +30,7 @@ internal sealed class ReferenceService : IReferenceService
         _categories = categories;
         _fitness = fitness;
         _feedbackCategories = feedbackCategories;
+        _attendanceStatuses = attendanceStatuses;
     }
 
     public async Task<IReadOnlyList<ClubDto>> GetClubsAsync(CancellationToken ct = default)
@@ -50,4 +53,7 @@ internal sealed class ReferenceService : IReferenceService
 
     public async Task<IReadOnlyList<CodedLookupDto>> GetFeedbackCategoriesAsync(CancellationToken ct = default)
         => (await _feedbackCategories.GetAllAsync(ct)).Select(c => new CodedLookupDto(c.Id, c.Code, c.NameEn, c.NameAr)).ToList();
+
+    public async Task<IReadOnlyList<CodedLookupDto>> GetAttendanceStatusesAsync(CancellationToken ct = default)
+        => (await _attendanceStatuses.GetAllAsync(ct)).Select(s => new CodedLookupDto(s.Id, s.Code, s.NameEn, s.NameAr)).ToList();
 }

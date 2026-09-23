@@ -39,6 +39,7 @@ public static class IdentityModuleExtensions
         services.AddScoped<IFitnessAssessmentRepository, FitnessAssessmentRepository>();
         services.AddScoped<IObservationCategoryRepository, ObservationCategoryRepository>();
         services.AddScoped<IFeedbackCategoryRepository, FeedbackCategoryRepository>();
+        services.AddScoped<IAttendanceStatusRepository, AttendanceStatusRepository>();
         services.AddScoped<IStrokeRepository, StrokeRepository>();
         services.AddScoped<IGenderRepository, GenderRepository>();
         services.AddScoped<IReferenceService, ReferenceService>();

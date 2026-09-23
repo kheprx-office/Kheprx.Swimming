@@ -7,6 +7,7 @@ import { BodyMeasurementItemDtoRs, CreateBodyMeasurementDtoRq, CreateBodyMeasure
 import { InBodyReadingListDtoRs, InBodyReadingItemDtoRs, DeleteInBodyReadingItemDtoRs, CreateInBodyReadingDtoRq } from '@features/swimmer-profile/data/dto/inbody-reading.dto';
 import { RecordListDtoRs, RecordItemDtoRs, DeleteRecordItemDtoRs, UpdateRecordDtoRq } from '@features/swimmer-profile/data/dto/record.dto';
 import { FeedbackEntryListDtoRs, FeedbackEntryItemDtoRs, DeleteFeedbackEntryItemDtoRs, CreateFeedbackEntryDtoRq } from '@features/swimmer-profile/data/dto/feedback-entry.dto';
+import { AttendanceRecordListDtoRs } from '@features/swimmer-profile/data/dto/attendance-record.dto';
 
 export interface ISwimmerProfileRepository {
   getProfile(id: string): Promise<SwimmerProfileItemDtoRs>;
@@ -30,6 +31,7 @@ export interface ISwimmerProfileRepository {
   createFeedbackEntry(id: string, rq: CreateFeedbackEntryDtoRq): Promise<FeedbackEntryItemDtoRs>;
   updateFeedbackEntry(id: string, entryId: string, rq: CreateFeedbackEntryDtoRq): Promise<FeedbackEntryItemDtoRs>;
   deleteFeedbackEntry(id: string, entryId: string): Promise<DeleteFeedbackEntryItemDtoRs>;
+  getAttendanceRecords(id: string): Promise<AttendanceRecordListDtoRs>;
 }
 
 export const SWIMMER_PROFILE_REPOSITORY = new InjectionToken<ISwimmerProfileRepository>('SWIMMER_PROFILE_REPOSITORY');

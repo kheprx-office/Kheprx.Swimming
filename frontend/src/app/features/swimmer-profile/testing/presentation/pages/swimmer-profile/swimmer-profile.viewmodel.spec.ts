@@ -29,6 +29,8 @@ import { CreateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/use
 import { UpdateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/update-feedback-entry.use-case';
 import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/delete-feedback-entry.use-case';
 import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
+import { ListAttendanceRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-attendance-records.use-case';
+import { LoadAttendanceStatusesUseCase } from '@features/reference/domain/usecases/load-attendance-statuses.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -76,6 +78,8 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const updateFeedbackUc = { run: jest.fn().mockResolvedValue((over as any).updateFeedback ?? { ok: true, data: undefined }) };
   const deleteFeedbackUc = { run: jest.fn().mockResolvedValue((over as any).deleteFeedback ?? { ok: true, data: undefined }) };
   const loadFeedbackCategoriesUc = { run: jest.fn().mockResolvedValue((over as any).feedbackCategories ?? { ok: true, data: [] }) };
+  const listAttendanceUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
+  const loadAttendanceStatusesUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -110,6 +114,8 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: UpdateFeedbackEntryUseCase, useValue: updateFeedbackUc },
     { provide: DeleteFeedbackEntryUseCase, useValue: deleteFeedbackUc },
     { provide: LoadFeedbackCategoriesUseCase, useValue: loadFeedbackCategoriesUc },
+    { provide: ListAttendanceRecordsUseCase, useValue: listAttendanceUc },
+    { provide: LoadAttendanceStatusesUseCase, useValue: loadAttendanceStatusesUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },

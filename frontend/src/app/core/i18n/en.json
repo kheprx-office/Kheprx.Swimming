@@ -113,6 +113,14 @@
       "noReadings": "No test readings yet.",
       "noneInRange": "No readings in the selected date range."
     },
+    "attendance": {
+      "subtitle": "Monthly training attendance.",
+      "rate": "Attendance Rate",
+      "monthly": "Monthly Attendance",
+      "noRecords": "No attendance recorded yet.",
+      "noNote": "No note recorded for this day.",
+      "legend": { "present": "Present", "late": "Late", "absent": "Absent", "excused": "Excused" }
+    },
     "fields": {
       "fullName": "Full Name", "nameEn": "Full Name (EN)", "nameAr": "Full Name (AR)",
       "dob": "Date of Birth", "phone": "Phone Number",

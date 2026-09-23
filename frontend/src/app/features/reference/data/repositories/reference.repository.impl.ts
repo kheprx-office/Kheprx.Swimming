@@ -29,4 +29,7 @@ export class ReferenceRepositoryImpl implements IReferenceRepository {
   getFitnessAssessments(): Promise<CodedLookupListDtoRs> {
     return this.http.get<CodedLookupListDtoRs>('/api/reference/fitness-assessments');
   }
+  getAttendanceStatuses(): Promise<CodedLookupListDtoRs> {
+    return this.http.get<CodedLookupListDtoRs>('/api/reference/attendance-statuses');
+  }
 }

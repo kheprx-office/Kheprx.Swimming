@@ -27,6 +27,9 @@ import { CreateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/use
 import { UpdateFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/update-feedback-entry.use-case';
 import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/usecases/delete-feedback-entry.use-case';
 import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
+import { ListAttendanceRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-attendance-records.use-case';
+import { LoadAttendanceStatusesUseCase } from '@features/reference/domain/usecases/load-attendance-statuses.use-case';
+import { AttendanceRecord } from '@features/swimmer-profile/domain/model/attendance-record';
 import { HealthReadingListItem } from '@features/health-readings/domain/model/health-reading-list-item';
 import { RecordEntry } from '@features/swimmer-profile/domain/model/record-entry';
 import { FeedbackEntry } from '@features/swimmer-profile/domain/model/feedback-entry';
@@ -69,6 +72,8 @@ export class SwimmerProfileViewModel {
   private readonly updateFeedbackUc = inject(UpdateFeedbackEntryUseCase);
   private readonly deleteFeedbackUc = inject(DeleteFeedbackEntryUseCase);
   private readonly loadFeedbackCategories = inject(LoadFeedbackCategoriesUseCase);
+  private readonly listAttendanceUc = inject(ListAttendanceRecordsUseCase);
+  private readonly loadAttendanceStatuses = inject(LoadAttendanceStatusesUseCase);
   private readonly notify = inject(NotificationService);
   private readonly i18n = inject(TranslateService);
   private readonly session = inject(AuthSessionStore);
@@ -125,12 +130,13 @@ export class SwimmerProfileViewModel {
   readonly deleting = signal(false);
 
   // Tab state — enabled tabs (see page enabledTabs) are switchable.
-  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'feedback'>('identityVitals');
+  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'attendance' | 'feedback'>('identityVitals');
   private guardiansLoaded = false;
   private bodyMeasurementLoaded = false;
   private inbodyLoaded = false;
   private recordsLoaded = false;
   private healthReadingsLoaded = false;
+  private attendanceLoaded = false;
   private feedbackLoaded = false;
 
   // Guardian state
@@ -278,6 +284,70 @@ export class SwimmerProfileViewModel {
     return this.feedbackEntries().filter((e) => inRange(e.entryDate)); // server returns newest-first
   });
 
+  // Attendance state (read-only calendar)
+  readonly attendanceRecords = signal<AttendanceRecord[]>([]);
+  readonly attendanceStatuses = signal<LookupItem[]>([]);
+  readonly loadingAttendance = signal(false);
+  readonly selectedMonth = signal('');                       // 'YYYY-MM'
+  readonly selectedAttendanceDay = signal<string | null>(null); // 'YYYY-MM-DD'
+
+  private readonly statusById = computed(() => new Map(this.attendanceStatuses().map((s) => [s.id, s])));
+
+  readonly attendanceMonths = computed(() => {
+    const set = new Set(this.attendanceRecords().map((r) => r.sessionDate.slice(0, 7)));
+    return [...set].sort((a, b) => b.localeCompare(a)); // newest first
+  });
+
+  readonly attendanceRate = computed(() => {
+    const month = this.selectedMonth();
+    const inMonth = this.attendanceRecords().filter((r) => r.sessionDate.slice(0, 7) === month);
+    if (inMonth.length === 0) return 0;
+    const attended = inMonth.filter((r) => {
+      const code = this.statusById().get(r.statusId)?.code;
+      return code === 'present' || code === 'late';
+    }).length;
+    return Math.round((attended / inMonth.length) * 100);
+  });
+
+  readonly attendanceWeeks = computed(() => {
+    const month = this.selectedMonth();
+    type Cell = { day: number; dateIso: string; code: string | null; hasNote: boolean } | null;
+    if (!month) return [] as Cell[][];
+    const [y, m] = month.split('-').map(Number);
+    const byDate = new Map(
+      this.attendanceRecords().filter((r) => r.sessionDate.slice(0, 7) === month).map((r) => [r.sessionDate, r]),
+    );
+    const firstWeekday = new Date(y, m - 1, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const cells: Cell[] = [];
+    for (let i = 0; i < firstWeekday; i++) cells.push(null);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateIso = `${month}-${String(day).padStart(2, '0')}`;
+      const rec = byDate.get(dateIso) ?? null;
+      cells.push({
+        day,
+        dateIso,
+        code: rec ? (this.statusById().get(rec.statusId)?.code ?? null) : null,
+        hasNote: !!(rec && (rec.coachNoteEn || rec.coachNoteAr)),
+      });
+    }
+    while (cells.length % 7 !== 0) cells.push(null);
+    const weeks: Cell[][] = [];
+    for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+    return weeks;
+  });
+
+  readonly selectedAttendanceDetail = computed(() => {
+    const iso = this.selectedAttendanceDay();
+    if (!iso) return null;
+    const rec = this.attendanceRecords().find((r) => r.sessionDate === iso);
+    if (!rec) return null;
+    return { dateIso: iso, status: this.statusById().get(rec.statusId) ?? null, record: rec };
+  });
+
+  selectAttendanceMonth(month: string): void { this.selectedMonth.set(month); this.selectedAttendanceDay.set(null); }
+  selectAttendanceDay(iso: string): void { this.selectedAttendanceDay.set(this.selectedAttendanceDay() === iso ? null : iso); }
+
   readonly recordGroups = computed(() => {
     const cats = this.recordCategories();
     const byId = new Map(cats.map((c) => [c.id, c]));
@@ -337,6 +407,11 @@ export class SwimmerProfileViewModel {
     this.editingFeedbackId.set(null);
     this.confirmingFeedbackDeleteId.set(null);
     this.fbFrom.set(''); this.fbTo.set('');
+    this.attendanceLoaded = false;
+    this.attendanceRecords.set([]);
+    this.attendanceStatuses.set([]);
+    this.selectedMonth.set('');
+    this.selectedAttendanceDay.set(null);
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
@@ -472,13 +547,14 @@ export class SwimmerProfileViewModel {
     }
   }
 
-  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'feedback'): void {
+  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'attendance' | 'feedback'): void {
     this.activeTab.set(key);
     if (key === 'guardian' && !this.guardiansLoaded) void this.loadGuardians();
     if (key === 'physiological' && !this.bodyMeasurementLoaded) void this.loadBodyMeasurement();
     if (key === 'inbody' && !this.inbodyLoaded) void this.loadInBody();
     if (key === 'records' && !this.recordsLoaded) void this.loadRecords();
     if (key === 'healthMonitoring' && !this.healthReadingsLoaded) void this.loadHealthReadings();
+    if (key === 'attendance' && !this.attendanceLoaded) void this.loadAttendance();
     if (key === 'feedback' && !this.feedbackLoaded) void this.loadFeedback();
   }
 
@@ -759,6 +835,25 @@ export class SwimmerProfileViewModel {
       await this.loadHealthReadings();
     } else {
       this.notify.error(this.i18n.t('swimmerProfile.toasts.deleteFailed'));
+    }
+  }
+
+  private async loadAttendance(): Promise<void> {
+    this.attendanceLoaded = true;
+    this.loadingAttendance.set(true);
+    const [listRes, statusRes] = await Promise.all([
+      this.listAttendanceUc.run(this.swimmerId),
+      this.loadAttendanceStatuses.run(),
+    ]);
+    this.loadingAttendance.set(false);
+    if (statusRes.ok) this.attendanceStatuses.set(statusRes.data);
+    if (listRes.ok) {
+      this.attendanceRecords.set(listRes.data);
+      this.selectedMonth.set(this.attendanceMonths()[0] ?? '');
+      this.selectedAttendanceDay.set(null);
+    } else {
+      this.attendanceLoaded = false;
+      this.attendanceRecords.set([]);
     }
   }
 
