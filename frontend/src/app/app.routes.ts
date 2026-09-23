@@ -4,6 +4,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { LoginViewModel, AccountViewModel } from '@features/auth';
 import { RegisterSwimmerViewModel, RegisterCoachViewModel, MedicalTestsViewModel, HealthMonitoringViewModel, SwimmerDataViewModel } from '@features/captain-panel';
 import { SwimmerProfileViewModel } from '@features/swimmer-profile';
+import { AttendanceEntryViewModel } from '@features/attendance';
 
 export const routes: Routes = [
   {
@@ -26,7 +27,12 @@ export const routes: Routes = [
         loadComponent: () => import('@features/swimmer-profile').then((m) => m.SwimmerProfilePage),
         providers: [SwimmerProfileViewModel],
       },
-      { path: 'attendance', canActivate: [firstLoginGuard], loadComponent: () => import('@features/attendance').then((m) => m.AttendancePage) },
+      {
+        path: 'attendance',
+        canActivate: [firstLoginGuard],
+        loadComponent: () => import('@features/attendance').then((m) => m.AttendancePage),
+        providers: [AttendanceEntryViewModel],
+      },
       { path: 'championships', canActivate: [firstLoginGuard], loadComponent: () => import('@features/championships').then((m) => m.ChampionshipsPage) },
       { path: 'captain-panel', canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')], loadComponent: () => import('@features/captain-panel').then((m) => m.CaptainPanelPage) },
       {

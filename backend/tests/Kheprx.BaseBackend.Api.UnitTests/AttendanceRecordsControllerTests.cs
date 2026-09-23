@@ -26,7 +26,7 @@ public class AttendanceRecordsControllerTests
         users.Setup(u => u.GetDisplayNamesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new Dictionary<Guid, UserNameDto> { [recorder] = new(recorder, "Coach Layla", "الكابتن ليلى") });
 
-        var controller = new AttendanceRecordsController(svc.Object, users.Object);
+        var controller = new AttendanceRecordsController(svc.Object, users.Object, new Mock<ISwimmerService>().Object, new Mock<IReferenceService>().Object);
         var result = await controller.List(swimmerId, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);

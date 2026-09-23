@@ -26,4 +26,20 @@ public class AttendanceRecordTests
         Assert.Null(r.CoachNoteEn);
         Assert.Null(r.CoachNoteAr);
     }
+
+    [Fact]
+    public void Update_overwrites_status_recorder_and_trims_notes()
+    {
+        var rec = new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 23),
+            Guid.NewGuid(), Guid.NewGuid(), "old", "قديم");
+        var newStatus = Guid.NewGuid();
+        var newRecorder = Guid.NewGuid();
+
+        rec.Update(newStatus, newRecorder, "  new note  ", "   ");
+
+        Assert.Equal(newStatus, rec.StatusId);
+        Assert.Equal(newRecorder, rec.RecordedBy);
+        Assert.Equal("new note", rec.CoachNoteEn); // trimmed
+        Assert.Null(rec.CoachNoteAr);              // whitespace → null
+    }
 }

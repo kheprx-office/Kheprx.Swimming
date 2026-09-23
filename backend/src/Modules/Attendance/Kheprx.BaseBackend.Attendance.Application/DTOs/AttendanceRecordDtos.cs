@@ -11,3 +11,15 @@ public sealed record AttendanceRecordDto(
     Guid RecordedBy,
     string RecordedByNameEn,
     string? RecordedByNameAr);
+
+public sealed record SwimmerSessionRowDto(
+    Guid SwimmerId, string Uid, string NameEn, string? NameAr,
+    string? ClubNameEn, string? ClubNameAr, string GenderCode,
+    Guid? StatusId, string? CoachNote, int? MonthRatePct, bool HasRecord);
+
+public sealed record AttendanceSessionDto(DateOnly Date, IReadOnlyList<SwimmerSessionRowDto> Rows);
+
+public sealed record SaveSessionRequest(DateOnly Date, IReadOnlyList<SaveSessionEntryRequest> Entries);
+public sealed record SaveSessionEntryRequest(Guid SwimmerId, Guid StatusId, string? CoachNote);
+
+public sealed record SaveSessionEntry(Guid SwimmerId, Guid StatusId, string? CoachNoteEn, string? CoachNoteAr);

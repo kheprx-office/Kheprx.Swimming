@@ -9,7 +9,20 @@
       "healthMonitoring": { "title": "مراقبة الصحة", "meta": "تسجيل قراءة", "desc": "سجّل نتائج الاختبارات الطبية لكل سبّاح مقابل الحدود الطبيعية لكل اختبار." }
     }
   },
-  "common": { "save": "حفظ", "cancel": "إلغاء", "comingSoon": "قريباً" },
+  "common": { "save": "حفظ", "cancel": "إلغاء", "comingSoon": "قريباً", "loading": "جارٍ التحميل…" },
+  "attendanceEntry": {
+    "subtitle": "سجّل حضور جلسة تدريب.",
+    "markAllPresent": "تحديد الكل حاضر",
+    "thisMonth": "هذا الشهر",
+    "notePlaceholder": "تقييم عام (اختياري)…",
+    "save": "حفظ الجلسة",
+    "saved": "تم حفظ الحضور",
+    "saveFailed": "تعذّر حفظ الحضور",
+    "loadFailed": "تعذّر تحميل الحضور",
+    "empty": "لا يوجد سبّاحون للعرض.",
+    "notPermitted": "يمكن للكابتن فقط حفظ الحضور.",
+    "status": { "present": "حاضر", "late": "متأخر", "absent": "غائب", "excused": "بعذر" }
+  },
   "roles": { "head_coach": "المدرب العام", "captain": "الكابتن" },
   "gender": { "male": "ذكر", "female": "أنثى" },
   "swimmers": {

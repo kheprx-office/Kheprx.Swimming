@@ -15,4 +15,29 @@ internal sealed class AttendanceRecordRepository : IAttendanceRecordRepository
               .Where(r => r.SwimmerId == swimmerId)
               .OrderByDescending(r => r.SessionDate).ThenByDescending(r => r.Id)
               .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<AttendanceRecord>> ListByDateAsync(DateOnly date, CancellationToken ct = default)
+        => await _db.AttendanceRecords.AsNoTracking()
+              .Where(r => r.SessionDate == date)
+              .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<AttendanceRecord>> ListByMonthAsync(int year, int month, CancellationToken ct = default)
+        => await _db.AttendanceRecords.AsNoTracking()
+              .Where(r => r.SessionDate.Year == year && r.SessionDate.Month == month)
+              .ToListAsync(ct);
+
+    public async Task UpsertSessionAsync(DateOnly date, IReadOnlyList<AttendanceRecord> incoming, CancellationToken ct = default)
+    {
+        // Tracked load (no AsNoTracking) so Update() mutations are persisted.
+        var existing = await _db.AttendanceRecords.Where(r => r.SessionDate == date).ToListAsync(ct);
+        var bySwimmer = existing.ToDictionary(r => r.SwimmerId);
+        foreach (var rec in incoming)
+        {
+            if (bySwimmer.TryGetValue(rec.SwimmerId, out var current))
+                current.Update(rec.StatusId, rec.RecordedBy, rec.CoachNoteEn, rec.CoachNoteAr);
+            else
+                _db.AttendanceRecords.Add(rec);
+        }
+        await _db.SaveChangesAsync(ct);
+    }
 }

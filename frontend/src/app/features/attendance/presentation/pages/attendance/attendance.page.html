@@ -1,5 +1,78 @@
-<div class="mx-auto max-w-3xl">
-  <header class="mb-8">
-    <h1 class="font-heading text-3xl text-ink">{{ 'shell.nav.attendance' | translate }}</h1>
+<div class="mx-auto max-w-5xl p-6 space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-heading text-3xl text-ink">{{ 'shell.nav.attendance' | translate }}</h1>
+      <p class="text-sm text-text-secondary">{{ 'attendanceEntry.subtitle' | translate }}</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <input type="date" [ngModel]="vm.selectedDate()" (ngModelChange)="vm.setDate($event)"
+             class="h-10 rounded-lg border border-border bg-card px-3 text-sm" />
+      <button type="button" (click)="vm.markAllPresent()"
+              class="h-10 rounded-lg border border-border px-3 text-sm font-bold">
+        {{ 'attendanceEntry.markAllPresent' | translate }}
+      </button>
+      <span class="rounded-lg bg-green-500/10 px-3 py-1.5 text-sm font-bold text-green-600">
+        {{ vm.presentCount() }}/{{ vm.total() }}
+      </span>
+    </div>
   </header>
+
+  @if (vm.loading()) {
+    <p class="text-sm text-text-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (vm.error()) {
+    <p class="text-sm text-danger">{{ 'attendanceEntry.loadFailed' | translate }}</p>
+  } @else if (vm.total() === 0) {
+    <p class="text-sm text-text-secondary">{{ 'attendanceEntry.empty' | translate }}</p>
+  } @else {
+    <div class="space-y-3">
+      @for (row of vm.rows(); track row.swimmerId) {
+        <div class="rounded-xl border border-border bg-surface p-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+              {{ initials(row) }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-bold text-ink">{{ displayName(row) }}</p>
+              @if (row.monthRatePct !== null) {
+                <p class="text-xs font-bold"
+                   [class.text-red-500]="vm.rateBand(row.monthRatePct) === 'red'"
+                   [class.text-amber-500]="vm.rateBand(row.monthRatePct) === 'amber'"
+                   [class.text-green-500]="vm.rateBand(row.monthRatePct) === 'green'">
+                  {{ row.monthRatePct }}% · {{ 'attendanceEntry.thisMonth' | translate }}
+                </p>
+              } @else {
+                <p class="text-xs text-text-secondary">— {{ 'attendanceEntry.thisMonth' | translate }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            @for (st of vm.statuses(); track st.id) {
+              <button type="button" (click)="vm.setStatus(row.swimmerId, st.id)"
+                      class="h-8 rounded-md border px-3 text-xs font-medium"
+                      [class.border-primary]="row.statusId === st.id"
+                      [class.bg-primary]="row.statusId === st.id"
+                      [class.text-white]="row.statusId === st.id">
+                {{ ('attendanceEntry.status.' + st.code) | translate }}
+              </button>
+            }
+          </div>
+
+          <textarea rows="2" [ngModel]="row.coachNote ?? ''" (ngModelChange)="vm.setNote(row.swimmerId, $event)"
+                    [placeholder]="'attendanceEntry.notePlaceholder' | translate"
+                    class="mt-3 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"></textarea>
+        </div>
+      }
+    </div>
+
+    <div class="flex items-center justify-end gap-3 border-t border-border pt-4">
+      @if (!vm.canSave()) {
+        <span class="text-xs text-text-secondary">{{ 'attendanceEntry.notPermitted' | translate }}</span>
+      }
+      <button type="button" (click)="vm.save()" [disabled]="!vm.canSave() || !vm.dirty() || vm.saving()"
+              class="h-10 rounded-md bg-primary px-4 text-sm font-medium text-white disabled:opacity-40">
+        {{ 'attendanceEntry.save' | translate }}
+      </button>
+    </div>
+  }
 </div>

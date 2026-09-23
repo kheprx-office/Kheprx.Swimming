@@ -9,7 +9,20 @@
       "healthMonitoring": { "title": "Health Monitoring", "meta": "Log a reading", "desc": "Log medical test results for a swimmer against each test's normal bounds." }
     }
   },
-  "common": { "save": "Save", "cancel": "Cancel", "comingSoon": "Coming soon" },
+  "common": { "save": "Save", "cancel": "Cancel", "comingSoon": "Coming soon", "loading": "Loading…" },
+  "attendanceEntry": {
+    "subtitle": "Log a training session's attendance.",
+    "markAllPresent": "Mark all present",
+    "thisMonth": "this month",
+    "notePlaceholder": "General feedback (optional)…",
+    "save": "Save Session",
+    "saved": "Attendance saved",
+    "saveFailed": "Could not save attendance",
+    "loadFailed": "Could not load attendance",
+    "empty": "No swimmers to show.",
+    "notPermitted": "Only a coach can save attendance.",
+    "status": { "present": "Present", "late": "Late", "absent": "Absent", "excused": "Excused" }
+  },
   "roles": { "head_coach": "Head Coach", "captain": "Captain" },
   "gender": { "male": "Male", "female": "Female" },
   "swimmers": {

@@ -23,4 +23,12 @@ public sealed class AttendanceRecord
         CoachNoteEn = string.IsNullOrWhiteSpace(coachNoteEn) ? null : coachNoteEn.Trim();
         CoachNoteAr = string.IsNullOrWhiteSpace(coachNoteAr) ? null : coachNoteAr.Trim();
     }
+
+    public void Update(Guid statusId, Guid recordedBy, string? coachNoteEn = null, string? coachNoteAr = null)
+    {
+        StatusId = statusId;
+        RecordedBy = recordedBy;
+        CoachNoteEn = string.IsNullOrWhiteSpace(coachNoteEn) ? null : coachNoteEn.Trim();
+        CoachNoteAr = string.IsNullOrWhiteSpace(coachNoteAr) ? null : coachNoteAr.Trim();
+    }
 }
