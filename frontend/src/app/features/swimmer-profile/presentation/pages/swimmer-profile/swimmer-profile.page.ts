@@ -4,6 +4,9 @@ import { TranslatePipe } from '@core/i18n';
 import { LanguageStore } from '@core/i18n/language.store';
 import { SelectFieldComponent } from '@core/ui/components/select-field.component';
 import { TextFieldComponent } from '@core/ui/components/text-field.component';
+import { formatMsToTime } from '@features/championships/domain/model/race-time';
+import { resolveRaceName } from '@features/championships/domain/model/swimmer-championship-history';
+import { SwimmerChampionshipHistory, SwimmerChampionshipRace } from '@features/championships/domain/model/swimmer-championship-history';
 import { SwimmerProfileViewModel } from './swimmer-profile.viewmodel';
 
 interface ProfileTab { key: string; labelKey: string; }
@@ -19,8 +22,8 @@ export class SwimmerProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   protected readonly language = inject(LanguageStore);
 
-  // Full tab strip for visual fidelity; identityVitals, guardian, physiological, inbody, records, healthMonitoring, attendance, and feedback are enabled.
-  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records', 'healthMonitoring', 'attendance', 'feedback']);
+  // Full tab strip for visual fidelity; identityVitals, guardian, physiological, inbody, records, healthMonitoring, attendance, championships, and feedback are enabled.
+  protected readonly enabledTabs = new Set(['identityVitals', 'guardian', 'physiological', 'inbody', 'records', 'healthMonitoring', 'attendance', 'championships', 'feedback']);
   isEnabled(key: string): boolean { return this.enabledTabs.has(key); }
 
   protected readonly tabs: ProfileTab[] = [
@@ -96,5 +99,26 @@ export class SwimmerProfilePage implements OnInit {
     const en = this.vm.profile()?.identity.nameEn ?? '';
     const parts = en.trim().split(/\s+/).filter(Boolean);
     return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
+  }
+
+  champName(c: SwimmerChampionshipHistory): string {
+    return this.language.lang() === 'ar' ? (c.nameAr ?? c.nameEn) : c.nameEn;
+  }
+  champLocation(c: SwimmerChampionshipHistory): string {
+    return this.language.lang() === 'ar' ? (c.locationAr ?? c.locationEn) : c.locationEn;
+  }
+  champDayLabel(r: SwimmerChampionshipRace): string {
+    return this.language.lang() === 'ar' ? (r.dayLabelAr ?? r.dayLabelEn) : r.dayLabelEn;
+  }
+  champRaceName(r: SwimmerChampionshipRace): string {
+    return resolveRaceName(this.vm.champDistances(), this.vm.champStrokes(), r.distanceId, r.strokeId, this.language.lang());
+  }
+  champTime(ms: number): string { return formatMsToTime(ms); }
+  champDateRange(startIso: string, endIso: string): string {
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    const locale = this.language.lang() === 'ar' ? 'ar-EG' : 'en-GB';
+    const start = new Date(startIso), end = new Date(endIso);
+    const fmt = (d: Date) => d.toLocaleDateString(locale, opts);
+    return startIso === endIso ? fmt(start) : `${fmt(start)} – ${fmt(end)}`;
   }
 }

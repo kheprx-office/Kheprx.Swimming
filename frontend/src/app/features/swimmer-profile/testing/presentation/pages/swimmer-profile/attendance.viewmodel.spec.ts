@@ -31,6 +31,9 @@ import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/use
 import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
 import { ListAttendanceRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-attendance-records.use-case';
 import { LoadAttendanceStatusesUseCase } from '@features/reference/domain/usecases/load-attendance-statuses.use-case';
+import { LoadSwimmerChampionshipHistoryUseCase } from '@features/championships/domain/usecases/load-swimmer-championship-history.use-case';
+import { LoadDistancesUseCase } from '@features/reference/domain/usecases/load-distances.use-case';
+import { LoadStrokesUseCase } from '@features/reference/domain/usecases/load-strokes.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -122,6 +125,9 @@ function build(overrides: {
 
   const listAttendanceUc        = { run: jest.fn().mockResolvedValue(overrides.listAttendance        ?? { ok: true, data: ALL_RECORDS }) };
   const loadAttendanceStatusesUc = { run: jest.fn().mockResolvedValue(overrides.loadAttendanceStatuses ?? { ok: true, data: ALL_STATUSES }) };
+  const loadChampHistoryUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
+  const loadDistancesUc    = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
+  const loadStrokesUc      = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
 
   const notify  = { success: jest.fn(), error: jest.fn() };
   const i18n    = { t: (k: string) => k };
@@ -161,6 +167,9 @@ function build(overrides: {
       { provide: LoadFeedbackCategoriesUseCase,       useValue: loadFeedbackCategoriesUc },
       { provide: ListAttendanceRecordsUseCase,        useValue: listAttendanceUc },
       { provide: LoadAttendanceStatusesUseCase,       useValue: loadAttendanceStatusesUc },
+      { provide: LoadSwimmerChampionshipHistoryUseCase, useValue: loadChampHistoryUc },
+      { provide: LoadDistancesUseCase,                useValue: loadDistancesUc },
+      { provide: LoadStrokesUseCase,                  useValue: loadStrokesUc },
       { provide: NotificationService,                 useValue: notify },
       { provide: TranslateService,                    useValue: i18n },
       { provide: AuthSessionStore,                    useValue: session },

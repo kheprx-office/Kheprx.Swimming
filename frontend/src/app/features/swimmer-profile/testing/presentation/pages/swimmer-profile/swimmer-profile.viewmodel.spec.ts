@@ -31,6 +31,9 @@ import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/use
 import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
 import { ListAttendanceRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-attendance-records.use-case';
 import { LoadAttendanceStatusesUseCase } from '@features/reference/domain/usecases/load-attendance-statuses.use-case';
+import { LoadSwimmerChampionshipHistoryUseCase } from '@features/championships/domain/usecases/load-swimmer-championship-history.use-case';
+import { LoadDistancesUseCase } from '@features/reference/domain/usecases/load-distances.use-case';
+import { LoadStrokesUseCase } from '@features/reference/domain/usecases/load-strokes.use-case';
 import { NotificationService } from '@core/ui/notification.service';
 import { TranslateService } from '@core/i18n';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
@@ -40,7 +43,7 @@ const IDENTITY = { id: 's1', uid: 'SW-1', nameEn: 'Ahmed', nameAr: 'أحمد', d
 const VITALS = { id: 'e1', examDate: '2026-09-19', bloodType: null, hemoglobin: 14.8, heightCm: 182, weightKg: 74, internalMed: REF, heartAssess: REF, spineAssess: REF };
 const VITALS2 = { id: 'e2', examDate: '2024-01-01', bloodType: null, hemoglobin: 13, heightCm: 178, weightKg: 71, internalMed: REF, heartAssess: REF, spineAssess: REF };
 
-function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | null; listHealthReadings?: unknown; updateHealthReading?: unknown; deleteHealthReading?: unknown; listFeedback?: unknown; createFeedback?: unknown; updateFeedback?: unknown; deleteFeedback?: unknown; feedbackCategories?: unknown } = {}) {
+function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | null; listHealthReadings?: unknown; updateHealthReading?: unknown; deleteHealthReading?: unknown; listFeedback?: unknown; createFeedback?: unknown; updateFeedback?: unknown; deleteFeedback?: unknown; feedbackCategories?: unknown; champHistory?: unknown } = {}) {
   const getUc = { run: jest.fn().mockResolvedValue(over.profile ?? { ok: true, data: { identity: IDENTITY, vitals: VITALS } }) };
   const updateUc = { run: jest.fn().mockResolvedValue(over.update ?? { ok: true, data: undefined }) };
   const createUc = { run: jest.fn().mockResolvedValue(over.create ?? { ok: true, data: VITALS }) };
@@ -80,6 +83,14 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const loadFeedbackCategoriesUc = { run: jest.fn().mockResolvedValue((over as any).feedbackCategories ?? { ok: true, data: [] }) };
   const listAttendanceUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
   const loadAttendanceStatusesUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
+  const CH = [{
+    eventId: 'ev1', nameEn: 'National', nameAr: null, startDate: '2023-11-15', endDate: '2023-11-16',
+    locationEn: 'Cairo', locationAr: null,
+    races: [{ dayLabelEn: 'Day 1', dayLabelAr: null, distanceId: 'd1', strokeId: 's1', timeMs: 52340, isPersonalBest: true }],
+  }];
+  const loadChampHistoryUc = { run: jest.fn().mockResolvedValue((over as any).champHistory ?? { ok: true, data: CH }) };
+  const loadDistancesUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [{ id: 'd1', code: '50m', nameEn: '50m', nameAr: null }] }) };
+  const loadStrokesUc = { run: jest.fn().mockResolvedValue({ ok: true, data: [{ id: 's1', code: 'freestyle', nameEn: 'Freestyle', nameAr: null }] }) };
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
@@ -116,6 +127,9 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
     { provide: LoadFeedbackCategoriesUseCase, useValue: loadFeedbackCategoriesUc },
     { provide: ListAttendanceRecordsUseCase, useValue: listAttendanceUc },
     { provide: LoadAttendanceStatusesUseCase, useValue: loadAttendanceStatusesUc },
+    { provide: LoadSwimmerChampionshipHistoryUseCase, useValue: loadChampHistoryUc },
+    { provide: LoadDistancesUseCase, useValue: loadDistancesUc },
+    { provide: LoadStrokesUseCase, useValue: loadStrokesUc },
     { provide: NotificationService, useValue: notify },
     { provide: TranslateService, useValue: i18n },
     { provide: AuthSessionStore, useValue: session },
@@ -486,6 +500,43 @@ describe('SwimmerProfileViewModel — Health Monitoring', () => {
     expect(deleteHealthReadingUc.run).toHaveBeenCalledWith({ id: 'h1' });
     expect(notify.success).toHaveBeenCalledWith('swimmerProfile.toasts.healthReadingRemoved');
     expect(vm.confirmingHealthReadingDeleteId()).toBeNull();
+  });
+});
+
+async function buildAndLoad(over: Parameters<typeof build>[0] = {}) {
+  const result = build(over);
+  await result.vm.load('s1');
+  return result;
+}
+
+describe('SwimmerProfileViewModel — Championships', () => {
+  it('loads championship history + lookups once when the championships tab opens', async () => {
+    const { vm } = await buildAndLoad();
+    vm.setTab('championships');
+    await Promise.resolve(); await Promise.resolve();
+    expect(vm.championshipHistory().length).toBe(1);
+    expect(vm.selectedChampId()).toBe('ev1');
+    expect(vm.selectedChampionship()?.races[0].timeMs).toBe(52340);
+    vm.setTab('identityVitals');
+    vm.setTab('championships');
+    await Promise.resolve();
+    // guard prevents a second load
+    expect((vm as unknown as { championshipHistory: () => unknown[] }).championshipHistory().length).toBe(1);
+  });
+
+  it('a joined championship with no races selects but shows no races', async () => {
+    const { vm } = await buildAndLoad({ champHistory: { ok: true, data: [{ eventId: 'ev2', nameEn: 'Spring', nameAr: null, startDate: '2023-04-08', endDate: '2023-04-09', locationEn: 'Oasis', locationAr: null, races: [] }] } });
+    vm.setTab('championships');
+    await Promise.resolve(); await Promise.resolve();
+    expect(vm.selectedChampionship()?.races.length).toBe(0);
+  });
+
+  it('a swimmer with no championships leaves the selection null', async () => {
+    const { vm } = await buildAndLoad({ champHistory: { ok: true, data: [] } });
+    vm.setTab('championships');
+    await Promise.resolve(); await Promise.resolve();
+    expect(vm.championshipHistory().length).toBe(0);
+    expect(vm.selectedChampionship()).toBeNull();
   });
 });
 

@@ -29,6 +29,10 @@ import { DeleteFeedbackEntryUseCase } from '@features/swimmer-profile/domain/use
 import { LoadFeedbackCategoriesUseCase } from '@features/reference/domain/usecases/load-feedback-categories.use-case';
 import { ListAttendanceRecordsUseCase } from '@features/swimmer-profile/domain/usecases/list-attendance-records.use-case';
 import { LoadAttendanceStatusesUseCase } from '@features/reference/domain/usecases/load-attendance-statuses.use-case';
+import { LoadSwimmerChampionshipHistoryUseCase } from '@features/championships/domain/usecases/load-swimmer-championship-history.use-case';
+import { LoadDistancesUseCase } from '@features/reference/domain/usecases/load-distances.use-case';
+import { LoadStrokesUseCase } from '@features/reference/domain/usecases/load-strokes.use-case';
+import { SwimmerChampionshipHistory } from '@features/championships/domain/model/swimmer-championship-history';
 import { AttendanceRecord } from '@features/swimmer-profile/domain/model/attendance-record';
 import { HealthReadingListItem } from '@features/health-readings/domain/model/health-reading-list-item';
 import { RecordEntry } from '@features/swimmer-profile/domain/model/record-entry';
@@ -74,6 +78,9 @@ export class SwimmerProfileViewModel {
   private readonly loadFeedbackCategories = inject(LoadFeedbackCategoriesUseCase);
   private readonly listAttendanceUc = inject(ListAttendanceRecordsUseCase);
   private readonly loadAttendanceStatuses = inject(LoadAttendanceStatusesUseCase);
+  private readonly loadChampHistoryUc = inject(LoadSwimmerChampionshipHistoryUseCase);
+  private readonly loadDistancesUc = inject(LoadDistancesUseCase);
+  private readonly loadStrokesUc = inject(LoadStrokesUseCase);
   private readonly notify = inject(NotificationService);
   private readonly i18n = inject(TranslateService);
   private readonly session = inject(AuthSessionStore);
@@ -130,7 +137,7 @@ export class SwimmerProfileViewModel {
   readonly deleting = signal(false);
 
   // Tab state — enabled tabs (see page enabledTabs) are switchable.
-  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'attendance' | 'feedback'>('identityVitals');
+  readonly activeTab = signal<'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'attendance' | 'championships' | 'feedback'>('identityVitals');
   private guardiansLoaded = false;
   private bodyMeasurementLoaded = false;
   private inbodyLoaded = false;
@@ -138,6 +145,7 @@ export class SwimmerProfileViewModel {
   private healthReadingsLoaded = false;
   private attendanceLoaded = false;
   private feedbackLoaded = false;
+  private championshipsLoaded = false;
 
   // Guardian state
   readonly guardians = signal<SwimmerGuardians | null>(null);
@@ -348,6 +356,16 @@ export class SwimmerProfileViewModel {
   selectAttendanceMonth(month: string): void { this.selectedMonth.set(month); this.selectedAttendanceDay.set(null); }
   selectAttendanceDay(iso: string): void { this.selectedAttendanceDay.set(this.selectedAttendanceDay() === iso ? null : iso); }
 
+  // Championships state (read-only history)
+  readonly championshipHistory = signal<SwimmerChampionshipHistory[]>([]);
+  readonly champDistances = signal<LookupItem[]>([]);
+  readonly champStrokes = signal<LookupItem[]>([]);
+  readonly selectedChampId = signal('');
+  readonly loadingChampionships = signal(false);
+
+  readonly selectedChampionship = computed(() =>
+    this.championshipHistory().find((c) => c.eventId === this.selectedChampId()) ?? this.championshipHistory()[0] ?? null);
+
   readonly recordGroups = computed(() => {
     const cats = this.recordCategories();
     const byId = new Map(cats.map((c) => [c.id, c]));
@@ -412,6 +430,11 @@ export class SwimmerProfileViewModel {
     this.attendanceStatuses.set([]);
     this.selectedMonth.set('');
     this.selectedAttendanceDay.set(null);
+    this.championshipsLoaded = false;
+    this.championshipHistory.set([]);
+    this.champDistances.set([]);
+    this.champStrokes.set([]);
+    this.selectedChampId.set('');
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
@@ -547,7 +570,7 @@ export class SwimmerProfileViewModel {
     }
   }
 
-  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'attendance' | 'feedback'): void {
+  setTab(key: 'identityVitals' | 'guardian' | 'physiological' | 'inbody' | 'records' | 'healthMonitoring' | 'attendance' | 'championships' | 'feedback'): void {
     this.activeTab.set(key);
     if (key === 'guardian' && !this.guardiansLoaded) void this.loadGuardians();
     if (key === 'physiological' && !this.bodyMeasurementLoaded) void this.loadBodyMeasurement();
@@ -555,6 +578,7 @@ export class SwimmerProfileViewModel {
     if (key === 'records' && !this.recordsLoaded) void this.loadRecords();
     if (key === 'healthMonitoring' && !this.healthReadingsLoaded) void this.loadHealthReadings();
     if (key === 'attendance' && !this.attendanceLoaded) void this.loadAttendance();
+    if (key === 'championships' && !this.championshipsLoaded) void this.loadChampionships();
     if (key === 'feedback' && !this.feedbackLoaded) void this.loadFeedback();
   }
 
@@ -854,6 +878,27 @@ export class SwimmerProfileViewModel {
     } else {
       this.attendanceLoaded = false;
       this.attendanceRecords.set([]);
+    }
+  }
+
+  private async loadChampionships(): Promise<void> {
+    this.championshipsLoaded = true;
+    this.loadingChampionships.set(true);
+    const [histRes, distRes, strokeRes] = await Promise.all([
+      this.loadChampHistoryUc.run(this.swimmerId),
+      this.loadDistancesUc.run(),
+      this.loadStrokesUc.run(),
+    ]);
+    this.loadingChampionships.set(false);
+    if (distRes.ok) this.champDistances.set(distRes.data);
+    if (strokeRes.ok) this.champStrokes.set(strokeRes.data);
+    if (histRes.ok) {
+      this.championshipHistory.set(histRes.data);
+      this.selectedChampId.set(histRes.data[0]?.eventId ?? '');
+    } else {
+      this.championshipsLoaded = false;
+      this.championshipHistory.set([]);
+      this.selectedChampId.set('');
     }
   }
 

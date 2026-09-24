@@ -565,6 +565,76 @@
         }
       </section>
     }
+    @if (vm.activeTab() === 'championships') {
+      <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
+          <div>
+            <h2 class="font-heading text-lg text-ink">{{ 'swimmerProfile.championships.title' | translate }}</h2>
+            <p class="mt-0.5 text-sm text-text-secondary">{{ 'swimmerProfile.championships.subtitle' | translate }}</p>
+          </div>
+          @if (vm.championshipHistory().length > 0) {
+            <div class="flex flex-col gap-1">
+              <label for="champ-select" class="text-xs font-medium text-text-secondary">{{ 'swimmerProfile.championships.select' | translate }}</label>
+              <select id="champ-select" class="h-9 min-w-[16rem] rounded-md border border-border bg-surface px-2 text-sm text-ink"
+                      [value]="vm.selectedChampId()" (change)="vm.selectedChampId.set($any($event.target).value)">
+                @for (c of vm.championshipHistory(); track c.eventId) {
+                  <option [value]="c.eventId">{{ champName(c) }} · {{ champDateRange(c.startDate, c.endDate) }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+
+        @if (vm.loadingChampionships()) {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.states.loading' | translate }}</p>
+        } @else if (vm.selectedChampionship(); as c) {
+          <section class="overflow-hidden rounded-xl border border-border">
+            <header class="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface p-4">
+              <div class="flex min-w-0 items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">🏆</span>
+                <div class="min-w-0">
+                  <h3 class="truncate font-heading text-base text-ink">{{ champName(c) }}</h3>
+                  <p class="mt-0.5 text-xs text-text-secondary">{{ champDateRange(c.startDate, c.endDate) }} · {{ champLocation(c) }}</p>
+                </div>
+              </div>
+              <span class="shrink-0 text-xs text-text-secondary">{{ c.races.length }} {{ 'swimmerProfile.championships.races' | translate }}</span>
+            </header>
+
+            @if (c.races.length === 0) {
+              <p class="p-6 text-center text-sm text-text-secondary">{{ 'swimmerProfile.championships.empty' | translate }}</p>
+            } @else {
+              <table class="w-full text-start text-sm">
+                <thead class="border-b border-border text-text-secondary">
+                  <tr>
+                    <th class="px-4 py-2.5 text-start font-medium">{{ 'swimmerProfile.championships.raceCol' | translate }}</th>
+                    <th class="px-4 py-2.5 text-start font-medium">{{ 'swimmerProfile.championships.dayCol' | translate }}</th>
+                    <th class="px-4 py-2.5 text-start font-medium">{{ 'swimmerProfile.championships.timeCol' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                  @for (r of c.races; track $index) {
+                    <tr>
+                      <td class="px-4 py-3 font-medium text-ink">{{ champRaceName(r) }}</td>
+                      <td class="px-4 py-3 text-text-secondary">{{ champDayLabel(r) }}</td>
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center gap-1.5 font-semibold text-ink">
+                          {{ champTime(r.timeMs) }}
+                          @if (r.isPersonalBest) {
+                            <span class="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">{{ 'swimmerProfile.championships.pb' | translate }}</span>
+                          }
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </section>
+        } @else {
+          <p class="text-sm text-text-secondary">{{ 'swimmerProfile.championships.noHistory' | translate }}</p>
+        }
+      </section>
+    }
     @if (vm.activeTab() === 'feedback') {
       <section class="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <div class="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
