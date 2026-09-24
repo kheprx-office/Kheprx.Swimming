@@ -27,4 +27,11 @@ internal sealed class ChampionshipEnrollmentRepository : IChampionshipEnrollment
 
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task<IReadOnlyList<Guid>> ListEventIdsBySwimmerAsync(Guid swimmerId, CancellationToken ct = default)
+        => await _db.Enrollments.AsNoTracking()
+              .Where(e => e.SwimmerId == swimmerId)
+              .Select(e => e.EventId)
+              .Distinct()
+              .ToListAsync(ct);
 }

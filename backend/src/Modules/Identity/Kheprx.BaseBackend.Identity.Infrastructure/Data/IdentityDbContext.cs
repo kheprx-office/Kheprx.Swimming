@@ -14,6 +14,7 @@ public sealed class IdentityDbContext : DbContext
     public DbSet<CaptainProfile> CaptainProfiles => Set<CaptainProfile>();
     public DbSet<SwimmerProfile> SwimmerProfiles => Set<SwimmerProfile>();
     public DbSet<Stroke> Strokes => Set<Stroke>();
+    public DbSet<Distance> Distances => Set<Distance>();
     public DbSet<BloodType> BloodTypes => Set<BloodType>();
     public DbSet<FitnessAssessment> FitnessAssessments => Set<FitnessAssessment>();
     public DbSet<MedicalExam> MedicalExams => Set<MedicalExam>();

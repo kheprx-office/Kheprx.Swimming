@@ -23,4 +23,12 @@ internal sealed class CompetitionEventRepository : ICompetitionEventRepository
 
     public async Task<CompetitionEvent?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => await _db.CompetitionEvents.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public async Task<IReadOnlyList<CompetitionEvent>> ListByIdsAsync(IReadOnlyList<Guid> eventIds, CancellationToken ct = default)
+    {
+        if (eventIds.Count == 0) return Array.Empty<CompetitionEvent>();
+        return await _db.CompetitionEvents.AsNoTracking()
+            .Where(e => eventIds.Contains(e.Id))
+            .ToListAsync(ct);
+    }
 }

@@ -18,7 +18,7 @@ public class ChampionshipServiceTests
         var repo = new Mock<ICompetitionEventRepository>();
         repo.Setup(r => r.ListAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new[] { ev });
 
-        var svc = new ChampionshipService(repo.Object, new Mock<IChampionshipEnrollmentRepository>().Object);
+        var svc = new ChampionshipService(repo.Object, new Mock<IChampionshipEnrollmentRepository>().Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
         var list = await svc.ListAsync();
 
         Assert.Single(list);
@@ -40,7 +40,7 @@ public class ChampionshipServiceTests
             .Callback<CompetitionEvent, CancellationToken>((e, _) => saved = e)
             .Returns(Task.CompletedTask);
 
-        var svc = new ChampionshipService(repo.Object, new Mock<IChampionshipEnrollmentRepository>().Object);
+        var svc = new ChampionshipService(repo.Object, new Mock<IChampionshipEnrollmentRepository>().Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
         var cmd = new CreateCompetitionEventCommand("Spring Cup", "كأس الربيع",
             new DateOnly(2024, 3, 1), new DateOnly(2024, 3, 2), "Cairo", "القاهرة", statusId, createdBy);
 
@@ -70,7 +70,7 @@ public class ChampionshipServiceTests
         events.Setup(r => r.GetByIdAsync(ev.Id, It.IsAny<CancellationToken>())).ReturnsAsync(ev);
         var enr = new Mock<IChampionshipEnrollmentRepository>();
 
-        var svc = new ChampionshipService(events.Object, enr.Object);
+        var svc = new ChampionshipService(events.Object, enr.Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
         var dto = await svc.GetByIdAsync(ev.Id);
 
         Assert.NotNull(dto);
@@ -84,7 +84,7 @@ public class ChampionshipServiceTests
     {
         var events = new Mock<ICompetitionEventRepository>();
         events.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((CompetitionEvent?)null);
-        var svc = new ChampionshipService(events.Object, new Mock<IChampionshipEnrollmentRepository>().Object);
+        var svc = new ChampionshipService(events.Object, new Mock<IChampionshipEnrollmentRepository>().Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
 
         Assert.Null(await svc.GetByIdAsync(Guid.NewGuid()));
     }
@@ -95,7 +95,7 @@ public class ChampionshipServiceTests
         var events = new Mock<ICompetitionEventRepository>();
         events.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((CompetitionEvent?)null);
         var enr = new Mock<IChampionshipEnrollmentRepository>();
-        var svc = new ChampionshipService(events.Object, enr.Object);
+        var svc = new ChampionshipService(events.Object, enr.Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
 
         Assert.Null(await svc.GetEnrolledSwimmerIdsAsync(Guid.NewGuid()));
         enr.Verify(r => r.ListSwimmerIdsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -111,7 +111,7 @@ public class ChampionshipServiceTests
         events.Setup(r => r.GetByIdAsync(ev.Id, It.IsAny<CancellationToken>())).ReturnsAsync(ev);
         var enr = new Mock<IChampionshipEnrollmentRepository>();
         enr.Setup(r => r.ListSwimmerIdsAsync(ev.Id, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { s1 });
-        var svc = new ChampionshipService(events.Object, enr.Object);
+        var svc = new ChampionshipService(events.Object, enr.Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
 
         var ids = await svc.GetEnrolledSwimmerIdsAsync(ev.Id);
         Assert.NotNull(ids);
@@ -124,7 +124,7 @@ public class ChampionshipServiceTests
         var events = new Mock<ICompetitionEventRepository>();
         events.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((CompetitionEvent?)null);
         var enr = new Mock<IChampionshipEnrollmentRepository>();
-        var svc = new ChampionshipService(events.Object, enr.Object);
+        var svc = new ChampionshipService(events.Object, enr.Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
 
         Assert.False(await svc.SetEnrollmentsAsync(Guid.NewGuid(), new[] { Guid.NewGuid() }));
         enr.Verify(r => r.ReplaceAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -139,7 +139,7 @@ public class ChampionshipServiceTests
         var events = new Mock<ICompetitionEventRepository>();
         events.Setup(r => r.GetByIdAsync(ev.Id, It.IsAny<CancellationToken>())).ReturnsAsync(ev);
         var enr = new Mock<IChampionshipEnrollmentRepository>();
-        var svc = new ChampionshipService(events.Object, enr.Object);
+        var svc = new ChampionshipService(events.Object, enr.Object, Mock.Of<ICompetitionScheduleRepository>(), Mock.Of<IRaceResultRepository>());
 
         Assert.True(await svc.SetEnrollmentsAsync(ev.Id, ids));
         enr.Verify(r => r.ReplaceAsync(ev.Id, ids, It.IsAny<CancellationToken>()), Times.Once);

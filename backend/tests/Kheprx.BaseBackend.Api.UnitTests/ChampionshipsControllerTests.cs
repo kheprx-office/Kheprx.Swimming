@@ -265,4 +265,124 @@ public class ChampionshipsControllerTests
             .Single();
         Assert.Equal("head_coach,captain", attr.Roles);
     }
+
+    [Fact]
+    public async Task GetResults_returns_200_with_rows()
+    {
+        var eventId = Guid.NewGuid();
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetResultsAsync(eventId, It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new ResultsDto(new[] { new RaceResultDto(Guid.NewGuid(), Guid.NewGuid(), 24560, 0, true) }));
+
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).GetResults(eventId, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<ResultsDto>>(ok.Value);
+        Assert.Single(body.Data!.Results);
+    }
+
+    [Fact]
+    public async Task GetResults_returns_404_when_event_missing()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetResultsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((ResultsDto?)null);
+
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).GetResults(Guid.NewGuid(), CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetRaceResults_returns_200_when_saved()
+    {
+        var eventId = Guid.NewGuid();
+        var raceId = Guid.NewGuid();
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.SetRaceResultsAsync(eventId, raceId, It.IsAny<IReadOnlyList<SetRaceResultsEntry>>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new SetRaceResultsResult(SetRaceResultsOutcome.Ok, new ResultsDto(Array.Empty<RaceResultDto>()), null));
+
+        var request = new SetRaceResultsRequest(new[] { new SetRaceResultsEntry(Guid.NewGuid(), 25000) });
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).SetRaceResults(eventId, raceId, request, CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task SetRaceResults_returns_404_when_not_found()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.SetRaceResultsAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyList<SetRaceResultsEntry>>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new SetRaceResultsResult(SetRaceResultsOutcome.NotFound, null, null));
+
+        var request = new SetRaceResultsRequest(Array.Empty<SetRaceResultsEntry>());
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).SetRaceResults(Guid.NewGuid(), Guid.NewGuid(), request, CancellationToken.None);
+
+        var nf = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetRaceResults_returns_400_when_invalid()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.SetRaceResultsAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<IReadOnlyList<SetRaceResultsEntry>>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new SetRaceResultsResult(SetRaceResultsOutcome.Invalid, null, "not_assigned"));
+
+        var request = new SetRaceResultsRequest(new[] { new SetRaceResultsEntry(Guid.NewGuid(), 25000) });
+        var result = await NewController(svc.Object, new Mock<IReferenceService>().Object).SetRaceResults(Guid.NewGuid(), Guid.NewGuid(), request, CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public void SetRaceResults_is_restricted_to_head_coach_and_captain()
+    {
+        var attr = typeof(ChampionshipsController).GetMethod(nameof(ChampionshipsController.SetRaceResults))!
+            .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), false)
+            .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()
+            .Single();
+        Assert.Equal("head_coach,captain", attr.Roles);
+    }
+
+    [Fact]
+    public async Task GetSwimmerHistory_returns_200_with_the_service_rows()
+    {
+        var swimmerId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetSwimmerHistoryAsync(swimmerId, It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new[]
+           {
+               new ChampionshipSwimmerHistoryDto(eventId, "National", null,
+                   new DateOnly(2023, 11, 15), new DateOnly(2023, 11, 16), "Cairo", null,
+                   new[] { new ChampionshipSwimmerRaceDto("Day 1", null, Guid.NewGuid(), Guid.NewGuid(), 52340, true) }),
+           });
+        var reference = new Mock<IReferenceService>();
+
+        var controller = NewController(svc.Object, reference.Object);
+        var result = await controller.GetSwimmerHistory(swimmerId, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>>(ok.Value);
+        Assert.Single(body.Data!);
+        Assert.Equal(eventId, body.Data![0].EventId);
+        Assert.Single(body.Data![0].Races);
+        Assert.True(body.Data![0].Races[0].IsPersonalBest);
+    }
+
+    [Fact]
+    public async Task GetSwimmerHistory_returns_200_and_empty_list_for_a_swimmer_with_no_history()
+    {
+        var svc = new Mock<IChampionshipService>();
+        svc.Setup(s => s.GetSwimmerHistoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(Array.Empty<ChampionshipSwimmerHistoryDto>());
+        var controller = NewController(svc.Object, new Mock<IReferenceService>().Object);
+
+        var result = await controller.GetSwimmerHistory(Guid.NewGuid(), CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>>(ok.Value);
+        Assert.Empty(body.Data!);
+    }
 }

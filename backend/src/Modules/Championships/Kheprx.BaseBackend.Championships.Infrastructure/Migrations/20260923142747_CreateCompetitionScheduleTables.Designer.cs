@@ -3,6 +3,7 @@ using System;
 using Kheprx.BaseBackend.Championships.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kheprx.BaseBackend.Championships.Infrastructure.Migrations
 {
     [DbContext(typeof(ChampionshipsDbContext))]
-    partial class ChampionshipsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260923142747_CreateCompetitionScheduleTables")]
+    partial class CreateCompetitionScheduleTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,38 +127,6 @@ namespace Kheprx.BaseBackend.Championships.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("race_assignment", "championships");
-                });
-
-            modelBuilder.Entity("Kheprx.BaseBackend.Championships.Domain.Entities.RaceResult", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsPersonalBest")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("RaceSessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RecordedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SwimmerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("TimeMs")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RaceSessionId", "SwimmerId")
-                        .IsUnique();
-
-                    b.ToTable("race_result", "championships");
                 });
 
             modelBuilder.Entity("Kheprx.BaseBackend.Championships.Domain.Entities.RaceSession", b =>

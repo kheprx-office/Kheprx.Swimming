@@ -131,4 +131,91 @@ public sealed class ChampionshipsController : BaseApiController
 
         return Ok(ApiResponse<object>.Success(ChampionshipMessages.EnrollmentSuccess.Saved(lang), null));
     }
+
+    /// <summary>Returns the full day → race → assigned-swimmer schedule for an event. 404 when unknown.</summary>
+    [HttpGet("{eventId:guid}/schedule")]
+    [ProducesResponseType(typeof(ApiResponse<ScheduleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ScheduleDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ScheduleDto>>> GetSchedule(Guid eventId, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var dto = await _service.GetScheduleAsync(eventId, ct);
+        if (dto is null)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<ScheduleDto>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found"));
+
+        return Ok(ApiResponse<ScheduleDto>.Success(ChampionshipMessages.ScheduleSuccess.Retrieved(lang), dto));
+    }
+
+    /// <summary>Replaces the whole schedule for an event (atomic). Head Coach or Captain only.
+    /// Every assigned swimmer must be enrolled in the event.</summary>
+    [HttpPut("{eventId:guid}/schedule")]
+    [Authorize(Roles = "head_coach,captain")]
+    [ProducesResponseType(typeof(ApiResponse<ScheduleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ScheduleDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ScheduleDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ScheduleDto>>> SetSchedule(Guid eventId, SetScheduleRequest request, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var days = request.Days ?? new List<SetScheduleDay>();
+        var result = await _service.SetScheduleAsync(eventId, days, ct);
+
+        return result.Outcome switch
+        {
+            SetScheduleOutcome.NotFound => StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<ScheduleDto>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found")),
+            SetScheduleOutcome.Invalid => BadRequest(
+                ApiResponse<ScheduleDto>.Failure(ChampionshipMessages.ScheduleErrors.Invalid(lang), "validation")),
+            _ => Ok(ApiResponse<ScheduleDto>.Success(ChampionshipMessages.ScheduleSuccess.Saved(lang), result.Saved!)),
+        };
+    }
+
+    /// <summary>Returns all recorded race results for an event. 404 when the event is unknown.</summary>
+    [HttpGet("{eventId:guid}/results")]
+    [ProducesResponseType(typeof(ApiResponse<ResultsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ResultsDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ResultsDto>>> GetResults(Guid eventId, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var dto = await _service.GetResultsAsync(eventId, ct);
+        if (dto is null)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<ResultsDto>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found"));
+
+        return Ok(ApiResponse<ResultsDto>.Success(ChampionshipMessages.ResultsSuccess.Retrieved(lang), dto));
+    }
+
+    /// <summary>Replaces the recorded times for one race (atomic). Head Coach or Captain only.
+    /// Every entered swimmer must be assigned to the race; times are positive milliseconds.</summary>
+    [HttpPut("{eventId:guid}/races/{raceSessionId:guid}/results")]
+    [Authorize(Roles = "head_coach,captain")]
+    [ProducesResponseType(typeof(ApiResponse<ResultsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ResultsDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ResultsDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ResultsDto>>> SetRaceResults(Guid eventId, Guid raceSessionId, SetRaceResultsRequest request, CancellationToken ct)
+    {
+        var lang = AppLanguage.Current;
+        var entries = request.Entries ?? new List<SetRaceResultsEntry>();
+        var result = await _service.SetRaceResultsAsync(eventId, raceSessionId, entries, CurrentUserId(), ct);
+
+        return result.Outcome switch
+        {
+            SetRaceResultsOutcome.NotFound => StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<ResultsDto>.Failure(ChampionshipMessages.NotFound.Event(lang), "not_found")),
+            SetRaceResultsOutcome.Invalid => BadRequest(
+                ApiResponse<ResultsDto>.Failure(ChampionshipMessages.ResultsErrors.Invalid(lang), "validation")),
+            _ => Ok(ApiResponse<ResultsDto>.Success(ChampionshipMessages.ResultsSuccess.Saved(lang), result.Saved!)),
+        };
+    }
+
+    /// <summary>Returns the swimmer's championship participation history — every enrolled event (newest first)
+    /// with the swimmer's races and times. Always 200 (empty list when the swimmer joined nothing).</summary>
+    [HttpGet("swimmer/{swimmerId:guid}/history")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>>> GetSwimmerHistory(Guid swimmerId, CancellationToken ct)
+    {
+        var rows = await _service.GetSwimmerHistoryAsync(swimmerId, ct);
+        return Ok(ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>.Success(
+            ChampionshipMessages.SwimmerHistorySuccess.Retrieved(AppLanguage.Current), rows));
+    }
 }

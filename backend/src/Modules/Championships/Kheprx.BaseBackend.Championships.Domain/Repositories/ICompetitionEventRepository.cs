@@ -5,4 +5,5 @@ public interface ICompetitionEventRepository
     Task<IReadOnlyList<CompetitionEvent>> ListAsync(CancellationToken ct = default);
     Task AddAsync(CompetitionEvent competitionEvent, CancellationToken ct = default);
     Task<CompetitionEvent?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<IReadOnlyList<CompetitionEvent>> ListByIdsAsync(IReadOnlyList<Guid> eventIds, CancellationToken ct = default);
 }

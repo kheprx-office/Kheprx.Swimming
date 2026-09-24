@@ -9,6 +9,10 @@ public sealed class ChampionshipsDbContext : DbContext
 
     public DbSet<CompetitionEvent> CompetitionEvents => Set<CompetitionEvent>();
     public DbSet<ChampionshipEnrollment> Enrollments => Set<ChampionshipEnrollment>();
+    public DbSet<CompetitionDay> CompetitionDays => Set<CompetitionDay>();
+    public DbSet<RaceSession> RaceSessions => Set<RaceSession>();
+    public DbSet<RaceAssignment> RaceAssignments => Set<RaceAssignment>();
+    public DbSet<RaceResult> RaceResults => Set<RaceResult>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -15,14 +15,16 @@ public class ReferenceServiceTests
         IFitnessAssessmentRepository? fitness = null,
         IFeedbackCategoryRepository? feedbackCategories = null,
         IAttendanceStatusRepository? attendanceStatuses = null,
-        ICompetitionStatusRepository? competitionStatuses = null)
+        ICompetitionStatusRepository? competitionStatuses = null,
+        IDistanceRepository? distances = null)
         => new(clubs ?? Mock.Of<IClubRepository>(), blood ?? Mock.Of<IBloodTypeRepository>(),
                strokes ?? Mock.Of<IStrokeRepository>(), genders ?? Mock.Of<IGenderRepository>(),
                categories ?? Mock.Of<IObservationCategoryRepository>(),
                fitness ?? Mock.Of<IFitnessAssessmentRepository>(),
                feedbackCategories ?? Mock.Of<IFeedbackCategoryRepository>(),
                attendanceStatuses ?? Mock.Of<IAttendanceStatusRepository>(),
-               competitionStatuses ?? Mock.Of<ICompetitionStatusRepository>());
+               competitionStatuses ?? Mock.Of<ICompetitionStatusRepository>(),
+               distances ?? Mock.Of<IDistanceRepository>());
 
     [Fact]
     public async Task GetStrokes_maps_entities_to_coded_dtos()
@@ -79,5 +81,19 @@ public class ReferenceServiceTests
         Assert.Single(result);
         Assert.Equal("fit", result[0].Code);
         Assert.Equal("Fit", result[0].NameEn);
+    }
+
+    [Fact]
+    public async Task GetDistances_maps_entities_to_coded_dtos()
+    {
+        var distances = new Mock<IDistanceRepository>();
+        distances.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(new[] { new Distance("50m", "50m", "٥٠ متر", 50) });
+
+        var result = await NewService(distances: distances.Object).GetDistancesAsync();
+
+        Assert.Single(result);
+        Assert.Equal("50m", result[0].Code);
+        Assert.Equal("50m", result[0].NameEn);
     }
 }

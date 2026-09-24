@@ -116,4 +116,15 @@ public sealed class ReferenceController : BaseApiController
             ReferenceMessages.Success.CompetitionStatusesListed(AppLanguage.Current), data);
         return Ok(body);
     }
+
+    /// <summary>Lists all race distances (Competition Days race builder).</summary>
+    [HttpGet("distances")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CodedLookupDto>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CodedLookupDto>>>> Distances(CancellationToken ct)
+    {
+        var data = await _service.GetDistancesAsync(ct);
+        var body = ApiResponse<IReadOnlyList<CodedLookupDto>>.Success(
+            ReferenceMessages.Success.DistancesListed(AppLanguage.Current), data);
+        return Ok(body);
+    }
 }

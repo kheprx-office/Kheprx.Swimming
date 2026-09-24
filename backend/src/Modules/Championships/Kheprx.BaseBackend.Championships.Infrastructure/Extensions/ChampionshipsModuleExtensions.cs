@@ -18,6 +18,8 @@ public static class ChampionshipsModuleExtensions
 
         services.AddScoped<ICompetitionEventRepository, CompetitionEventRepository>();
         services.AddScoped<IChampionshipEnrollmentRepository, ChampionshipEnrollmentRepository>();
+        services.AddScoped<ICompetitionScheduleRepository, CompetitionScheduleRepository>();
+        services.AddScoped<IRaceResultRepository, RaceResultRepository>();
         services.AddScoped<IChampionshipService, ChampionshipService>();
         return services;
     }

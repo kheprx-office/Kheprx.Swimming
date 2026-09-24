@@ -3,6 +3,7 @@ using System;
 using Kheprx.BaseBackend.Championships.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kheprx.BaseBackend.Championships.Infrastructure.Migrations
 {
     [DbContext(typeof(ChampionshipsDbContext))]
-    partial class ChampionshipsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260923230234_CreateRaceResultTable")]
+    partial class CreateRaceResultTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
