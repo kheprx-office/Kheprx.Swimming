@@ -1,0 +1,29 @@
+<div class="relative min-h-full w-full">
+  <app-decor-background />
+  <div class="relative z-10 mx-auto max-w-[1400px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+
+    @if (vm.error()) {
+      <div class="animate-fade-in rounded-2xl border border-border bg-surface p-6 shadow-warm">
+        <p class="text-text-secondary">{{ 'dashboard.loadError' | translate }}</p>
+      </div>
+    }
+
+    @if (vm.summary(); as s) {
+      <app-dashboard-hero
+        [userName]="vm.currentUserName()"
+        [swimmerCount]="s.swimmerCount"
+        [newThisMonth]="s.newThisMonth"
+        [attendanceRatePct]="s.monthAttendanceRatePct" />
+
+      <div class="grid gap-6 lg:grid-cols-12">
+        <div class="lg:col-span-8">
+          <app-weekly-attendance-chart [days]="s.last7Days" />
+        </div>
+        <div class="lg:col-span-4">
+          <app-swimmers-by-stroke [strokes]="s.strokeSplit" [swimmerCount]="s.swimmerCount" />
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

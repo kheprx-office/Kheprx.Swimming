@@ -1,0 +1,38 @@
+<section class="animate-fade-in flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-warm">
+  <div class="mb-4 flex items-center justify-between">
+    <h2 class="font-heading text-lg text-ink">{{ 'dashboard.weeklyAttendance' | translate }}</h2>
+    <div class="flex items-center gap-4 text-[11px] text-text-secondary">
+      <span class="flex items-center gap-1.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-primary"></span>{{ 'dashboard.present' | translate }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <span class="h-2.5 w-2.5 rounded-full bg-accent"></span>{{ 'dashboard.absent' | translate }}
+      </span>
+    </div>
+  </div>
+
+  @if (hasData()) {
+    <svg [attr.viewBox]="'0 0 ' + vbWidth + ' ' + vbHeight" class="h-auto w-full" role="img" aria-hidden="true">
+      <!-- horizontal grid -->
+      @for (gy of gridYs(); track $index) {
+        <line [attr.x1]="padX" [attr.x2]="vbWidth - padX" [attr.y1]="gy" [attr.y2]="gy" class="stroke-border" stroke-width="1" />
+      }
+      <!-- present: filled area + line -->
+      <path [attr.d]="presentArea()" class="fill-primary/10" stroke="none" />
+      <path [attr.d]="presentLine()" class="stroke-primary" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <!-- absent: line only -->
+      <path [attr.d]="absentLine()" class="stroke-accent" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <!-- weekday labels -->
+      @for (d of plotDays(); track d.date; let i = $index) {
+        <text
+          [attr.x]="xFor(i, plotDays().length)"
+          [attr.y]="vbHeight - 10"
+          text-anchor="middle"
+          class="fill-current text-text-secondary"
+          font-size="13">{{ weekdayLabel(d.date) }}</text>
+      }
+    </svg>
+  } @else {
+    <p class="py-12 text-center text-sm text-text-secondary">{{ 'dashboard.noRecentSessions' | translate }}</p>
+  }
+</section>

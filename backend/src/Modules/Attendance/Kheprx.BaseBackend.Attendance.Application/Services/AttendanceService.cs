@@ -34,6 +34,20 @@ internal sealed class AttendanceService : IAttendanceService
                         .ToDictionary(s => s.Key, s => s.Count()));
     }
 
+    public async Task<IReadOnlyList<DailyStatusCountsDto>> GetRecentDailyStatusCountsAsync(
+        int days, CancellationToken ct = default)
+    {
+        var rows = await _records.ListRecentDaysAsync(days, ct);
+        return rows
+            .GroupBy(r => r.SessionDate)
+            .OrderBy(g => g.Key) // oldest -> newest
+            .Select(g => new DailyStatusCountsDto(
+                g.Key,
+                (IReadOnlyDictionary<Guid, int>)g.GroupBy(r => r.StatusId)
+                    .ToDictionary(s => s.Key, s => s.Count())))
+            .ToList();
+    }
+
     public async Task SaveSessionAsync(DateOnly date, IReadOnlyList<SaveSessionEntry> entries, Guid recordedBy,
         CancellationToken ct = default)
     {

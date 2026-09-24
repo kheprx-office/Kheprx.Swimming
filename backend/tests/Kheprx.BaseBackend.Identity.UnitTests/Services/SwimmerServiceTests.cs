@@ -487,4 +487,34 @@ public class SwimmerServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
         swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task GetNewThisMonthCountAsync_uses_first_of_current_month_utc_as_cutoff()
+    {
+        var now = DateTime.UtcNow;
+        var expectedCutoff = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.CountCreatedSinceAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>())).ReturnsAsync(4);
+
+        var result = await svc.GetNewThisMonthCountAsync();
+
+        Assert.Equal(4, result);
+        swimmers.Verify(r => r.CountCreatedSinceAsync(expectedCutoff, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetStrokeSplitAsync_orders_by_count_descending()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetStrokeCountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new[]
+        {
+            new StrokeCountRow(Guid.NewGuid(), "back", "Backstroke", "ظهر", 3),
+            new StrokeCountRow(Guid.NewGuid(), "free", "Freestyle", "حرة", 9),
+        });
+
+        var result = await svc.GetStrokeSplitAsync();
+
+        Assert.Equal("free", result[0].Code);
+        Assert.Equal("back", result[1].Code);
+    }
 }

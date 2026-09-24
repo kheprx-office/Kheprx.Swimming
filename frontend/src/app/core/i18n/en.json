@@ -10,6 +10,28 @@
     }
   },
   "common": { "save": "Save", "cancel": "Cancel", "comingSoon": "Coming soon", "loading": "Loading…" },
+  "dashboard": {
+    "greeting": "Welcome back",
+    "subtitle": "Here is how your club is doing.",
+    "swimmers": "Swimmers",
+    "thisMonth": "this month",
+    "attendanceThisMonth": "attendance this month",
+    "noSessions": "No sessions recorded yet",
+    "weeklyAttendance": "Weekly attendance",
+    "present": "Present",
+    "absent": "Absent",
+    "noRecentSessions": "No recent sessions to show.",
+    "strokeSplit": "Swimmers by stroke",
+    "registeredSwimmers": "registered swimmers",
+    "multiStrokeNote": "Swimmers may specialize in more than one stroke.",
+    "noStrokes": "No stroke data yet.",
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "attendance": "attendance",
+    "hasMostSwimmers": "currently has the most swimmers.",
+    "loadError": "Couldn't load the dashboard. Please try again."
+  },
   "attendanceEntry": {
     "subtitle": "Log a training session's attendance.",
     "markAllPresent": "Mark all present",
@@ -289,13 +311,13 @@
     }
   },
   "shell": {
-    "brand": "Oasis Academy",
+    "brand": "El Nagar Academy",
     "brandSubtitle": "International Swimming",
     "signOut": "Sign out",
     "toggleSidebar": "Toggle sidebar",
     "lockedHint": "Change your password to continue.",
     "searchPlaceholder": "Search swimmers, events…",
-    "activeClub": { "label": "Active club", "value": "Oasis Aquatics" },
+    "activeClub": { "label": "Active club", "value": "El Nagar Aquatics" },
     "nav": {
       "groups": { "overview": "Overview", "coaching": "Coaching", "administration": "Administration" },
       "dashboard": "Dashboard", "swimmers": "Swimmers", "attendance": "Attendance",

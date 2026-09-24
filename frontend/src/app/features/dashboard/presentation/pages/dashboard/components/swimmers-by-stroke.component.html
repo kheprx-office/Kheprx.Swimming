@@ -1,0 +1,35 @@
+<section class="animate-fade-in flex h-full flex-col rounded-2xl border border-border bg-surface p-6 shadow-warm">
+  <h2 class="font-heading text-lg text-ink">{{ 'dashboard.strokeSplit' | translate }}</h2>
+  <p class="mt-1 text-xs text-text-secondary">
+    {{ swimmerCount() }} {{ 'dashboard.registeredSwimmers' | translate }}
+  </p>
+
+  @if (hasData()) {
+    <!-- segmented share bar -->
+    <div class="mt-6 flex h-2.5 gap-0.5 overflow-hidden rounded-full">
+      @for (st of strokes(); track st.strokeId; let i = $index) {
+        <span class="h-full" [style.width.%]="segmentPct(st.count)" [style.background-color]="colorFor(i)"></span>
+      }
+    </div>
+
+    <!-- legend / counts -->
+    <ul class="mt-5 flex flex-1 flex-col gap-3.5">
+      @for (st of strokes(); track st.strokeId; let i = $index) {
+        <li class="flex items-center gap-3 text-sm">
+          <span class="h-2.5 w-2.5 shrink-0 rounded-full" [style.background-color]="colorFor(i)"></span>
+          <span class="flex-1 truncate text-text-secondary">{{ strokeName(st) }}</span>
+          <span class="tabular font-semibold text-ink">{{ st.count }}</span>
+        </li>
+      }
+    </ul>
+
+    @if (topStroke(); as top) {
+      <p class="mt-6 border-t border-border pt-4 text-xs leading-relaxed text-text-secondary">
+        {{ strokeName(top) }} {{ 'dashboard.hasMostSwimmers' | translate }}
+      </p>
+    }
+    <p class="mt-3 text-[11px] text-text-muted">{{ 'dashboard.multiStrokeNote' | translate }}</p>
+  } @else {
+    <p class="mt-6 text-sm text-text-secondary">{{ 'dashboard.noStrokes' | translate }}</p>
+  }
+</section>

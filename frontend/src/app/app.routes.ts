@@ -6,6 +6,7 @@ import { RegisterSwimmerViewModel, RegisterCoachViewModel, MedicalTestsViewModel
 import { SwimmerProfileViewModel } from '@features/swimmer-profile';
 import { AttendanceEntryViewModel } from '@features/attendance';
 import { ChampionshipsViewModel, ChampionshipDetailViewModel, CompetitionDaysViewModel } from '@features/championships';
+import { DashboardViewModel } from '@features/dashboard';
 
 export const routes: Routes = [
   {
@@ -18,7 +19,12 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'home', canActivate: [firstLoginGuard], loadComponent: () => import('@features/home').then((m) => m.HomePage) },
+      {
+        path: 'home',
+        canActivate: [firstLoginGuard],
+        loadComponent: () => import('@features/dashboard').then((m) => m.DashboardPage),
+        providers: [DashboardViewModel],
+      },
       // Placeholder feature routes — blank pages so the sidebar nav is fully clickable
       // while the real features are still to be built.
       { path: 'swimmers', canActivate: [firstLoginGuard], loadComponent: () => import('@features/swimmers').then((m) => m.SwimmersPage) },

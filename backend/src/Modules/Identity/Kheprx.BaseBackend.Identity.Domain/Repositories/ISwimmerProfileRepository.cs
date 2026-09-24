@@ -6,6 +6,7 @@ namespace Kheprx.BaseBackend.Identity.Domain.Repositories;
 public interface ISwimmerProfileRepository
 {
     Task<int> CountAsync(CancellationToken ct = default);
+    Task<int> CountCreatedSinceAsync(DateTime sinceUtc, CancellationToken ct = default);
     Task<int> GetMaxUidNumberAsync(CancellationToken ct = default);
     Task<IReadOnlyList<SwimmerListRow>> ListAsync(string? search = null, CancellationToken ct = default);
     Task AddAsync(SwimmerProfile profile, CancellationToken ct = default);
@@ -25,4 +26,5 @@ public interface ISwimmerProfileRepository
     Task AddGuardianAsync(Guardian guardian, CancellationToken ct = default);
     Task<BodyMeasurementRow?> GetLatestBodyMeasurementAsync(Guid swimmerId, CancellationToken ct = default);
     Task AddBodyMeasurementAsync(BodyMeasurement measurement, CancellationToken ct = default);
+    Task<IReadOnlyList<StrokeCountRow>> GetStrokeCountsAsync(CancellationToken ct = default);
 }

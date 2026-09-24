@@ -324,4 +324,43 @@ public class SwimmerProfileRepositoryTests
         Assert.Equal(76.5m, row!.WaistDiameterCm);
         Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), row.MeasuredAt);
     }
+
+    [Fact]
+    public async Task CountCreatedSinceAsync_counts_only_profiles_at_or_after_the_cutoff()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        await repo.AddAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid()));
+        await repo.AddAsync(new SwimmerProfile(Guid.NewGuid(), "SW-0002", Guid.NewGuid()));
+        await repo.SaveChangesAsync();
+
+        // Both were created "now" (ctor stamps DateTime.UtcNow).
+        Assert.Equal(2, await repo.CountCreatedSinceAsync(DateTime.UtcNow.AddDays(-1)));
+        Assert.Equal(0, await repo.CountCreatedSinceAsync(DateTime.UtcNow.AddDays(1)));
+    }
+
+    [Fact]
+    public async Task GetStrokeCountsAsync_counts_swimmers_per_stroke_including_multi_stroke_overlap()
+    {
+        await using var db = NewDb();
+        var free = new Stroke("free", "Freestyle", "حرة");
+        var back = new Stroke("back", "Backstroke", "ظهر");
+        db.Strokes.AddRange(free, back);
+
+        var swimmerA = Guid.NewGuid();
+        var swimmerB = Guid.NewGuid();
+        // A specializes in both strokes; B only in freestyle.
+        db.SwimmerSpecializations.AddRange(
+            new SwimmerSpecialization(swimmerA, free.Id),
+            new SwimmerSpecialization(swimmerA, back.Id),
+            new SwimmerSpecialization(swimmerB, free.Id));
+        await db.SaveChangesAsync();
+
+        var repo = new SwimmerProfileRepository(db);
+        var rows = await repo.GetStrokeCountsAsync();
+
+        Assert.Equal(2, rows.Single(r => r.Code == "free").Count); // A + B
+        Assert.Equal(1, rows.Single(r => r.Code == "back").Count); // A only (overlap)
+        Assert.Equal("حرة", rows.Single(r => r.Code == "free").NameAr);
+    }
 }

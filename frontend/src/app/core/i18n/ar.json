@@ -10,6 +10,28 @@
     }
   },
   "common": { "save": "حفظ", "cancel": "إلغاء", "comingSoon": "قريباً", "loading": "جارٍ التحميل…" },
+  "dashboard": {
+    "greeting": "مرحباً بعودتك",
+    "subtitle": "إليك أداء ناديك.",
+    "swimmers": "السباحون",
+    "thisMonth": "هذا الشهر",
+    "attendanceThisMonth": "نسبة الحضور هذا الشهر",
+    "noSessions": "لا توجد جلسات مسجلة بعد",
+    "weeklyAttendance": "الحضور الأسبوعي",
+    "present": "حاضر",
+    "absent": "غائب",
+    "noRecentSessions": "لا توجد جلسات حديثة لعرضها.",
+    "strokeSplit": "توزيع السباحين حسب السباحة",
+    "registeredSwimmers": "سباح مسجل",
+    "multiStrokeNote": "قد يتخصص السباح في أكثر من سباحة.",
+    "noStrokes": "لا توجد بيانات سباحات بعد.",
+    "goodMorning": "صباح الخير",
+    "goodAfternoon": "طاب يومك",
+    "goodEvening": "مساء الخير",
+    "attendance": "الحضور",
+    "hasMostSwimmers": "لديه أكبر عدد من السباحين حاليًا.",
+    "loadError": "تعذّر تحميل لوحة المعلومات. حاول مرة أخرى."
+  },
   "attendanceEntry": {
     "subtitle": "سجّل حضور جلسة تدريب.",
     "markAllPresent": "تحديد الكل حاضر",
@@ -289,13 +311,13 @@
     }
   },
   "shell": {
-    "brand": "أكاديمية الواحة",
+    "brand": "أكاديمية النجار",
     "brandSubtitle": "السباحة الدولية",
     "signOut": "تسجيل الخروج",
     "toggleSidebar": "طيّ القائمة الجانبية",
     "lockedHint": "غيّر كلمة المرور للمتابعة.",
     "searchPlaceholder": "ابحث عن سبّاحين، فعاليات…",
-    "activeClub": { "label": "النادي النشط", "value": "أوٰسِس أكواتيكس" },
+    "activeClub": { "label": "النادي النشط", "value": "نادي النجار المائي" },
     "nav": {
       "groups": { "overview": "نظرة عامة", "coaching": "التدريب", "administration": "الإدارة" },
       "dashboard": "الرئيسية", "swimmers": "السباحون", "attendance": "الحضور",

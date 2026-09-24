@@ -49,3 +49,6 @@ public sealed record UpdateSwimmerIdentityRequest(string NameEn, string? NameAr,
 public sealed record CreateMedicalExamRequest(
     DateOnly ExamDate, Guid? BloodTypeId, decimal Hemoglobin, decimal HeightCm, decimal WeightKg,
     Guid InternalMedId, Guid HeartAssessId, Guid SpineAssessId);
+
+/// <summary>One stroke's swimmer count for the dashboard stroke split (GET /api/dashboard/summary).</summary>
+public sealed record StrokeSplitDto(Guid StrokeId, string Code, string NameEn, string? NameAr, int Count);

@@ -56,6 +56,28 @@ public class AttendanceServiceTests
     }
 
     [Fact]
+    public async Task GetRecentDailyStatusCountsAsync_groups_by_date_oldest_first_with_status_counts()
+    {
+        var repo = new Mock<IAttendanceRecordRepository>();
+        repo.Setup(r => r.ListRecentDaysAsync(7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 28), Present, Guid.NewGuid()),
+                new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 28), Absent,  Guid.NewGuid()),
+                new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 20), Present, Guid.NewGuid()),
+            });
+
+        var svc = new AttendanceService(repo.Object);
+        var days = await svc.GetRecentDailyStatusCountsAsync(7);
+
+        Assert.Equal(2, days.Count);
+        Assert.Equal(new DateOnly(2026, 9, 20), days[0].Date); // oldest first
+        Assert.Equal(new DateOnly(2026, 9, 28), days[1].Date);
+        Assert.Equal(1, days[1].Counts[Present]);
+        Assert.Equal(1, days[1].Counts[Absent]);
+    }
+
+    [Fact]
     public async Task SaveSessionAsync_maps_entries_to_records_stamped_with_recorder()
     {
         var date = new DateOnly(2026, 9, 23);

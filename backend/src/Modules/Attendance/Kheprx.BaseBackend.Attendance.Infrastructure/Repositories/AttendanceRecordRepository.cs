@@ -26,6 +26,18 @@ internal sealed class AttendanceRecordRepository : IAttendanceRecordRepository
               .Where(r => r.SessionDate.Year == year && r.SessionDate.Month == month)
               .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<AttendanceRecord>> ListRecentDaysAsync(int dayCount, CancellationToken ct = default)
+    {
+        var dates = await _db.AttendanceRecords.AsNoTracking()
+            .Select(r => r.SessionDate).Distinct()
+            .OrderByDescending(d => d).Take(dayCount)
+            .ToListAsync(ct);
+        if (dates.Count == 0) return Array.Empty<AttendanceRecord>();
+        return await _db.AttendanceRecords.AsNoTracking()
+            .Where(r => dates.Contains(r.SessionDate))
+            .ToListAsync(ct);
+    }
+
     public async Task UpsertSessionAsync(DateOnly date, IReadOnlyList<AttendanceRecord> incoming, CancellationToken ct = default)
     {
         // Tracked load (no AsNoTracking) so Update() mutations are persisted.

@@ -60,6 +60,35 @@ public class AttendanceRecordRepositoryTests
     }
 
     [Fact]
+    public async Task ListRecentDaysAsync_returns_records_for_the_most_recent_distinct_days_only()
+    {
+        await using var db = NewDb();
+        var st = Guid.NewGuid();
+        // Four distinct dates; ask for the 3 most recent.
+        db.AttendanceRecords.Add(new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 10), st, Guid.NewGuid()));
+        db.AttendanceRecords.Add(new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 20), st, Guid.NewGuid()));
+        db.AttendanceRecords.Add(new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 20), st, Guid.NewGuid())); // same day, 2 rows
+        db.AttendanceRecords.Add(new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 25), st, Guid.NewGuid()));
+        db.AttendanceRecords.Add(new AttendanceRecord(Guid.NewGuid(), new DateOnly(2026, 9, 28), st, Guid.NewGuid()));
+        await db.SaveChangesAsync();
+
+        var repo = new AttendanceRecordRepository(db);
+        var rows = await repo.ListRecentDaysAsync(3);
+
+        var days = rows.Select(r => r.SessionDate).Distinct().OrderBy(d => d).ToList();
+        Assert.Equal(new[] { new DateOnly(2026, 9, 20), new DateOnly(2026, 9, 25), new DateOnly(2026, 9, 28) }, days);
+        Assert.Equal(4, rows.Count); // Sep 20 contributes 2 rows
+    }
+
+    [Fact]
+    public async Task ListRecentDaysAsync_returns_empty_when_no_records()
+    {
+        await using var db = NewDb();
+        var rows = await new AttendanceRecordRepository(db).ListRecentDaysAsync(7);
+        Assert.Empty(rows);
+    }
+
+    [Fact]
     public async Task UpsertSessionAsync_inserts_new_and_updates_existing_without_duplicating()
     {
         await using var db = NewDb();

@@ -15,6 +15,9 @@ internal sealed class SwimmerProfileRepository : ISwimmerProfileRepository
     public Task<int> CountAsync(CancellationToken ct = default)
         => _db.SwimmerProfiles.AsNoTracking().CountAsync(ct);
 
+    public Task<int> CountCreatedSinceAsync(DateTime sinceUtc, CancellationToken ct = default)
+        => _db.SwimmerProfiles.AsNoTracking().Where(s => s.CreatedAt >= sinceUtc).CountAsync(ct);
+
     public async Task<int> GetMaxUidNumberAsync(CancellationToken ct = default)
     {
         var uids = await _db.SwimmerProfiles.AsNoTracking().Select(s => s.Uid).ToListAsync(ct);
@@ -158,6 +161,15 @@ internal sealed class SwimmerProfileRepository : ISwimmerProfileRepository
 
     public Task AddBodyMeasurementAsync(BodyMeasurement measurement, CancellationToken ct = default)
         => _db.BodyMeasurements.AddAsync(measurement, ct).AsTask();
+
+    public async Task<IReadOnlyList<StrokeCountRow>> GetStrokeCountsAsync(CancellationToken ct = default)
+    {
+        return await (
+            from st in _db.Strokes.AsNoTracking()
+            join sp in _db.SwimmerSpecializations.AsNoTracking() on st.Id equals sp.StrokeId into specs
+            select new StrokeCountRow(st.Id, st.Code, st.NameEn, st.NameAr, specs.Count()))
+            .ToListAsync(ct);
+    }
 
     // exam LEFT-joined to blood_type, INNER-joined to fitness_assessment ×3
     private IQueryable<ExamJoin> ExamRows() =>

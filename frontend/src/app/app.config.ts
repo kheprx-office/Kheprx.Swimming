@@ -23,6 +23,7 @@ import { OBSERVATION_PROVIDERS } from '@features/observations/data/observation.p
 import { SWIMMER_PROFILE_PROVIDERS } from '@features/swimmer-profile/data/swimmer-profile.providers';
 import { ATTENDANCE_PROVIDERS } from '@features/attendance/data/attendance.providers';
 import { CHAMPIONSHIPS_PROVIDERS } from '@features/championships/data/championships.providers';
+import { DASHBOARD_PROVIDERS } from '@features/dashboard/data/dashboard.providers';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 
 export const appConfig: ApplicationConfig = {
@@ -42,6 +43,7 @@ export const appConfig: ApplicationConfig = {
     ...SWIMMER_PROFILE_PROVIDERS,
     ...ATTENDANCE_PROVIDERS,
     ...CHAMPIONSHIPS_PROVIDERS,
+    ...DASHBOARD_PROVIDERS,
     // Restore the persisted session (GET /api/auth/me) BEFORE the router activates, so
     // guards don't see a not-yet-rehydrated store and bounce a logged-in user to /login
     // on page reload.

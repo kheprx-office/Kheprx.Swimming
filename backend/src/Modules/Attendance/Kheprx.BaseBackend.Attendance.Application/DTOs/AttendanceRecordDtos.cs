@@ -23,3 +23,6 @@ public sealed record SaveSessionRequest(DateOnly Date, IReadOnlyList<SaveSession
 public sealed record SaveSessionEntryRequest(Guid SwimmerId, Guid StatusId, string? CoachNote);
 
 public sealed record SaveSessionEntry(Guid SwimmerId, Guid StatusId, string? CoachNoteEn, string? CoachNoteAr);
+
+/// <summary>Per-date status counts (StatusId -> count) for the dashboard weekly chart.</summary>
+public sealed record DailyStatusCountsDto(DateOnly Date, IReadOnlyDictionary<Guid, int> Counts);

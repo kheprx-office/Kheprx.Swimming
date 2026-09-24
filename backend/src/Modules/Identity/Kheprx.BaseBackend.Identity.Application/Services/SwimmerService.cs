@@ -265,4 +265,20 @@ internal sealed class SwimmerService : ISwimmerService
         await _swimmers.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<int> GetNewThisMonthCountAsync(CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var firstOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        return await _swimmers.CountCreatedSinceAsync(firstOfMonth, ct);
+    }
+
+    public async Task<IReadOnlyList<StrokeSplitDto>> GetStrokeSplitAsync(CancellationToken ct = default)
+    {
+        var rows = await _swimmers.GetStrokeCountsAsync(ct);
+        return rows
+            .OrderByDescending(r => r.Count)
+            .Select(r => new StrokeSplitDto(r.StrokeId, r.Code, r.NameEn, r.NameAr, r.Count))
+            .ToList();
+    }
 }
