@@ -6,6 +6,7 @@ export interface IReferenceRepository {
   getClubs(): Promise<ClubListDtoRs>;
   getBloodTypes(): Promise<CodedLookupListDtoRs>;
   getStrokes(): Promise<CodedLookupListDtoRs>;
+  getDistances(): Promise<CodedLookupListDtoRs>;
   getGenders(): Promise<CodedLookupListDtoRs>;
   getObservationCategories(): Promise<CodedLookupListDtoRs>;
   getFeedbackCategories(): Promise<CodedLookupListDtoRs>;

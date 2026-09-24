@@ -16,7 +16,7 @@
       <p class="mt-1 text-sm text-text-secondary">{{ vm.dateRange() }} · {{ vm.location() }}</p>
     </div>
 
-    <!-- Tab strip: only Enrollment enabled -->
+    <!-- Tab strip: Enrollment + Competition Days enabled -->
     <div class="mb-6 flex flex-wrap gap-2 border-b border-border pb-2">
       @for (t of tabs; track t.key) {
         <button type="button"
@@ -29,7 +29,7 @@
                 [disabled]="!isEnabled(t.key)"
                 [attr.aria-disabled]="!isEnabled(t.key)"
                 [attr.title]="!isEnabled(t.key) ? ('championships.detail.comingSoon' | translate) : null"
-                (click)="isEnabled(t.key) && vm.setTab(t.key)">
+                (click)="onTab(t.key)">
           {{ t.labelKey | translate }}
         </button>
       }
@@ -87,6 +87,243 @@
           }
         } @else {
           <p class="p-6 text-center text-sm text-danger">{{ 'championships.detail.error' | translate }}</p>
+        }
+      </section>
+    }
+    @if (vm.activeTab() === 'days') {
+      <section class="rounded-2xl border border-border bg-surface shadow-sm">
+        @if (daysVm.loading()) {
+          <p class="p-6 text-center text-sm text-text-secondary">{{ 'championships.detail.loading' | translate }}</p>
+        } @else if (daysVm.error()) {
+          <p class="p-6 text-center text-sm text-danger">{{ 'championships.detail.error' | translate }}</p>
+        } @else if (daysVm.loaded()) {
+          <!-- Header: totals + Save -->
+          <div class="flex flex-col gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex gap-6 text-sm">
+              <span><span class="font-bold text-primary">{{ daysVm.dayCount() }}</span> {{ 'championships.days.totals.days' | translate }}</span>
+              <span><span class="font-bold text-primary">{{ daysVm.raceCount() }}</span> {{ 'championships.days.totals.races' | translate }}</span>
+              <span><span class="font-bold text-primary">{{ daysVm.entryCount() }}</span> {{ 'championships.days.totals.entries' | translate }}</span>
+            </div>
+            @if (daysVm.canManage()) {
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="daysVm.addDay()" [disabled]="!daysVm.canAddDay()"
+                        class="inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-medium text-text-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50">
+                  + {{ 'championships.days.addDay' | translate }}
+                </button>
+                <button type="button" (click)="daysVm.save()" [disabled]="!daysVm.dirty() || daysVm.saving()"
+                        class="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
+                  {{ 'championships.days.save' | translate }}
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (daysVm.days().length === 0) {
+            <p class="p-8 text-center text-sm text-text-secondary">{{ 'championships.days.empty' | translate }}</p>
+          } @else {
+            <div class="space-y-4 p-5">
+              @for (day of daysVm.days(); track day.key) {
+                <div class="rounded-xl border border-border">
+                  <!-- Day header -->
+                  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 p-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <input type="text" [ngModel]="day.labelEn" (ngModelChange)="daysVm.updateDay(day.key, { labelEn: $event })"
+                             [disabled]="!daysVm.canManage()" [attr.aria-label]="'championships.days.dayLabel' | translate"
+                             class="h-9 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink" />
+                      <!-- Date is system-assigned (next free day in the championship range) and read-only. -->
+                      <span class="inline-flex h-9 items-center rounded-lg border border-border bg-muted/40 px-3 text-sm text-ink"
+                            [attr.aria-label]="'championships.days.dayDate' | translate">
+                        {{ daysVm.dayDateLabel(day.dayDate) }}
+                      </span>
+                    </div>
+                    @if (daysVm.canManage()) {
+                      <div class="flex items-center gap-2">
+                        <button type="button" (click)="daysVm.addRace(day.key)"
+                                class="inline-flex h-8 items-center rounded-md bg-primary/10 px-3 text-xs font-bold text-primary hover:bg-primary/20">
+                          + {{ 'championships.days.addRace' | translate }}
+                        </button>
+                        <button type="button" (click)="daysVm.removeDay(day.key)" [attr.aria-label]="'championships.days.removeDay' | translate"
+                                class="rounded-md p-2 text-danger hover:bg-danger/10">✕</button>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Races -->
+                  @if (day.races.length === 0) {
+                    <p class="p-4 text-center text-sm text-text-secondary">{{ 'championships.days.noRaces' | translate }}</p>
+                  } @else {
+                    <div class="divide-y divide-border">
+                      @for (race of day.races; track race.key) {
+                        <div class="space-y-3 p-4">
+                          <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                              <select [ngModel]="race.distanceId" (ngModelChange)="daysVm.updateRace(day.key, race.key, { distanceId: $event })"
+                                      [disabled]="!daysVm.canManage()" [attr.aria-label]="'championships.days.distance' | translate"
+                                      class="h-8 rounded-md border border-border bg-surface px-2 text-sm text-ink">
+                                @for (d of daysVm.distances(); track d.id) { <option [value]="d.id">{{ daysVm.distanceLabel(d.id) }}</option> }
+                              </select>
+                              <select [ngModel]="race.strokeId" (ngModelChange)="daysVm.updateRace(day.key, race.key, { strokeId: $event })"
+                                      [disabled]="!daysVm.canManage()" [attr.aria-label]="'championships.days.stroke' | translate"
+                                      class="h-8 rounded-md border border-border bg-surface px-2 text-sm text-ink">
+                                @for (st of daysVm.strokes(); track st.id) { <option [value]="st.id">{{ daysVm.strokeLabel(st.id) }}</option> }
+                              </select>
+                              <input type="time" [ngModel]="race.scheduledTime" (ngModelChange)="daysVm.updateRace(day.key, race.key, { scheduledTime: $event || null })"
+                                     [disabled]="!daysVm.canManage()" [attr.aria-label]="'championships.days.time' | translate"
+                                     class="h-8 rounded-md border border-border bg-surface px-2 text-sm text-ink" />
+                              <span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                                {{ race.swimmerIds.length }} {{ 'championships.days.swimmersCount' | translate }}
+                              </span>
+                              <span class="rounded-full bg-muted px-2 py-0.5 text-xs text-text-secondary">
+                                {{ ('championships.days.status.' + daysVm.statusOf(day, race)) | translate }}
+                              </span>
+                            </div>
+                            @if (daysVm.canManage()) {
+                              <button type="button" (click)="daysVm.removeRace(day.key, race.key)" [attr.aria-label]="'championships.days.removeRace' | translate"
+                                      class="rounded-md p-2 text-danger hover:bg-danger/10">✕</button>
+                            }
+                          </div>
+
+                          <!-- Participant chips (enrolled swimmers only) -->
+                          @if (daysVm.canManage()) {
+                            <div class="rounded-lg border border-border bg-muted/20 p-3">
+                              <p class="mb-2 text-xs font-bold uppercase text-text-secondary">{{ 'championships.days.chooseParticipants' | translate }}</p>
+                              @if (daysVm.enrolledSwimmers().length === 0) {
+                                <p class="text-sm text-text-secondary">{{ 'championships.days.enrollFirst' | translate }}</p>
+                              } @else {
+                                <div class="flex flex-wrap gap-2">
+                                  @for (s of daysVm.enrolledSwimmers(); track s.id) {
+                                    <button type="button" (click)="daysVm.toggleSwimmer(day.key, race.key, s.id)"
+                                            [attr.aria-pressed]="daysVm.isAssigned(day.key, race.key, s.id)"
+                                            class="inline-flex h-8 items-center rounded-md border px-3 text-xs font-medium"
+                                            [class.bg-primary]="daysVm.isAssigned(day.key, race.key, s.id)"
+                                            [class.text-white]="daysVm.isAssigned(day.key, race.key, s.id)"
+                                            [class.border-primary]="daysVm.isAssigned(day.key, race.key, s.id)"
+                                            [class.border-border]="!daysVm.isAssigned(day.key, race.key, s.id)"
+                                            [class.text-text-secondary]="!daysVm.isAssigned(day.key, race.key, s.id)">
+                                      {{ daysVm.swimmerName(s) }}
+                                    </button>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </section>
+    }
+    @if (vm.activeTab() === 'finished') {
+      <section class="rounded-2xl border border-border bg-surface shadow-sm">
+        @if (resultsVm.loading()) {
+          <p class="p-6 text-center text-sm text-text-secondary">{{ 'championships.detail.loading' | translate }}</p>
+        } @else if (resultsVm.error()) {
+          <p class="p-6 text-center text-sm text-danger">{{ 'championships.detail.error' | translate }}</p>
+        } @else if (resultsVm.loaded()) {
+          <p class="border-b border-border p-4 text-xs text-text-secondary">{{ 'championships.finished.helper' | translate }}</p>
+          @if (resultsVm.finishedRaces().length === 0) {
+            <p class="p-8 text-center text-sm text-text-secondary">{{ 'championships.finished.empty' | translate }}</p>
+          } @else {
+            <div class="space-y-4 p-5">
+              @for (race of resultsVm.finishedRaces(); track race.raceSessionId) {
+                <div class="rounded-xl border border-border">
+                  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 p-4">
+                    <div>
+                      <p class="font-medium text-ink">{{ race.raceName }}</p>
+                      <p class="text-xs text-text-secondary">
+                        {{ race.dayLabel }} · {{ race.scheduledTime || '—' }} · {{ race.swimmers.length }} {{ 'championships.finished.swimmers' | translate }}
+                      </p>
+                    </div>
+                    @if (resultsVm.canManage()) {
+                      <button type="button" (click)="resultsVm.openResults(race.raceSessionId)"
+                              [attr.aria-expanded]="resultsVm.isOpen(race.raceSessionId)"
+                              class="inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-medium text-text-secondary hover:text-primary">
+                        {{ (resultsVm.isOpen(race.raceSessionId) ? 'championships.finished.cancel' : 'championships.finished.enter') | translate }}
+                      </button>
+                    }
+                  </div>
+                  @if (resultsVm.canManage() && resultsVm.isOpen(race.raceSessionId)) {
+                    <div class="space-y-3 p-4">
+                      @if (race.swimmers.length === 0) {
+                        <p class="text-sm text-text-secondary">{{ 'championships.finished.noSwimmers' | translate }}</p>
+                      } @else {
+                        <p class="text-xs text-text-secondary">{{ 'championships.finished.timeFormatHint' | translate }}</p>
+                        @for (s of race.swimmers; track s.id) {
+                          <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm text-ink">{{ s.name }}</span>
+                            <input type="text" inputmode="decimal"
+                                   [ngModel]="resultsVm.timeInput(race.raceSessionId, s.id)"
+                                   (ngModelChange)="resultsVm.setTime(race.raceSessionId, s.id, $event)"
+                                   placeholder="0:00.00" [attr.aria-label]="s.name"
+                                   class="h-9 w-28 rounded-md border border-border bg-surface px-2 text-sm text-ink" />
+                          </div>
+                        }
+                        <div class="flex justify-end">
+                          <button type="button" (click)="resultsVm.saveResults(race.raceSessionId)" [disabled]="resultsVm.saving()"
+                                  class="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
+                            {{ 'championships.finished.save' | translate }}
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </section>
+    }
+    @if (vm.activeTab() === 'results') {
+      <section class="rounded-2xl border border-border bg-surface shadow-sm">
+        @if (resultsVm.loading()) {
+          <p class="p-6 text-center text-sm text-text-secondary">{{ 'championships.detail.loading' | translate }}</p>
+        } @else if (resultsVm.error()) {
+          <p class="p-6 text-center text-sm text-danger">{{ 'championships.detail.error' | translate }}</p>
+        } @else if (resultsVm.loaded()) {
+          @if (resultsVm.resultRaces().length === 0) {
+            <p class="p-8 text-center text-sm text-text-secondary">{{ 'championships.results.empty' | translate }}</p>
+          } @else {
+            <div class="space-y-4 p-5">
+              @for (race of resultsVm.resultRaces(); track race.raceSessionId) {
+                <div class="rounded-xl border border-border">
+                  <div class="border-b border-border bg-muted/30 p-4">
+                    <p class="font-medium text-ink">{{ race.raceName }}</p>
+                    <p class="text-xs text-text-secondary">{{ race.dayLabel }}</p>
+                  </div>
+                  <table class="w-full text-sm">
+                    <thead class="border-b border-border text-xs text-text-secondary">
+                      <tr>
+                        <th class="p-2 text-start">{{ 'championships.results.rank' | translate }}</th>
+                        <th class="p-2 text-start">{{ 'championships.results.swimmer' | translate }}</th>
+                        <th class="p-2 text-start">{{ 'championships.results.time' | translate }}</th>
+                        <th class="p-2 text-start">{{ 'championships.results.pb' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                      @for (e of race.entries; track e.rank) {
+                        <tr>
+                          <td class="p-2 font-bold text-primary">{{ e.rank }}</td>
+                          <td class="p-2 text-ink">{{ e.swimmerName }}</td>
+                          <td class="p-2 tabular-nums text-ink">{{ resultsVm.formatTime(e.timeMs) }}</td>
+                          <td class="p-2">
+                            @if (e.isPersonalBest) {
+                              <span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">{{ 'championships.results.pbBadge' | translate }}</span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
         }
       </section>
     }

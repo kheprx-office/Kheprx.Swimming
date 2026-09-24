@@ -81,6 +81,48 @@
       "saveFailed": "Couldn't save the enrollment.",
       "emptyRoster": "No swimmers to enroll yet.",
       "years": "yrs"
+    },
+    "days": {
+      "dayName": "Day",
+      "totals": { "days": "Days", "races": "Races", "entries": "Entries" },
+      "empty": "Add competition days to structure this event.",
+      "noRaces": "No races yet — add a race to this day.",
+      "addDay": "Add Day",
+      "addRace": "Race",
+      "removeDay": "Remove day",
+      "removeRace": "Remove race",
+      "dayLabel": "Day label",
+      "dayDate": "Day date",
+      "distance": "Distance",
+      "stroke": "Stroke",
+      "time": "Time",
+      "swimmersCount": "swimmers",
+      "chooseParticipants": "Choose participants",
+      "enrollFirst": "No enrolled swimmers yet — enroll swimmers in the Enrollment tab first.",
+      "status": { "scheduled": "Scheduled", "awaitingResults": "Awaiting results" },
+      "save": "Save",
+      "saved": "Schedule saved",
+      "saveFailed": "Couldn't save the schedule."
+    },
+    "finished": {
+      "helper": "Races waiting on results — enter finish times for any race.",
+      "empty": "No races waiting on results.",
+      "swimmers": "swimmers",
+      "enter": "Enter results",
+      "cancel": "Cancel",
+      "save": "Save results",
+      "timeFormatHint": "Format m:ss.SS — use h:mm:ss.SS for races over an hour.",
+      "noSwimmers": "No swimmers assigned to this race.",
+      "saved": "Results saved",
+      "saveFailed": "Couldn't save the results."
+    },
+    "results": {
+      "empty": "No results recorded yet.",
+      "rank": "Rank",
+      "swimmer": "Swimmer",
+      "time": "Time",
+      "pb": "PB",
+      "pbBadge": "PB"
     }
   },
   "swimmerProfile": {
@@ -232,6 +274,18 @@
       "edit": "Edit",
       "remove": "Remove",
       "confirmDelete": "Delete this feedback?"
+    },
+    "championships": {
+      "title": "Championship History",
+      "subtitle": "Every championship entered, with its races and results",
+      "select": "Championship",
+      "raceCol": "Race",
+      "dayCol": "Day",
+      "timeCol": "Time",
+      "races": "races",
+      "empty": "No results recorded yet.",
+      "noHistory": "No championships joined yet.",
+      "pb": "PB"
     }
   },
   "shell": {

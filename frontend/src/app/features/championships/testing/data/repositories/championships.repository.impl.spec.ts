@@ -32,4 +32,23 @@ describe('ChampionshipsRepositoryImpl (detail + enrollment)', () => {
     await repo.setEnrollments('e1', rq);
     expect(http.put).toHaveBeenCalledWith('/api/championships/e1/enrollments', { body: rq });
   });
+
+  it('getResults GETs the results endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ data: { results: [] } });
+    await repo.getResults('e1');
+    expect(http.get).toHaveBeenCalledWith('/api/championships/e1/results');
+  });
+
+  it('setRaceResults PUTs to the per-race results endpoint with the body', async () => {
+    (http.put as jest.Mock).mockResolvedValue({ data: { results: [] } });
+    const rq = { entries: [{ swimmerId: 's1', timeMs: 24560 }] };
+    await repo.setRaceResults('e1', 'race1', rq);
+    expect(http.put).toHaveBeenCalledWith('/api/championships/e1/races/race1/results', { body: rq });
+  });
+
+  it('getSwimmerChampionshipHistory GETs the swimmer history endpoint', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ data: [] });
+    await repo.getSwimmerChampionshipHistory('sw1');
+    expect(http.get).toHaveBeenCalledWith('/api/championships/swimmer/sw1/history');
+  });
 });

@@ -17,6 +17,9 @@ export class ReferenceRepositoryImpl implements IReferenceRepository {
   getStrokes(): Promise<CodedLookupListDtoRs> {
     return this.http.get<CodedLookupListDtoRs>('/api/reference/strokes');
   }
+  getDistances(): Promise<CodedLookupListDtoRs> {
+    return this.http.get<CodedLookupListDtoRs>('/api/reference/distances');
+  }
   getGenders(): Promise<CodedLookupListDtoRs> {
     return this.http.get<CodedLookupListDtoRs>('/api/reference/genders');
   }
