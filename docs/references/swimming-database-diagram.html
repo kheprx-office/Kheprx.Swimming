@@ -357,7 +357,6 @@ const SCHEMA = [
    {c:"swimmer_id",t:"uuid",k:"FK",fk:"identity.swimmer_profile.id",n:false},
    {c:"time_ms",t:"integer",k:"",n:false},
    {c:"points",t:"integer",k:"",n:false},
-   {c:"rank",t:"integer",k:"",n:false},
    {c:"is_personal_best",t:"boolean",k:"",n:false},
    {c:"recorded_by",t:"uuid",k:"FK",fk:"identity.app_user.id",n:false},
    {c:"(race_session_id, swimmer_id)",t:"—",k:"U",n:false,note:"one result per swimmer per race"}]}
@@ -463,7 +462,8 @@ const IMPLEMENTED = new Set([
   "athlete.body_measurement","athlete.guardian",
   "reference.feedback_category","health.feedback_entry",
   "reference.attendance_status","attendance.attendance_record",
-  "reference.competition_status","championships.competition_event","championships.championship_enrollment"
+  "reference.competition_status","championships.competition_event","championships.championship_enrollment",
+  "reference.distance","championships.competition_day","championships.race_session","championships.race_assignment"
 ]);
 const isImplemented = key => IMPLEMENTED.has(key);
 function statusDot(key){
