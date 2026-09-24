@@ -1,0 +1,240 @@
+/* Onboarding wizard — scoped visual styling in the Oasis design language.
+   Colors come from the project's real design tokens (--c-* in styles.scss), so the
+   page matches the login/dashboard palette. Nothing here leaks outside this component
+   (Angular view encapsulation), so the shared form controls and other pages are untouched. */
+
+.oa-page {
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  background: rgb(var(--c-canvas)); /* warm cream */
+}
+
+.oa-container {
+  width: 100%;
+  max-width: 64rem; /* ~1024px — wider, premium proportions like the reference */
+}
+
+/* ----- Header ----- */
+.oa-header {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+.oa-title {
+  font-family: 'Fraunces', 'Georgia', serif; /* elegant heading, matches the rest of Oasis */
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: rgb(var(--c-ink));
+  margin: 0 0 0.6rem;
+}
+.oa-subtitle {
+  font-size: 1.05rem;
+  color: rgb(var(--c-text-secondary));
+  margin: 0;
+}
+
+/* ----- Stepper ----- */
+.oa-stepper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  list-style: none;
+}
+.oa-step {
+  display: flex;
+  align-items: flex-start;
+  &:not(.is-last) {
+    flex: 1;
+  }
+}
+.oa-step-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  width: 6rem;
+}
+.oa-step-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-text-muted));
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.oa-step-label {
+  font-size: 0.75rem;
+  line-height: 1.15;
+  text-align: center;
+  max-width: 6rem;
+  color: rgb(var(--c-text-muted));
+}
+.oa-step-col.is-active {
+  .oa-step-circle {
+    background: rgb(var(--c-primary));
+    border-color: rgb(var(--c-primary));
+    color: #fff;
+  }
+  .oa-step-label {
+    color: rgb(var(--c-ink));
+    font-weight: 600;
+  }
+}
+.oa-step-line {
+  flex: 1;
+  height: 1px;
+  margin-top: 1rem; /* aligns with the vertical centre of the 2rem circle */
+  background: rgb(var(--c-border));
+}
+
+/* ----- Card ----- */
+.oa-card {
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(74, 63, 45, 0.05); /* soft warm elevation, not heavy */
+}
+.oa-card-title {
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: rgb(var(--c-ink));
+  margin: 0 0 1rem;
+}
+.oa-divider {
+  border: 0;
+  border-top: 1px solid rgb(var(--c-border));
+  margin: 0 0 1.5rem;
+}
+.oa-divider--bottom {
+  margin: 2rem 0 1.25rem;
+}
+.oa-error {
+  color: #db2c21;
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+/* ----- Form grid ----- */
+.oa-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem 1.5rem;
+}
+@media (min-width: 640px) {
+  .oa-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .oa-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.oa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.oa-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgb(var(--c-ink));
+}
+
+/* ----- Inputs / selects / dates ----- */
+.oa-input {
+  height: 2.75rem; /* ~44px */
+  width: 100%;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 0.6rem; /* ~10px */
+  background: rgb(var(--c-surface));
+  color: rgb(var(--c-ink));
+  padding: 0 0.85rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.oa-input::placeholder {
+  color: rgb(var(--c-text-muted));
+}
+.oa-input:focus {
+  outline: none;
+  border-color: rgb(var(--c-primary));
+  box-shadow: 0 0 0 3px rgb(var(--c-primary) / 0.12); /* subtle teal focus, no aggressive glow */
+}
+.oa-input[type='number']::-webkit-outer-spin-button,
+.oa-input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.oa-input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.oa-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  /* muted chevron (#918C82 = --c-text-muted) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23918C82' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+}
+
+.oa-input--locked {
+  display: flex;
+  align-items: center;
+  background: rgb(var(--c-canvas)); /* light beige — visibly disabled but readable */
+  color: rgb(var(--c-text-muted));
+  cursor: not-allowed;
+}
+
+/* ----- Actions ----- */
+.oa-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.oa-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgb(var(--c-primary));
+  color: #fff;
+  border: 0;
+  border-radius: 0.6rem;
+  padding: 0.7rem 1.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.oa-next:hover:not(:disabled) {
+  background: rgb(var(--c-primary-hover));
+}
+.oa-next:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.oa-next-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}

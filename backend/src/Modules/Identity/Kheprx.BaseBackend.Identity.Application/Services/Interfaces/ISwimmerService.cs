@@ -19,4 +19,6 @@ public interface ISwimmerService
     Task<bool> AddBodyMeasurementAsync(Guid id, CreateBodyMeasurementRequest request, CancellationToken ct = default);
     Task<int> GetNewThisMonthCountAsync(CancellationToken ct = default);
     Task<IReadOnlyList<StrokeSplitDto>> GetStrokeSplitAsync(CancellationToken ct = default);
+    Task<OnboardingPrefillDto?> GetOnboardingPrefillAsync(Guid userId, CancellationToken ct = default);
+    Task<OnboardingStepResultDto?> CompleteIdentityVitalsAsync(Guid userId, CompleteIdentityVitalsRequest request, CancellationToken ct = default);
 }

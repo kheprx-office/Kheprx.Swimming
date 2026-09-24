@@ -1,4 +1,5 @@
 using Kheprx.BaseBackend.Identity.Domain.Entities;
+using Kheprx.BaseBackend.Identity.Domain.Exceptions;
 using Xunit;
 
 namespace Kheprx.BaseBackend.Identity.UnitTests.Entities;
@@ -32,5 +33,21 @@ public class SwimmerProfileTests
 
         Assert.Equal(swimmerId, s.SwimmerProfileId);
         Assert.Equal(strokeId, s.StrokeId);
+    }
+
+    [Fact]
+    public void SetTrainingClub_updates_id()
+    {
+        var p = new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid());
+        var newClub = Guid.NewGuid();
+        p.SetTrainingClub(newClub);
+        Assert.Equal(newClub, p.TrainingClubId);
+    }
+
+    [Fact]
+    public void SetTrainingClub_rejects_empty()
+    {
+        var p = new SwimmerProfile(Guid.NewGuid(), "SW-0001", Guid.NewGuid());
+        Assert.Throws<InvalidUserException>(() => p.SetTrainingClub(Guid.Empty));
     }
 }

@@ -118,6 +118,9 @@ internal sealed class SwimmerProfileRepository : ISwimmerProfileRepository
     public Task<SwimmerProfile?> GetByIdTrackedAsync(Guid id, CancellationToken ct = default)
         => _db.SwimmerProfiles.FirstOrDefaultAsync(p => p.Id == id, ct);
 
+    public Task<SwimmerProfile?> GetByUserIdTrackedAsync(Guid userId, CancellationToken ct = default)
+        => _db.SwimmerProfiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
     public async Task<IReadOnlyList<MedicalExamRow>> ListExamsAsync(Guid swimmerId, CancellationToken ct = default)
         => await ExamRows()
             .Where(x => x.SwimmerId == swimmerId)

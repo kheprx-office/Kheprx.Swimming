@@ -22,11 +22,25 @@ export const roleGuard = (...roles: UserRole[]): CanActivateFn => () => {
   return true;
 };
 
-// firstLoginGuard: an authenticated user still flagged mustChangePassword is pinned to
-// /change-password until they change it. Applied to shell children EXCEPT /change-password.
+// firstLoginGuard: an authenticated user still flagged mustChangePassword is pinned to their
+// first-login destination until it clears — swimmers to /onboarding (finish the wizard),
+// everyone else to /change-password. Applied to shell children EXCEPT those two routes.
 export const firstLoginGuard: CanActivateFn = () => {
   const auth = inject(AuthSessionStore);
   const router = inject(Router);
-  if (auth.mustChangePassword()) { router.navigate(['/change-password']); return false; }
+  if (auth.mustChangePassword()) {
+    router.navigate([auth.role() === 'swimmer' ? '/onboarding' : '/change-password']);
+    return false;
+  }
+  return true;
+};
+
+// onboardingGuard: the /onboarding wizard is only for a first-login swimmer. Anonymous → /login;
+// a non-swimmer or an already-onboarded swimmer → /home.
+export const onboardingGuard: CanActivateFn = () => {
+  const auth = inject(AuthSessionStore);
+  const router = inject(Router);
+  if (!auth.isAuthenticated()) { router.navigate(['/login']); return false; }
+  if (auth.role() !== 'swimmer' || !auth.mustChangePassword()) { router.navigate(['/home']); return false; }
   return true;
 };

@@ -281,4 +281,46 @@ internal sealed class SwimmerService : ISwimmerService
             .Select(r => new StrokeSplitDto(r.StrokeId, r.Code, r.NameEn, r.NameAr, r.Count))
             .ToList();
     }
+
+    public async Task<OnboardingPrefillDto?> GetOnboardingPrefillAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByUserIdTrackedAsync(userId, ct);
+        if (profile is null) return null;
+        var user = await _users.GetByIdAsync(profile.UserId, ct);
+        if (user is null) return null;
+        return new OnboardingPrefillDto(profile.Uid, user.NameEn, user.NameAr, user.GenderId, user.Dob, profile.TrainingClubId);
+    }
+
+    public async Task<OnboardingStepResultDto?> CompleteIdentityVitalsAsync(
+        Guid userId, CompleteIdentityVitalsRequest request, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByUserIdTrackedAsync(userId, ct);
+        if (profile is null) return null;
+        var user = await _users.GetByIdAsync(profile.UserId, ct);
+        if (user is null) return null;
+
+        // Reference-existence guards (same throw-on-unknown convention as CreateAsync/CreateExamAsync).
+        if (!await _genders.ExistsAsync(request.GenderId, ct)) throw new InvalidUserException("Unknown gender.");
+        if (!await _clubs.ExistsAsync(request.TrainingClubId, ct)) throw new InvalidUserException("Unknown training club.");
+        if (!await _fitness.ExistsAsync(request.InternalMedId, ct)) throw new InvalidUserException("Unknown internal medicine assessment.");
+        if (!await _fitness.ExistsAsync(request.HeartAssessId, ct)) throw new InvalidUserException("Unknown heart assessment.");
+        if (!await _fitness.ExistsAsync(request.SpineAssessId, ct)) throw new InvalidUserException("Unknown spine assessment.");
+        if (request.BloodTypeId is { } bt && !await _bloodTypes.ExistsAsync(bt, ct)) throw new InvalidUserException("Unknown blood type.");
+
+        // Identity: name_en (+ name_ar preserved as sent), gender, dob. Email + phone preserved.
+        user.UpdateProfile(request.NameEn, request.NameAr, user.Email, request.GenderId, request.Dob, user.Phone);
+        profile.SetTrainingClub(request.TrainingClubId);
+
+        // Vitals: a new dated medical exam row.
+        var exam = new MedicalExam(profile.Id, request.ExamDate, request.InternalMedId, request.HeartAssessId,
+            request.SpineAssessId, request.BloodTypeId, request.Hemoglobin, request.HeightCm, request.WeightKg);
+        await _swimmers.AddExamAsync(exam, ct);
+
+        // Completing Step 1 completes onboarding for now → clear the forced-first-login flag.
+        user.CompleteFirstLogin();
+
+        // Single SaveChanges over the shared IdentityDbContext → identity + exam + flag persist atomically.
+        await _swimmers.SaveChangesAsync(ct);
+        return new OnboardingStepResultDto(false);
+    }
 }

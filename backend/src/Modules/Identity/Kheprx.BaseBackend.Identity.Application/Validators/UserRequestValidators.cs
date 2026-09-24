@@ -156,3 +156,25 @@ public sealed class CreateMedicalExamRequestValidator : AbstractValidator<Create
         RuleFor(x => x.WeightKg).GreaterThan(0m).LessThan(500m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
     }
 }
+
+public sealed class CompleteIdentityVitalsRequestValidator : AbstractValidator<CompleteIdentityVitalsRequest>
+{
+    public CompleteIdentityVitalsRequestValidator()
+    {
+        RuleFor(x => x.NameEn).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.GenderId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.GenderRequired(AppLanguage.Current));
+        RuleFor(x => x.TrainingClubId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.TrainingClubRequired(AppLanguage.Current));
+        RuleFor(x => x.Dob)
+            .NotEqual(default(DateOnly)).WithMessage(_ => SwimmerMessages.Errors.DobRequired(AppLanguage.Current))
+            .LessThan(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => SwimmerMessages.Errors.DobInPast(AppLanguage.Current));
+        RuleFor(x => x.ExamDate)
+            .NotEqual(default(DateOnly)).WithMessage(_ => SwimmerMessages.Errors.ExamDateInvalid(AppLanguage.Current))
+            .LessThanOrEqualTo(_ => DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(_ => SwimmerMessages.Errors.ExamDateInvalid(AppLanguage.Current));
+        RuleFor(x => x.InternalMedId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.AssessmentRequired(AppLanguage.Current));
+        RuleFor(x => x.HeartAssessId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.AssessmentRequired(AppLanguage.Current));
+        RuleFor(x => x.SpineAssessId).NotEqual(Guid.Empty).WithMessage(_ => SwimmerMessages.Errors.AssessmentRequired(AppLanguage.Current));
+        RuleFor(x => x.Hemoglobin).GreaterThan(0m).LessThan(30m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+        RuleFor(x => x.HeightCm).GreaterThan(0m).LessThan(300m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+        RuleFor(x => x.WeightKg).GreaterThan(0m).LessThan(500m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+    }
+}

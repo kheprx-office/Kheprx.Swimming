@@ -17,6 +17,7 @@ import { UserRole } from '@core/domain/roles';
 const LANDING_ROUTE_BY_ROLE: Record<UserRole, string> = {
   head_coach: '/home',
   captain: '/home',
+  swimmer: '/home',
 };
 
 // Default selection before roles load; matches the dev-prefilled Head Coach credentials.
@@ -77,7 +78,7 @@ export class LoginViewModel {
     this.loading.set(false);
     if (r.ok) {
       if (r.data.mustChangePassword) {
-        void this.router.navigate(['/change-password']);
+        void this.router.navigate([this.auth.role() === 'swimmer' ? '/onboarding' : '/change-password']);
       } else {
         const role = this.auth.role();
         void this.router.navigate([role ? LANDING_ROUTE_BY_ROLE[role] : '/home']);

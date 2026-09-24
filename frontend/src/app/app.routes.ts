@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, firstLoginGuard, roleGuard } from '@features/auth/presentation/auth.guard';
+import { authGuard, firstLoginGuard, roleGuard, onboardingGuard } from '@features/auth/presentation/auth.guard';
 import { LayoutComponent } from './layout/layout.component';
 import { LoginViewModel, AccountViewModel } from '@features/auth';
 import { RegisterSwimmerViewModel, RegisterCoachViewModel, MedicalTestsViewModel, HealthMonitoringViewModel, SwimmerDataViewModel } from '@features/captain-panel';
@@ -7,12 +7,19 @@ import { SwimmerProfileViewModel } from '@features/swimmer-profile';
 import { AttendanceEntryViewModel } from '@features/attendance';
 import { ChampionshipsViewModel, ChampionshipDetailViewModel, CompetitionDaysViewModel } from '@features/championships';
 import { DashboardViewModel } from '@features/dashboard';
+import { OnboardingViewModel } from '@features/swimmer-onboarding';
 
 export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () => import('@features/auth').then((m) => m.LoginPage),
     providers: [LoginViewModel],
+  },
+  {
+    path: 'onboarding',
+    canActivate: [authGuard, onboardingGuard],
+    loadComponent: () => import('@features/swimmer-onboarding').then((m) => m.OnboardingWizardPage),
+    providers: [OnboardingViewModel],
   },
   {
     path: '',

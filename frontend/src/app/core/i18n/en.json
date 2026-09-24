@@ -45,7 +45,7 @@
     "notPermitted": "Only a coach can save attendance.",
     "status": { "present": "Present", "late": "Late", "absent": "Absent", "excused": "Excused" }
   },
-  "roles": { "head_coach": "Head Coach", "captain": "Captain" },
+  "roles": { "head_coach": "Head Coach", "captain": "Captain", "swimmer": "Swimmer" },
   "gender": { "male": "Male", "female": "Female" },
   "swimmers": {
     "title": "Swimmers",
@@ -452,5 +452,30 @@
       "loggedOut": "Reading logged — outside the normal range",
       "createFailed": "Couldn't log the reading"
     }
+  },
+  "onboarding": {
+    "title": "Join Oasis Academy",
+    "subtitle": "Let's get you set up for the pool",
+    "steps": { "identity": "Identity & Vitals", "guardian": "Guardian & Medical", "physiological": "Physiological", "inbody": "InBody", "done": "Done" },
+    "sectionTitle": "Identity & Vitals",
+    "fullName": "Full Name",
+    "sport": "Sport",
+    "sportLocked": "Swimming (Locked)",
+    "trainingClub": "Training Club",
+    "gender": "Gender",
+    "dob": "Date of Birth",
+    "lastExamDate": "Last Examination Date",
+    "internalMed": "Internal Medicine Result",
+    "heart": "Heart Assessment",
+    "spine": "Spine Assessment",
+    "bloodType": "Blood Type",
+    "hemoglobin": "Hemoglobin (g/dL)",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "selectPlaceholder": "Select…",
+    "next": "Next Step",
+    "completed": "Welcome aboard! Your profile is set up.",
+    "saveFailed": "Could not save your details. Please try again.",
+    "loadFailed": "Could not load your details. Please try again."
   }
 }

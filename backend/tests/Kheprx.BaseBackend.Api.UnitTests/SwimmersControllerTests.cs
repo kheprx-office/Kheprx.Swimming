@@ -11,6 +11,9 @@ namespace Kheprx.BaseBackend.Api.UnitTests;
 
 public class SwimmersControllerTests
 {
+    private static SwimmersController OnboardingController(ISwimmerService svc)
+        => new(svc) { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() } };
+
     [Fact]
     public async Task Count_returns_200_with_swimmer_count()
     {
@@ -355,5 +358,52 @@ public class SwimmersControllerTests
 
         var nf = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, nf.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetOnboardingPrefill_returns_200_with_dto()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.GetOnboardingPrefillAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new OnboardingPrefillDto("SW-0001", "Sam", null, Guid.NewGuid(), new DateOnly(2010, 1, 1), Guid.NewGuid()));
+
+        var result = await OnboardingController(svc.Object).GetOnboardingPrefill(CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var body = Assert.IsType<ApiResponse<OnboardingPrefillDto>>(ok.Value);
+        Assert.True(body.SuccessStatus);
+        Assert.Equal("SW-0001", body.Data!.Uid);
+    }
+
+    [Fact]
+    public async Task GetOnboardingPrefill_returns_404_when_not_a_swimmer()
+    {
+        var svc = new Mock<ISwimmerService>();
+        svc.Setup(s => s.GetOnboardingPrefillAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync((OnboardingPrefillDto?)null);
+
+        var result = await OnboardingController(svc.Object).GetOnboardingPrefill(CancellationToken.None);
+
+        Assert.Equal(StatusCodes.Status404NotFound, Assert.IsType<ObjectResult>(result.Result).StatusCode);
+    }
+
+    [Fact]
+    public async Task CompleteOnboarding_returns_200_when_ok_404_when_null()
+    {
+        var req = new CompleteIdentityVitalsRequest("Sam", null, Guid.NewGuid(), new DateOnly(2010, 1, 1), Guid.NewGuid(),
+            new DateOnly(2026, 1, 1), null, 14.5m, 175m, 68m, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
+        var okSvc = new Mock<ISwimmerService>();
+        okSvc.Setup(s => s.CompleteIdentityVitalsAsync(It.IsAny<Guid>(), It.IsAny<CompleteIdentityVitalsRequest>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync(new OnboardingStepResultDto(false));
+        var okResult = await OnboardingController(okSvc.Object).CompleteOnboardingIdentityVitals(req, CancellationToken.None);
+        var ok = Assert.IsType<OkObjectResult>(okResult.Result);
+        Assert.False(Assert.IsType<ApiResponse<OnboardingStepResultDto>>(ok.Value).Data!.MustChangePassword);
+
+        var nfSvc = new Mock<ISwimmerService>();
+        nfSvc.Setup(s => s.CompleteIdentityVitalsAsync(It.IsAny<Guid>(), It.IsAny<CompleteIdentityVitalsRequest>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync((OnboardingStepResultDto?)null);
+        var nfResult = await OnboardingController(nfSvc.Object).CompleteOnboardingIdentityVitals(req, CancellationToken.None);
+        Assert.Equal(StatusCodes.Status404NotFound, Assert.IsType<ObjectResult>(nfResult.Result).StatusCode);
     }
 }

@@ -1,3 +1,5 @@
+using Kheprx.BaseBackend.Identity.Domain.Exceptions;
+
 namespace Kheprx.BaseBackend.Identity.Domain.Entities;
 
 public sealed class SwimmerProfile
@@ -22,5 +24,12 @@ public sealed class SwimmerProfile
         RepresentChampionshipClubId = representChampionshipClubId;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
+    }
+
+    public void SetTrainingClub(Guid trainingClubId)
+    {
+        if (trainingClubId == Guid.Empty) throw new InvalidUserException("Training club is required.");
+        TrainingClubId = trainingClubId;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

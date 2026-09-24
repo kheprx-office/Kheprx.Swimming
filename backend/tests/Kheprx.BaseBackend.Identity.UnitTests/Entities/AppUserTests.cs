@@ -42,4 +42,22 @@ public sealed class AppUserTests
         var born = new AppUser("u", "n", Guid.NewGuid(), dob: new DateOnly(2000, 1, 1));
         Assert.True(born.Age >= 25);
     }
+
+    [Fact]
+    public void CompleteFirstLogin_clears_flag_without_touching_password()
+    {
+        var u = New(firstLogin: true);
+        u.CompleteFirstLogin();
+        Assert.False(u.IsFirstLogin);
+        Assert.Equal("hash", u.PasswordHash); // unchanged (New() sets passwordHash: "hash")
+    }
+
+    [Fact]
+    public void CompleteFirstLogin_is_idempotent()
+    {
+        var u = New(firstLogin: true);
+        u.CompleteFirstLogin();
+        u.CompleteFirstLogin();
+        Assert.False(u.IsFirstLogin);
+    }
 }

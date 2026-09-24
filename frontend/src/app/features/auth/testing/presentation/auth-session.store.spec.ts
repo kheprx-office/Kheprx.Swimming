@@ -184,6 +184,16 @@ describe('AuthSessionStore', () => {
     expect(store.currentUserName()).toBe('Coach User');
   });
 
+  it('markOnboardingComplete flips mustChangePassword to false', async () => {
+    login.run.mockResolvedValue(ok({ ...session, principal: { role: 'swimmer', userId: 'USR-SWIM' }, mustChangePassword: true }));
+    const store = make();
+    await store.signIn('swimmer@example.com', 'Oasis2026!', 'swimmer');
+    expect(store.mustChangePassword()).toBe(true);
+    store.markOnboardingComplete();
+    expect(store.mustChangePassword()).toBe(false);
+    expect(store.isAuthenticated()).toBe(true);
+  });
+
   it('signOut clears the display name', async () => {
     login.run.mockResolvedValue(ok(session));
     loadCurrentUser.run.mockResolvedValue(ok({ userId: 'USR-COACH', email: 'a@b.c', nameEn: 'Coach User', nameAr: null, role: 'head_coach', phone: null, gender: null, age: null, nationalId: null }));

@@ -59,6 +59,14 @@ public sealed class AppUser
         IsFirstLogin = false;
     }
 
+    // Clears the forced-first-login flag WITHOUT changing the password. Used by the
+    // swimmer onboarding wizard, which completes first-login by finishing the wizard
+    // rather than by a password change (unlike SetPassword). Idempotent.
+    public void CompleteFirstLogin()
+    {
+        IsFirstLogin = false;
+    }
+
     public void UpdateProfile(
         string nameEn, string? nameAr, string? email, Guid? genderId, DateOnly? dob, string? phone)
     {

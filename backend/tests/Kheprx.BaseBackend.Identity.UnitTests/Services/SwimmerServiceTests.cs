@@ -258,6 +258,11 @@ public class SwimmerServiceTests
     private static CreateMedicalExamRequest ExamReq() => new(
         new DateOnly(2026, 9, 19), null, 15m, 183m, 75m, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
+    private static CompleteIdentityVitalsRequest CompleteReq() => new(
+        "Ahmed Ali", null, Guid.NewGuid(), new DateOnly(2010, 1, 1), Guid.NewGuid(),
+        new DateOnly(2026, 1, 1), null, 14.5m, 175m, 68m,
+        Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
     [Fact]
     public async Task ListExams_returns_null_when_swimmer_missing()
     {
@@ -516,5 +521,97 @@ public class SwimmerServiceTests
 
         Assert.Equal("free", result[0].Code);
         Assert.Equal("back", result[1].Code);
+    }
+
+    // ── Onboarding prefill tests ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetOnboardingPrefill_returns_null_when_not_a_swimmer()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SwimmerProfile?)null);
+        Assert.Null(await svc.GetOnboardingPrefillAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetOnboardingPrefill_maps_identity_ids()
+    {
+        var (svc, swimmers, users) = Build();
+        var userId = Guid.NewGuid();
+        var clubId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0009", clubId);
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        var genderId = Guid.NewGuid();
+        users.Setup(u => u.GetByIdAsync(profile.UserId, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(new AppUser("s.swimmer", "Sam", Guid.NewGuid(), nameAr: "سام", genderId: genderId, dob: new DateOnly(2011, 3, 4)));
+
+        var dto = await svc.GetOnboardingPrefillAsync(userId);
+
+        Assert.NotNull(dto);
+        Assert.Equal("SW-0009", dto!.Uid);
+        Assert.Equal("Sam", dto.NameEn);
+        Assert.Equal("سام", dto.NameAr);
+        Assert.Equal(genderId, dto.GenderId);
+        Assert.Equal(clubId, dto.TrainingClubId);
+    }
+
+    // ── CompleteIdentityVitals tests ─────────────────────────────────────────
+
+    [Fact]
+    public async Task CompleteIdentityVitals_returns_null_when_not_a_swimmer()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SwimmerProfile?)null);
+        Assert.Null(await svc.CompleteIdentityVitalsAsync(Guid.NewGuid(), CompleteReq()));
+    }
+
+    [Fact]
+    public async Task CompleteIdentityVitals_updates_identity_inserts_exam_and_clears_first_login()
+    {
+        var (svc, swimmers, users) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        var user = new AppUser("s.swimmer", "Old Name", Guid.NewGuid(), email: "s@x.io", genderId: Guid.NewGuid(), dob: new DateOnly(2009, 1, 1), isFirstLogin: true);
+        users.Setup(u => u.GetByIdAsync(profile.UserId, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+        var newClub = Guid.NewGuid();
+
+        var result = await svc.CompleteIdentityVitalsAsync(userId, CompleteReq() with { NameEn = "New Name", TrainingClubId = newClub });
+
+        Assert.NotNull(result);
+        Assert.False(result!.MustChangePassword);
+        Assert.Equal("New Name", user.NameEn);
+        Assert.Equal("s@x.io", user.Email);          // preserved
+        Assert.False(user.IsFirstLogin);             // cleared
+        Assert.Equal(newClub, profile.TrainingClubId);
+        swimmers.Verify(r => r.AddExamAsync(It.IsAny<MedicalExam>(), It.IsAny<CancellationToken>()), Times.Once);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompleteIdentityVitals_accepts_null_blood_type()
+    {
+        var (svc, swimmers, users) = Build();
+        var userId = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(userId, "SW-0001", Guid.NewGuid()));
+        users.Setup(u => u.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync(new AppUser("s", "S", Guid.NewGuid(), email: "s@x.io"));
+        var result = await svc.CompleteIdentityVitalsAsync(userId, CompleteReq() with { BloodTypeId = null });
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task CompleteIdentityVitals_throws_when_reference_unknown()
+    {
+        var (svc, swimmers, users) = Build(refsExist: false);
+        var userId = Guid.NewGuid();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SwimmerProfile(userId, "SW-0001", Guid.NewGuid()));
+        users.Setup(u => u.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync(new AppUser("s", "S", Guid.NewGuid(), email: "s@x.io"));
+        await Assert.ThrowsAnyAsync<Exception>(() => svc.CompleteIdentityVitalsAsync(userId, CompleteReq()));
     }
 }

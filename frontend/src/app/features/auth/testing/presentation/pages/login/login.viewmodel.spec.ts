@@ -62,6 +62,13 @@ describe('LoginViewModel', () => {
     await vm.submit();
     expect(router.navigate).toHaveBeenCalledWith(['/change-password']);
   });
+  it('routes a first-login swimmer to /onboarding', async () => {
+    const swimmerForced: AuthSession = { tokens: { accessToken: 'a', refreshToken: 'r' }, principal: { role: 'swimmer', userId: 'USR-SWIM' }, mustChangePassword: true };
+    (auth.signIn as jest.Mock).mockResolvedValue(ok(swimmerForced));
+    (auth.role as jest.Mock).mockReturnValue('swimmer');
+    await vm.submit();
+    expect(router.navigate).toHaveBeenCalledWith(['/onboarding']);
+  });
   it('surfaces the error message on failure', async () => {
     (auth.signIn as jest.Mock).mockResolvedValue(
       fail(

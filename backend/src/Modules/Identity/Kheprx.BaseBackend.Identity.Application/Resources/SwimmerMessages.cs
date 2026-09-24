@@ -36,6 +36,8 @@ public static class SwimmerMessages
         public static string GuardiansSaved(string lang) => lang switch { "ar" => "تم حفظ بيانات ولي الأمر", _ => "Guardian details saved" };
         public static string BodyMeasurementRetrieved(string lang) => lang switch { "ar" => "قياسات الجسم", _ => "Body measurements" };
         public static string BodyMeasurementSaved(string lang) => lang switch { "ar" => "تم حفظ قياسات الجسم", _ => "Body measurements saved" };
+        public static string OnboardingPrefillRetrieved(string lang) => lang switch { "ar" => "بيانات البدء", _ => "Onboarding prefill" };
+        public static string OnboardingCompleted(string lang) => lang switch { "ar" => "تم إكمال البيانات", _ => "Onboarding completed" };
     }
 
     public static class Errors

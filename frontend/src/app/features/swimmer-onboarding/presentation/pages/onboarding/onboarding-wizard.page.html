@@ -1,0 +1,146 @@
+<div class="oa-page">
+  <div class="oa-container">
+    <header class="oa-header">
+      <h1 class="oa-title">{{ 'onboarding.title' | translate }}</h1>
+      <p class="oa-subtitle">{{ 'onboarding.subtitle' | translate }}</p>
+    </header>
+
+    <!-- Circular stepper: teal active step + hairline connectors. Step 1 is the current step;
+         2–5 are upcoming. Navigation logic is unchanged (only Step 1 is functional this pass). -->
+    <ol class="oa-stepper">
+      @for (step of steps; track step.key; let i = $index; let last = $last) {
+        <li class="oa-step" [class.is-last]="last">
+          <div class="oa-step-col" [class.is-active]="step.active">
+            <span class="oa-step-circle">{{ i + 1 }}</span>
+            <span class="oa-step-label">{{ 'onboarding.steps.' + step.key | translate }}</span>
+          </div>
+          @if (!last) {
+            <span class="oa-step-line" aria-hidden="true"></span>
+          }
+        </li>
+      }
+    </ol>
+
+    <section class="oa-card">
+      <h2 class="oa-card-title">{{ 'onboarding.sectionTitle' | translate }}</h2>
+      <hr class="oa-divider" />
+
+      @if (vm.error()) {
+        <p class="oa-error">{{ 'onboarding.loadFailed' | translate }}</p>
+      }
+
+      <div class="oa-grid">
+        <!-- Full Name -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.fullName' | translate }}</span>
+          <input class="oa-input" type="text" [value]="vm.nameEn()" (input)="vm.nameEn.set($any($event.target).value)" />
+        </label>
+
+        <!-- Sport (locked, single-sport app) -->
+        <div class="oa-field">
+          <span class="oa-label">{{ 'onboarding.sport' | translate }}</span>
+          <div class="oa-input oa-input--locked" aria-disabled="true">{{ 'onboarding.sportLocked' | translate }}</div>
+        </div>
+
+        <!-- Training Club -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.trainingClub' | translate }}</span>
+          <select class="oa-input oa-select" [value]="vm.trainingClubId()" (change)="vm.trainingClubId.set($any($event.target).value)">
+            <option value="">{{ 'onboarding.selectPlaceholder' | translate }}</option>
+            @for (o of vm.clubs(); track o.id) { <option [value]="o.id">{{ labelFor(o) }}</option> }
+          </select>
+        </label>
+
+        <!-- Gender -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.gender' | translate }}</span>
+          <select class="oa-input oa-select" [value]="vm.genderId()" (change)="vm.genderId.set($any($event.target).value)">
+            <option value="">{{ 'onboarding.selectPlaceholder' | translate }}</option>
+            @for (o of vm.genders(); track o.id) { <option [value]="o.id">{{ labelFor(o) }}</option> }
+          </select>
+        </label>
+
+        <!-- Date of Birth -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.dob' | translate }}</span>
+          <input class="oa-input" type="date" [value]="vm.dob()" (input)="vm.dob.set($any($event.target).value)" />
+        </label>
+
+        <!-- Last Examination Date -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.lastExamDate' | translate }}</span>
+          <input class="oa-input" type="date" [value]="vm.examDate()" (input)="vm.examDate.set($any($event.target).value)" />
+        </label>
+
+        <!-- Internal Medicine Result -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.internalMed' | translate }}</span>
+          <select class="oa-input oa-select" [value]="vm.internalMedId()" (change)="vm.internalMedId.set($any($event.target).value)">
+            <option value="">{{ 'onboarding.selectPlaceholder' | translate }}</option>
+            @for (o of vm.fitnessAssessments(); track o.id) { <option [value]="o.id">{{ labelFor(o) }}</option> }
+          </select>
+        </label>
+
+        <!-- Heart Assessment -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.heart' | translate }}</span>
+          <select class="oa-input oa-select" [value]="vm.heartAssessId()" (change)="vm.heartAssessId.set($any($event.target).value)">
+            <option value="">{{ 'onboarding.selectPlaceholder' | translate }}</option>
+            @for (o of vm.fitnessAssessments(); track o.id) { <option [value]="o.id">{{ labelFor(o) }}</option> }
+          </select>
+        </label>
+
+        <!-- Spine Assessment -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.spine' | translate }}</span>
+          <select class="oa-input oa-select" [value]="vm.spineAssessId()" (change)="vm.spineAssessId.set($any($event.target).value)">
+            <option value="">{{ 'onboarding.selectPlaceholder' | translate }}</option>
+            @for (o of vm.fitnessAssessments(); track o.id) { <option [value]="o.id">{{ labelFor(o) }}</option> }
+          </select>
+        </label>
+
+        <!-- Blood Type -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.bloodType' | translate }}</span>
+          <select class="oa-input oa-select" [value]="vm.bloodTypeId()" (change)="vm.bloodTypeId.set($any($event.target).value)">
+            <option value="">{{ 'onboarding.selectPlaceholder' | translate }}</option>
+            @for (o of vm.bloodTypes(); track o.id) { <option [value]="o.id">{{ labelFor(o) }}</option> }
+          </select>
+        </label>
+
+        <!-- Hemoglobin -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.hemoglobin' | translate }}</span>
+          <input class="oa-input" type="number" step="any" inputmode="decimal" [value]="vm.hemoglobin()" (input)="vm.hemoglobin.set($any($event.target).value)" />
+        </label>
+
+        <!-- Height -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.height' | translate }}</span>
+          <input class="oa-input" type="number" step="any" inputmode="decimal" [value]="vm.heightCm()" (input)="vm.heightCm.set($any($event.target).value)" />
+        </label>
+
+        <!-- Weight -->
+        <label class="oa-field">
+          <span class="oa-label">{{ 'onboarding.weight' | translate }}</span>
+          <input class="oa-input" type="number" step="any" inputmode="decimal" [value]="vm.weightKg()" (input)="vm.weightKg.set($any($event.target).value)" />
+        </label>
+      </div>
+
+      <hr class="oa-divider oa-divider--bottom" />
+
+      <div class="oa-actions">
+        <button
+          type="button"
+          class="oa-next"
+          [disabled]="!vm.canSubmit() || vm.submitting()"
+          (click)="vm.submit()">
+          {{ 'onboarding.next' | translate }}
+          <svg class="oa-next-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { runInInjectionContext, Injector } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { authGuard, roleGuard, firstLoginGuard } from '@features/auth/presentation/auth.guard';
+import { authGuard, roleGuard, firstLoginGuard, onboardingGuard } from '@features/auth/presentation/auth.guard';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 
 function setup(auth: Partial<AuthSessionStore>) {
@@ -43,13 +43,43 @@ describe('roleGuard', () => {
 
 describe('firstLoginGuard', () => {
   it('redirects to /change-password when mustChangePassword is true', () => {
-    const { injector, router } = setup({ mustChangePassword: () => true } as Partial<AuthSessionStore>);
+    const { injector, router } = setup({ mustChangePassword: () => true, role: () => 'head_coach' } as Partial<AuthSessionStore>);
     expect(run(injector, firstLoginGuard)).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/change-password']);
   });
   it('allows navigation when mustChangePassword is false', () => {
-    const { injector, router } = setup({ mustChangePassword: () => false } as Partial<AuthSessionStore>);
+    const { injector, router } = setup({ mustChangePassword: () => false, role: () => 'head_coach' } as Partial<AuthSessionStore>);
     expect(run(injector, firstLoginGuard)).toBe(true);
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+});
+
+describe('onboardingGuard', () => {
+  it('allows a first-login swimmer', () => {
+    const { injector } = setup({ isAuthenticated: () => true, role: () => 'swimmer', mustChangePassword: () => true } as Partial<AuthSessionStore>);
+    expect(run(injector, onboardingGuard)).toBe(true);
+  });
+  it('redirects an already-onboarded swimmer to /home', () => {
+    const { injector, router } = setup({ isAuthenticated: () => true, role: () => 'swimmer', mustChangePassword: () => false } as Partial<AuthSessionStore>);
+    expect(run(injector, onboardingGuard)).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/home']);
+  });
+  it('redirects a non-swimmer to /home', () => {
+    const { injector, router } = setup({ isAuthenticated: () => true, role: () => 'head_coach', mustChangePassword: () => true } as Partial<AuthSessionStore>);
+    expect(run(injector, onboardingGuard)).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/home']);
+  });
+  it('redirects an anonymous user to /login', () => {
+    const { injector, router } = setup({ isAuthenticated: () => false } as Partial<AuthSessionStore>);
+    expect(run(injector, onboardingGuard)).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+  });
+});
+
+describe('firstLoginGuard (role-aware)', () => {
+  it('pins a first-login swimmer to /onboarding', () => {
+    const { injector, router } = setup({ mustChangePassword: () => true, role: () => 'swimmer' } as Partial<AuthSessionStore>);
+    expect(run(injector, firstLoginGuard)).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/onboarding']);
   });
 });

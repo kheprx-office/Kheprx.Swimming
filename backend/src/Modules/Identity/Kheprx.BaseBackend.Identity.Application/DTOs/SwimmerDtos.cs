@@ -52,3 +52,16 @@ public sealed record CreateMedicalExamRequest(
 
 /// <summary>One stroke's swimmer count for the dashboard stroke split (GET /api/dashboard/summary).</summary>
 public sealed record StrokeSplitDto(Guid StrokeId, string Code, string NameEn, string? NameAr, int Count);
+
+/// <summary>Prefill for the swimmer first-login wizard, Step 1 (GET /api/swimmers/me/onboarding/identity-vitals).</summary>
+public sealed record OnboardingPrefillDto(
+    string Uid, string NameEn, string? NameAr, Guid? GenderId, DateOnly? Dob, Guid? TrainingClubId);
+
+/// <summary>Step 1 submission (POST /api/swimmers/me/onboarding/identity-vitals): identity edits + a new medical exam.</summary>
+public sealed record CompleteIdentityVitalsRequest(
+    string NameEn, string? NameAr, Guid GenderId, DateOnly Dob, Guid TrainingClubId,
+    DateOnly ExamDate, Guid? BloodTypeId, decimal Hemoglobin, decimal HeightCm, decimal WeightKg,
+    Guid InternalMedId, Guid HeartAssessId, Guid SpineAssessId);
+
+/// <summary>Result of completing an onboarding step: the refreshed first-login flag (false once done).</summary>
+public sealed record OnboardingStepResultDto(bool MustChangePassword);

@@ -21,6 +21,7 @@ import { MEDICAL_TEST_PROVIDERS } from '@features/medical-tests/data/medical-tes
 import { HEALTH_READING_PROVIDERS } from '@features/health-readings/data/health-reading.providers';
 import { OBSERVATION_PROVIDERS } from '@features/observations/data/observation.providers';
 import { SWIMMER_PROFILE_PROVIDERS } from '@features/swimmer-profile/data/swimmer-profile.providers';
+import { SWIMMER_ONBOARDING_PROVIDERS } from '@features/swimmer-onboarding/data/swimmer-onboarding.providers';
 import { ATTENDANCE_PROVIDERS } from '@features/attendance/data/attendance.providers';
 import { CHAMPIONSHIPS_PROVIDERS } from '@features/championships/data/championships.providers';
 import { DASHBOARD_PROVIDERS } from '@features/dashboard/data/dashboard.providers';
@@ -41,6 +42,7 @@ export const appConfig: ApplicationConfig = {
     ...HEALTH_READING_PROVIDERS,
     ...OBSERVATION_PROVIDERS,
     ...SWIMMER_PROFILE_PROVIDERS,
+    ...SWIMMER_ONBOARDING_PROVIDERS,
     ...ATTENDANCE_PROVIDERS,
     ...CHAMPIONSHIPS_PROVIDERS,
     ...DASHBOARD_PROVIDERS,

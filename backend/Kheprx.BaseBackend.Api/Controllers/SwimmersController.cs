@@ -298,4 +298,45 @@ public sealed class SwimmersController : BaseApiController
     }
 
     #endregion
+
+    #region Onboarding (self-service) — GET/POST api/swimmers/me/onboarding/identity-vitals
+
+    /// <summary>Prefill for the swimmer's own first-login wizard, Step 1. Swimmer only; resolved from the JWT.</summary>
+    /// <response code="200">The prefill.</response>
+    /// <response code="404">The caller is not a swimmer / has no profile.</response>
+    [HttpGet("me/onboarding/identity-vitals")]
+    [Authorize(Roles = "swimmer")]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingPrefillDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingPrefillDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<OnboardingPrefillDto>>> GetOnboardingPrefill(CancellationToken ct)
+    {
+        var dto = await _service.GetOnboardingPrefillAsync(CurrentUserId(), ct);
+        if (dto is null)
+        {
+            var nf = ApiResponse<OnboardingPrefillDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<OnboardingPrefillDto>.Success(SwimmerMessages.Success.OnboardingPrefillRetrieved(AppLanguage.Current), dto));
+    }
+
+    /// <summary>Completes the swimmer's own first-login Step 1 (identity + first medical exam), clearing first-login. Swimmer only.</summary>
+    /// <response code="200">Completed; returns the refreshed first-login flag (false).</response>
+    /// <response code="404">The caller is not a swimmer / has no profile.</response>
+    [HttpPost("me/onboarding/identity-vitals")]
+    [Authorize(Roles = "swimmer")]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<OnboardingStepResultDto>>> CompleteOnboardingIdentityVitals(
+        CompleteIdentityVitalsRequest request, CancellationToken ct)
+    {
+        var result = await _service.CompleteIdentityVitalsAsync(CurrentUserId(), request, ct);
+        if (result is null)
+        {
+            var nf = ApiResponse<OnboardingStepResultDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<OnboardingStepResultDto>.Success(SwimmerMessages.Success.OnboardingCompleted(AppLanguage.Current), result));
+    }
+
+    #endregion
 }

@@ -75,6 +75,14 @@ export class AuthSessionStore {
     return r;
   }
 
+  /** Marks first-login onboarding complete locally: the swimmer finished the wizard, so the
+   *  backend cleared IsFirstLogin. Patches the session flag so firstLoginGuard/onboardingGuard
+   *  stop pinning the user to /onboarding — no re-login or token reissue needed. */
+  markOnboardingComplete(): void {
+    const s = this._session();
+    if (s) this._session.set({ ...s, mustChangePassword: false });
+  }
+
   private async rehydrate(): Promise<void> {
     const accessToken = await this.tokens.getAccess();
     const refreshToken = await this.tokens.getRefresh();

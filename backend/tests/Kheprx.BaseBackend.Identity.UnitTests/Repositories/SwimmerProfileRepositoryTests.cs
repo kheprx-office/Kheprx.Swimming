@@ -181,6 +181,22 @@ public class SwimmerProfileRepositoryTests
     }
 
     [Fact]
+    public async Task GetByUserIdTracked_returns_profile_for_user_and_null_otherwise()
+    {
+        await using var db = NewDb();
+        var repo = new SwimmerProfileRepository(db);
+        var userId = Guid.NewGuid();
+        await repo.AddAsync(new SwimmerProfile(userId, "SW-0007", Guid.NewGuid()));
+        await repo.SaveChangesAsync();
+
+        var found = await repo.GetByUserIdTrackedAsync(userId);
+        Assert.NotNull(found);
+        Assert.Equal("SW-0007", found!.Uid);
+
+        Assert.Null(await repo.GetByUserIdTrackedAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
     public async Task ListExams_returns_all_newest_first_with_ids()
     {
         await using var db = NewDb();
