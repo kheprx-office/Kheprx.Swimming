@@ -10,10 +10,10 @@ function build(repo: Partial<ISwimmerOnboardingRepository>) {
 
 describe('GetOnboardingPrefillUseCase', () => {
   it('maps the prefill DTO to the domain model', async () => {
-    const repo = { getPrefill: async () => ({ data: { uid: 'SW-1', nameEn: 'Sam', nameAr: 'سام', genderId: 'g1', dob: '2010-01-01', trainingClubId: 'c1' } }) };
+    const repo = { getPrefill: async () => ({ data: { uid: 'SW-1', nameEn: 'Sam', nameAr: 'سام', genderId: 'g1', dob: '2010-01-01', trainingClubId: 'c1', phone: '01099999999' } }) };
     const r = await build(repo as ISwimmerOnboardingRepository).run();
     expect(r.ok).toBe(true);
-    if (r.ok) { expect(r.data.nameEn).toBe('Sam'); expect(r.data.trainingClubId).toBe('c1'); }
+    if (r.ok) { expect(r.data.nameEn).toBe('Sam'); expect(r.data.trainingClubId).toBe('c1'); expect(r.data.phone).toBe('01099999999'); }
   });
 
   it('fails validation when the prefill is malformed', async () => {

@@ -33,12 +33,17 @@ export class RegisterSwimmerViewModel {
   readonly loading = signal(false);
   readonly created = signal<CreatedSwimmer | null>(null);
 
+  // Latest allowed date of birth = today (UTC, matching the backend's DateTime.UtcNow check).
+  // Used as the date picker's [max] and to keep DoB strictly in the past (backend rejects otherwise).
+  readonly maxDob = new Date().toISOString().slice(0, 10);
+
   readonly canSubmit = computed(() =>
     this.nameEn().trim().length > 0 &&
     this.username().trim().length > 0 &&
     this.trainingClubId().length > 0 &&
     this.genderId().length > 0 &&
     this.dob().length > 0 &&
+    this.dob() < this.maxDob &&
     this.strokeIds().length > 0);
 
   constructor() { void this.loadLookups(); }
@@ -71,9 +76,14 @@ export class RegisterSwimmerViewModel {
     if (r.ok) {
       this.created.set(r.data);
       this.notify.success(this.i18n.t('accountCreation.success'));
+    } else if (r.error.status === 409) {
+      this.notify.error(this.i18n.t('accountCreation.errors.usernameTaken'));
+    } else if (r.error.status === 400 && r.error.code) {
+      // The backend packs the specific field message(s) into the error body (AppError.code) —
+      // surface it instead of a generic toast (e.g. "Date of birth must be in the past").
+      this.notify.error(r.error.code);
     } else {
-      const key = r.error.status === 409 ? 'accountCreation.errors.usernameTaken' : 'accountCreation.errors.failed';
-      this.notify.error(this.i18n.t(key));
+      this.notify.error(this.i18n.t('accountCreation.errors.failed'));
     }
   }
 

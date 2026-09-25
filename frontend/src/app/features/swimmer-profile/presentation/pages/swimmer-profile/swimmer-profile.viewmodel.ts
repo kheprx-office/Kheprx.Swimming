@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { GetMySwimmerIdUseCase } from '@features/swimmer-profile/domain/usecases/get-my-swimmer-id.use-case';
 import { GetSwimmerProfileUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-profile.use-case';
 import { UpdateSwimmerIdentityUseCase } from '@features/swimmer-profile/domain/usecases/update-swimmer-identity.use-case';
 import { CreateMedicalExamUseCase } from '@features/swimmer-profile/domain/usecases/create-medical-exam.use-case';
@@ -48,6 +49,7 @@ import { AuthSessionStore } from '@features/auth/presentation/auth-session.store
 
 @Injectable()
 export class SwimmerProfileViewModel {
+  private readonly getMyIdUc = inject(GetMySwimmerIdUseCase);
   private readonly getProfileUc = inject(GetSwimmerProfileUseCase);
   private readonly updateIdentityUc = inject(UpdateSwimmerIdentityUseCase);
   private readonly createExamUc = inject(CreateMedicalExamUseCase);
@@ -391,6 +393,12 @@ export class SwimmerProfileViewModel {
   });
 
   private swimmerId = '';
+
+  async loadMe(): Promise<void> {
+    const r = await this.getMyIdUc.run();
+    if (!r.ok) { this.notFound.set(true); return; }
+    await this.load(r.data);
+  }
 
   async load(id: string): Promise<void> {
     this.swimmerId = id;

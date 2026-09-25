@@ -1,6 +1,8 @@
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Health.Application.DTOs;
 using Kheprx.BaseBackend.Health.Application.Resources;
 using Kheprx.BaseBackend.Health.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Identity.Application.Resources;
 using Kheprx.BaseBackend.Identity.Application.Services.Interfaces;
 using Kheprx.BaseBackend.SharedKernel.Resources;
 using Kheprx.BaseBackend.SharedKernel.Responses;
@@ -15,11 +17,13 @@ public sealed class FeedbackEntriesController : BaseApiController
 {
     private readonly IFeedbackService _service;
     private readonly IUserService _users;
+    private readonly ISwimmerSelfAccessGuard _access;
 
-    public FeedbackEntriesController(IFeedbackService service, IUserService users)
+    public FeedbackEntriesController(IFeedbackService service, IUserService users, ISwimmerSelfAccessGuard access)
     {
         _service = service;
         _users = users;
+        _access = access;
     }
 
     /// <summary>Lists a swimmer's feedback entries, newest first, with author names resolved.</summary>
@@ -28,6 +32,10 @@ public sealed class FeedbackEntriesController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<FeedbackEntryDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<FeedbackEntryDto>>>> List(Guid id, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), id, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<IReadOnlyList<FeedbackEntryDto>>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var rows = await _service.ListAsync(id, ct);
         var enriched = await EnrichAuthors(rows, ct);
         return Ok(ApiResponse<IReadOnlyList<FeedbackEntryDto>>.Success(FeedbackMessages.Success.Listed(AppLanguage.Current), enriched));

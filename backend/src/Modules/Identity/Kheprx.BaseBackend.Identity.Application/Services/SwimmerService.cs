@@ -288,7 +288,7 @@ internal sealed class SwimmerService : ISwimmerService
         if (profile is null) return null;
         var user = await _users.GetByIdAsync(profile.UserId, ct);
         if (user is null) return null;
-        return new OnboardingPrefillDto(profile.Uid, user.NameEn, user.NameAr, user.GenderId, user.Dob, profile.TrainingClubId);
+        return new OnboardingPrefillDto(profile.Uid, user.NameEn, user.NameAr, user.GenderId, user.Dob, profile.TrainingClubId, user.Phone);
     }
 
     public async Task<OnboardingStepResultDto?> CompleteIdentityVitalsAsync(
@@ -307,20 +307,84 @@ internal sealed class SwimmerService : ISwimmerService
         if (!await _fitness.ExistsAsync(request.SpineAssessId, ct)) throw new InvalidUserException("Unknown spine assessment.");
         if (request.BloodTypeId is { } bt && !await _bloodTypes.ExistsAsync(bt, ct)) throw new InvalidUserException("Unknown blood type.");
 
-        // Identity: name_en (+ name_ar preserved as sent), gender, dob. Email + phone preserved.
-        user.UpdateProfile(request.NameEn, request.NameAr, user.Email, request.GenderId, request.Dob, user.Phone);
+        // Identity: name_en, name_ar, gender, dob, phone — all from the request. Email preserved.
+        user.UpdateProfile(request.NameEn, request.NameAr, user.Email, request.GenderId, request.Dob, request.Phone);
         profile.SetTrainingClub(request.TrainingClubId);
 
-        // Vitals: a new dated medical exam row.
-        var exam = new MedicalExam(profile.Id, request.ExamDate, request.InternalMedId, request.HeartAssessId,
-            request.SpineAssessId, request.BloodTypeId, request.Hemoglobin, request.HeightCm, request.WeightKg);
-        await _swimmers.AddExamAsync(exam, ct);
+        // Vitals (idempotent per-step save): update the swimmer's latest exam if one exists
+        // (Back→edit→Next / resume re-run), else insert a new dated exam.
+        var latestExam = await _swimmers.GetLatestExamAsync(profile.Id, ct);
+        if (latestExam is null)
+        {
+            var exam = new MedicalExam(profile.Id, request.ExamDate, request.InternalMedId, request.HeartAssessId,
+                request.SpineAssessId, request.BloodTypeId, request.Hemoglobin, request.HeightCm, request.WeightKg);
+            await _swimmers.AddExamAsync(exam, ct);
+        }
+        else
+        {
+            var tracked = await _swimmers.GetExamTrackedAsync(latestExam.Id, ct);
+            // latestExam is this swimmer's row fetched in the same context, so the tracked lookup cannot be null here.
+            tracked!.Update(request.ExamDate, request.InternalMedId, request.HeartAssessId, request.SpineAssessId,
+                request.BloodTypeId, request.Hemoglobin, request.HeightCm, request.WeightKg);
+        }
 
-        // Completing Step 1 completes onboarding for now → clear the forced-first-login flag.
-        user.CompleteFirstLogin();
-
-        // Single SaveChanges over the shared IdentityDbContext → identity + exam + flag persist atomically.
+        // Onboarding is NOT completed here — Step 4 (InBody) clears first-login.
         await _swimmers.SaveChangesAsync(ct);
         return new OnboardingStepResultDto(false);
+    }
+
+    public async Task<Guid?> UpsertOnboardingGuardiansAsync(
+        Guid userId, GuardianInputDto father, GuardianInputDto mother, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByUserIdTrackedAsync(userId, ct);
+        if (profile is null) return null;
+
+        await UpsertOne(profile.Id, "father", father, ct);
+        await UpsertOne(profile.Id, "mother", mother, ct);
+        await _swimmers.SaveChangesAsync(ct);
+        return profile.Id;
+    }
+
+    public async Task<bool> CompleteOnboardingAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByUserIdTrackedAsync(userId, ct);
+        if (profile is null) return false;
+        var user = await _users.GetByIdAsync(profile.UserId, ct);
+        if (user is null) return false;
+
+        user.CompleteFirstLogin();
+        await _users.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<bool> CompleteOnboardingPhysiologicalAsync(
+        Guid userId, CompletePhysiologicalRequest req, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByUserIdTrackedAsync(userId, ct);
+        if (profile is null) return false;
+
+        // Idempotent per-step save: update the swimmer's latest measurement if one exists
+        // (Back→edit→Next / resume re-run), else insert a new dated row.
+        var existing = await _swimmers.GetLatestBodyMeasurementTrackedAsync(profile.Id, ct);
+        if (existing is null)
+        {
+            var measurement = new BodyMeasurement(profile.Id,
+                req.RightArmCm, req.LeftArmCm, req.RightLegCm, req.LeftLegCm, req.TorsoCm, req.BustDiameterCm, req.WaistDiameterCm);
+            await _swimmers.AddBodyMeasurementAsync(measurement, ct);
+        }
+        else
+        {
+            existing.Update(req.RightArmCm, req.LeftArmCm, req.RightLegCm, req.LeftLegCm, req.TorsoCm, req.BustDiameterCm, req.WaistDiameterCm);
+        }
+
+        // Onboarding is NOT completed here — Step 4 (InBody) is the finish line.
+        await _swimmers.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<Guid?> GetSwimmerIdByUserAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profile = await _swimmers.GetByUserIdTrackedAsync(userId, ct);
+        return profile?.Id;
     }
 }

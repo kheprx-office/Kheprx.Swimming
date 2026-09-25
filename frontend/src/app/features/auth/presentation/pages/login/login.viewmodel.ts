@@ -12,12 +12,12 @@ import { createLogger } from '@core/logging/logger';
 import { toUserMessage } from '@core/domain/errors/user-message';
 import { UserRole } from '@core/domain/roles';
 
-// Where each role lands after signing in. All roles land on /home (the starter scaffold
-// landing shell); business-specific landing pages are added when business modules are built.
+// Where each role lands after signing in. Swimmers land directly on their profile;
+// coaching roles land on the dashboard.
 const LANDING_ROUTE_BY_ROLE: Record<UserRole, string> = {
   head_coach: '/home',
   captain: '/home',
-  swimmer: '/home',
+  swimmer: '/my-profile',
 };
 
 // Default selection before roles load; matches the dev-prefilled Head Coach credentials.

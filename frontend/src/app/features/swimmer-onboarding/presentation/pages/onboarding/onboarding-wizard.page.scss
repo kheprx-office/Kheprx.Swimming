@@ -1,4 +1,4 @@
-/* Onboarding wizard — scoped visual styling in the Oasis design language.
+/* Onboarding wizard — scoped visual styling in the El Nagar design language.
    Colors come from the project's real design tokens (--c-* in styles.scss), so the
    page matches the login/dashboard palette. Nothing here leaks outside this component
    (Angular view encapsulation), so the shared form controls and other pages are untouched. */
@@ -16,13 +16,46 @@
   max-width: 64rem; /* ~1024px — wider, premium proportions like the reference */
 }
 
+/* ----- Language switcher ----- */
+.oa-lang {
+  display: flex;
+  justify-content: flex-end; /* trailing edge: right in LTR, left in RTL */
+  margin-bottom: 1rem;
+}
+.oa-lang-group {
+  display: inline-flex;
+  gap: 0.15rem;
+  padding: 0.15rem;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 0.6rem;
+  background: rgb(var(--c-canvas));
+}
+.oa-lang-btn {
+  height: 1.75rem;
+  padding: 0 0.7rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: rgb(var(--c-text-secondary));
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.oa-lang-btn.is-active {
+  background: rgb(var(--c-surface));
+  color: rgb(var(--c-ink));
+  box-shadow: 0 1px 2px rgba(74, 63, 45, 0.12);
+}
+
 /* ----- Header ----- */
 .oa-header {
   text-align: center;
   margin-bottom: 2.25rem;
 }
 .oa-title {
-  font-family: 'Fraunces', 'Georgia', serif; /* elegant heading, matches the rest of Oasis */
+  font-family: 'Fraunces', 'Georgia', serif; /* elegant heading, matches the rest of El Nagar */
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1.1;
@@ -238,3 +271,18 @@
   width: 1.05rem;
   height: 1.05rem;
 }
+
+/* ----- Step 2: Two-column layout ----- */
+.oa-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 800px) { .oa-two-col { grid-template-columns: 1fr; } }
+.oa-subcard { border: 1px solid var(--oa-border, #e5e0d8); border-radius: 12px; padding: 1.25rem; background: rgba(0,0,0,0.015); display: flex; flex-direction: column; gap: 0.9rem; }
+.oa-subcard-title { font-weight: 700; margin: 0 0 0.5rem; }
+.oa-subcard-title--teal { color: var(--oa-teal, #1f6f78); }
+.oa-subcard-title--coral { color: #c85a3c; }
+.oa-med-row { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--oa-border, #e5e0d8); }
+.oa-med-row:last-child { border-bottom: 0; }
+.oa-med-head { display: flex; align-items: center; justify-content: space-between; }
+.oa-yesno { display: inline-flex; gap: 1rem; font-size: 0.9rem; }
+.oa-actions--split { display: flex; justify-content: space-between; align-items: center; }
+.oa-back { background: none; border: 0; color: var(--oa-muted, #6b6459); cursor: pointer; font: inherit; }
+.oa-back:hover { color: var(--oa-fg, #2b2b2b); }

@@ -29,4 +29,17 @@ public sealed class BodyMeasurement
         BustDiameterCm = bustDiameterCm;
         WaistDiameterCm = waistDiameterCm;
     }
+
+    public void Update(decimal rightArmCm, decimal leftArmCm, decimal rightLegCm,
+        decimal leftLegCm, decimal torsoCm, decimal bustDiameterCm, decimal waistDiameterCm)
+    {
+        MeasuredAt = DateOnly.FromDateTime(DateTime.UtcNow);
+        RightArmCm = rightArmCm;
+        LeftArmCm = leftArmCm;
+        RightLegCm = rightLegCm;
+        LeftLegCm = leftLegCm;
+        TorsoCm = torsoCm;
+        BustDiameterCm = bustDiameterCm;
+        WaistDiameterCm = waistDiameterCm;
+    }
 }

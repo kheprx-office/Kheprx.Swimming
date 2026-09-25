@@ -6,6 +6,7 @@ export interface OnboardingPrefill {
   genderId: string | null;
   dob: string | null;
   trainingClubId: string | null;
+  phone: string | null;
 }
 
 export interface IdentityVitalsSubmission {
@@ -22,6 +23,45 @@ export interface IdentityVitalsSubmission {
   internalMedId: string;
   heartAssessId: string;
   spineAssessId: string;
+  phone: string | null;
 }
 
 export interface OnboardingResult { mustChangePassword: boolean; }
+
+export interface GuardianInput {
+  name: string;
+  nationalId: string;
+  phone: string;
+}
+
+export interface OnboardingMedicalItem {
+  categoryId: string;
+  fieldLabel: string;
+  value: string;
+}
+
+export interface GuardianMedicalSubmission {
+  father: GuardianInput;
+  mother: GuardianInput;
+  medical: OnboardingMedicalItem[];
+}
+
+export interface PhysiologicalSubmission {
+  rightArmCm: number;
+  leftArmCm: number;
+  rightLegCm: number;
+  leftLegCm: number;
+  torsoCm: number;
+  bustDiameterCm: number;
+  waistDiameterCm: number;
+}
+
+export interface InBodySubmission {
+  heightCm: number;
+  weightKg: number;
+  fatPct: number;
+  musclePct: number;
+  waterPct: number;
+  boneDensity: number;
+  bodyDensity: number;
+}

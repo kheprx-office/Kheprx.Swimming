@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { runInInjectionContext, Injector } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { authGuard, roleGuard, firstLoginGuard, onboardingGuard } from '@features/auth/presentation/auth.guard';
+import { authGuard, roleGuard, firstLoginGuard, onboardingGuard, swimmerHomeRedirectGuard } from '@features/auth/presentation/auth.guard';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 
 function setup(auth: Partial<AuthSessionStore>) {
@@ -81,5 +81,20 @@ describe('firstLoginGuard (role-aware)', () => {
     const { injector, router } = setup({ mustChangePassword: () => true, role: () => 'swimmer' } as Partial<AuthSessionStore>);
     expect(run(injector, firstLoginGuard)).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/onboarding']);
+  });
+});
+
+describe('swimmerHomeRedirectGuard', () => {
+  it('redirects a swimmer to /my-profile', () => {
+    const { injector, router } = setup({ role: () => 'swimmer' } as Partial<AuthSessionStore>);
+    const result = runInInjectionContext(injector, () => swimmerHomeRedirectGuard({} as never, {} as never));
+    expect(result).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/my-profile']);
+  });
+  it('allows a coach through', () => {
+    const { injector, router } = setup({ role: () => 'head_coach' } as Partial<AuthSessionStore>);
+    const result = runInInjectionContext(injector, () => swimmerHomeRedirectGuard({} as never, {} as never));
+    expect(result).toBe(true);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

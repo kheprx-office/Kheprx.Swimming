@@ -24,6 +24,9 @@ builder.Services.AddHealthModule(builder.Configuration);
 builder.Services.AddAttendanceModule(builder.Configuration);
 builder.Services.AddChampionshipsModule(builder.Configuration);
 
+// Security guards
+builder.Services.AddScoped<Kheprx.BaseBackend.Api.Security.ISwimmerSelfAccessGuard, Kheprx.BaseBackend.Api.Security.SwimmerSelfAccessGuard>();
+
 // Cross-cutting concerns
 builder.Services.AddMvcConfiguration();
 builder.Services.AddSwaggerConfiguration();

@@ -35,6 +35,15 @@ export const firstLoginGuard: CanActivateFn = () => {
   return true;
 };
 
+// swimmerHomeRedirectGuard: swimmers have no coach dashboard — send them to their profile.
+// Applied to /home so the '' default and roleGuard's '/' fallback never strand a swimmer.
+export const swimmerHomeRedirectGuard: CanActivateFn = () => {
+  const auth = inject(AuthSessionStore);
+  const router = inject(Router);
+  if (auth.role() === 'swimmer') { router.navigate(['/my-profile']); return false; }
+  return true;
+};
+
 // onboardingGuard: the /onboarding wizard is only for a first-login swimmer. Anonymous → /login;
 // a non-swimmer or an already-onboarded swimmer → /home.
 export const onboardingGuard: CanActivateFn = () => {

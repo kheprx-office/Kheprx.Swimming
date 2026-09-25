@@ -7,6 +7,7 @@ export interface OnboardingPrefillDtoRs {
   genderId: string | null;
   dob: string | null;
   trainingClubId: string | null;
+  phone: string | null;
 }
 export interface OnboardingPrefillItemDtoRs extends BaseResponseRs<OnboardingPrefillDtoRs> {}
 

@@ -44,6 +44,16 @@ internal sealed class ObservationService : IObservationService
         return true;
     }
 
+    public async Task ReplaceForSwimmerAsync(Guid swimmerId, IReadOnlyList<CreateObservationRequest> items, Guid recordedBy, CancellationToken ct = default)
+    {
+        // Idempotent per-step onboarding save: remove the swimmer's observations, then insert the current set.
+        var existing = await _observations.ListBySwimmerTrackedAsync(swimmerId, ct);
+        _observations.RemoveRange(existing);
+        foreach (var item in items)
+            await _observations.AddAsync(new Observation(item.SwimmerId, item.CategoryId, item.FieldLabel, item.Value, recordedBy), ct);
+        await _observations.SaveChangesAsync(ct);
+    }
+
     private static ObservationDto ToDto(Observation o) =>
         new(o.Id, o.SwimmerId, o.CategoryId, o.FieldLabel, o.Value, o.ObservedDate, o.RecordedBy);
 }

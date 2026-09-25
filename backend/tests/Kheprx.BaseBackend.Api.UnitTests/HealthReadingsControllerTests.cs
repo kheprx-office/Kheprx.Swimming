@@ -1,4 +1,5 @@
 using Kheprx.BaseBackend.Api.Controllers;
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Health.Application.DTOs;
 using Kheprx.BaseBackend.Health.Application.Services.Interfaces;
 using Kheprx.BaseBackend.SharedKernel.Responses;
@@ -11,8 +12,17 @@ namespace Kheprx.BaseBackend.Api.UnitTests;
 
 public class HealthReadingsControllerTests
 {
-    private static HealthReadingsController Controller(IHealthReadingService svc)
-        => new(svc) { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() } };
+    // Permissive guard: CanReadAsync always returns true — keeps all pre-existing tests passing.
+    private static ISwimmerSelfAccessGuard PermissiveGuard()
+    {
+        var m = new Mock<ISwimmerSelfAccessGuard>();
+        m.Setup(a => a.CanReadAsync(It.IsAny<bool>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+         .ReturnsAsync(true);
+        return m.Object;
+    }
+
+    private static HealthReadingsController Controller(IHealthReadingService svc, ISwimmerSelfAccessGuard? access = null)
+        => new(svc, access ?? PermissiveGuard()) { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() } };
 
     private static HealthReadingListItemDto Row(Guid id) =>
         new(id, Guid.NewGuid(), "Glucose", "الجلوكوز", "mg/dL", 90m, 70m, 110m, DateTime.UtcNow, "normal");

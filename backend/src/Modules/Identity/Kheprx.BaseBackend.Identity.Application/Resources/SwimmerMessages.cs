@@ -56,5 +56,6 @@ public static class SwimmerMessages
         public static string AssessmentRequired(string lang) => lang switch { "ar" => "نتيجة التقييم مطلوبة", _ => "An assessment result is required" };
         public static string ExamDateInvalid(string lang) => lang switch { "ar" => "تاريخ الفحص غير صالح", _ => "The exam date is invalid" };
         public static string ExamNotFound(string lang) => lang switch { "ar" => "الفحص غير موجود", _ => "Exam not found" };
+        public static string Forbidden(string lang) => lang switch { "ar" => "غير مصرح لك بعرض بيانات سبّاح آخر", _ => "You may only view your own data" };
     }
 }

@@ -4,7 +4,7 @@ import { LayoutComponent } from './layout.component';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 import { LanguageStore } from '@core/i18n';
 
-function setup(role: 'head_coach' | 'captain', mustChangePassword = false) {
+function setup(role: 'head_coach' | 'captain' | 'swimmer', mustChangePassword = false) {
   localStorage.clear();
   const signOut = jest.fn().mockResolvedValue(undefined);
   const auth = {
@@ -106,5 +106,14 @@ describe('LayoutComponent (captain)', () => {
       (b) => (b as HTMLElement).textContent?.trim(),
     );
     expect(labels).toContain('Captain Panel');
+  });
+});
+
+describe('LayoutComponent (swimmer)', () => {
+  it('shows only My Profile and Settings', () => {
+    const { fixture } = setup('swimmer');
+    const labels = Array.from(fixture.nativeElement.querySelectorAll('nav button'))
+      .map((b) => (b as HTMLElement).textContent?.trim());
+    expect(labels).toEqual(['My Profile', 'Settings']);
   });
 });

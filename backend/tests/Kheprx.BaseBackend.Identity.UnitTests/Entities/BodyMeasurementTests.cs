@@ -23,4 +23,21 @@ public class BodyMeasurementTests
         Assert.Equal(94.0m, m.BustDiameterCm);
         Assert.Equal(76.5m, m.WaistDiameterCm);
     }
+
+    [Fact]
+    public void Update_overwrites_values_and_refreshes_measured_at()
+    {
+        var m = new BodyMeasurement(Guid.NewGuid(), 1m, 2m, 3m, 4m, 5m, 6m, 7m);
+
+        m.Update(78.5m, 78.2m, 96.2m, 96.0m, 52.8m, 94.0m, 76.5m);
+
+        Assert.Equal(78.5m, m.RightArmCm);
+        Assert.Equal(78.2m, m.LeftArmCm);
+        Assert.Equal(96.2m, m.RightLegCm);
+        Assert.Equal(96.0m, m.LeftLegCm);
+        Assert.Equal(52.8m, m.TorsoCm);
+        Assert.Equal(94.0m, m.BustDiameterCm);
+        Assert.Equal(76.5m, m.WaistDiameterCm);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), m.MeasuredAt);
+    }
 }

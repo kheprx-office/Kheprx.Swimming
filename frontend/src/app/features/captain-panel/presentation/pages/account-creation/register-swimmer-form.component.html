@@ -15,7 +15,7 @@
     <app-text-field [label]="'accountCreation.fields.email' | translate" [value]="vm.email()" (valueChange)="vm.email.set($event)"></app-text-field>
     <app-text-field [label]="'accountCreation.fields.phone' | translate" [value]="vm.phone()" (valueChange)="vm.phone.set($event)"></app-text-field>
     <app-select-field [label]="'accountCreation.fields.gender' | translate" [placeholder]="'accountCreation.placeholders.selectOne' | translate" [options]="vm.genders()" [value]="vm.genderId()" (valueChange)="vm.genderId.set($event)"></app-select-field>
-    <app-date-field [label]="'accountCreation.fields.dob' | translate" [value]="vm.dob()" (valueChange)="vm.dob.set($event)"></app-date-field>
+    <app-date-field [label]="'accountCreation.fields.dob' | translate" [value]="vm.dob()" [max]="vm.maxDob" (valueChange)="vm.dob.set($event)"></app-date-field>
     <app-select-field [label]="'accountCreation.fields.trainingClub' | translate" [placeholder]="'accountCreation.placeholders.selectOne' | translate" [options]="vm.clubs()" [value]="vm.trainingClubId()" (valueChange)="vm.trainingClubId.set($event)"></app-select-field>
     <app-select-field [label]="'accountCreation.fields.championshipClub' | translate" [placeholder]="'accountCreation.placeholders.none' | translate" [options]="vm.clubs()" [value]="vm.championshipClubId()" (valueChange)="vm.championshipClubId.set($event)"></app-select-field>
     <div class="md:col-span-2">

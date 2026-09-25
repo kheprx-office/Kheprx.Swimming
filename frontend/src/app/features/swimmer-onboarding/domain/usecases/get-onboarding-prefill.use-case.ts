@@ -14,6 +14,6 @@ export class GetOnboardingPrefillUseCase extends UseCase<void, OnboardingPrefill
     const res = await this.repo.getPrefill();
     if (!isOnboardingPrefillValid(res.data)) throw new AppError('Invalid onboarding prefill received', 'validation');
     const d = res.data;
-    return { uid: d.uid, nameEn: d.nameEn, nameAr: d.nameAr ?? null, genderId: d.genderId ?? null, dob: d.dob ?? null, trainingClubId: d.trainingClubId ?? null };
+    return { uid: d.uid, nameEn: d.nameEn, nameAr: d.nameAr ?? null, genderId: d.genderId ?? null, dob: d.dob ?? null, trainingClubId: d.trainingClubId ?? null, phone: d.phone ?? null };
   }
 }

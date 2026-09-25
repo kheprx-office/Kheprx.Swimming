@@ -59,4 +59,25 @@ describe('RegisterSwimmerViewModel', () => {
     expect(vm.created()).toBeNull();
     expect(notify.error).toHaveBeenCalled();
   });
+
+  it('surfaces the specific server validation message on a 400', async () => {
+    const create = { run: jest.fn().mockResolvedValue(fail(new AppError('Validation failed', 'http', 400, 'Date of birth must be in the past'))) };
+    const { vm, notify } = build(create);
+    vm.nameEn.set('Mona'); vm.username.set('mona'); vm.trainingClubId.set('c1');
+    vm.genderId.set('g1'); vm.dob.set('2010-05-01'); vm.strokeIds.set(['s1']);
+    await vm.submit();
+    expect(notify.error).toHaveBeenCalledWith('Date of birth must be in the past');
+  });
+
+  it('blocks submit when the date of birth is today or in the future', () => {
+    const { vm } = build();
+    vm.nameEn.set('Mona'); vm.username.set('mona'); vm.trainingClubId.set('c1');
+    vm.genderId.set('g1'); vm.strokeIds.set(['s1']);
+    vm.dob.set('2099-01-01');   // future
+    expect(vm.canSubmit()).toBe(false);
+    vm.dob.set(vm.maxDob);      // today (maxDob === today) → must be strictly in the past
+    expect(vm.canSubmit()).toBe(false);
+    vm.dob.set('2010-05-01');   // past
+    expect(vm.canSubmit()).toBe(true);
+  });
 });

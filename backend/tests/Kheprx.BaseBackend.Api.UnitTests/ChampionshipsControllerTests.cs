@@ -1,4 +1,5 @@
 using Kheprx.BaseBackend.Api.Controllers;
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Championships.Application.DTOs;
 using Kheprx.BaseBackend.Championships.Application.Services.Interfaces;
 using Kheprx.BaseBackend.Identity.Application.DTOs;
@@ -14,8 +15,17 @@ namespace Kheprx.BaseBackend.Api.UnitTests;
 
 public class ChampionshipsControllerTests
 {
-    private static ChampionshipsController NewController(IChampionshipService svc, IReferenceService reference)
-        => new(svc, reference) { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() } };
+    // Permissive guard: CanReadAsync always returns true — keeps all pre-existing tests passing.
+    private static ISwimmerSelfAccessGuard PermissiveGuard()
+    {
+        var m = new Mock<ISwimmerSelfAccessGuard>();
+        m.Setup(a => a.CanReadAsync(It.IsAny<bool>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+         .ReturnsAsync(true);
+        return m.Object;
+    }
+
+    private static ChampionshipsController NewController(IChampionshipService svc, IReferenceService reference, ISwimmerSelfAccessGuard? access = null)
+        => new(svc, reference, access ?? PermissiveGuard()) { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() } };
 
     [Fact]
     public async Task List_returns_200_and_resolves_status_code_and_names()
@@ -33,7 +43,7 @@ public class ChampionshipsControllerTests
         reference.Setup(r => r.GetCompetitionStatusesAsync(It.IsAny<CancellationToken>()))
                  .ReturnsAsync(new[] { new CodedLookupDto(statusId, "upcoming", "Upcoming", "قادمة") });
 
-        var controller = new ChampionshipsController(svc.Object, reference.Object);
+        var controller = NewController(svc.Object, reference.Object);
 
         var result = await controller.List(CancellationToken.None);
 
@@ -60,7 +70,7 @@ public class ChampionshipsControllerTests
         reference.Setup(r => r.GetCompetitionStatusesAsync(It.IsAny<CancellationToken>()))
                  .ReturnsAsync(Array.Empty<CodedLookupDto>());
 
-        var controller = new ChampionshipsController(svc.Object, reference.Object);
+        var controller = NewController(svc.Object, reference.Object);
         var result = await controller.List(CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);

@@ -23,6 +23,7 @@ export class CompleteIdentityVitalsUseCase extends UseCase<IdentityVitalsSubmiss
       internalMedId: input.internalMedId,
       heartAssessId: input.heartAssessId,
       spineAssessId: input.spineAssessId,
+      phone: input.phone ?? null,
     });
   }
 }

@@ -24,3 +24,23 @@ public sealed class CreateBodyMeasurementRequestValidator : AbstractValidator<Cr
             .LessThanOrEqualTo(999.9m)
             .WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
 }
+
+public sealed class CompletePhysiologicalRequestValidator : AbstractValidator<CompletePhysiologicalRequest>
+{
+    public CompletePhysiologicalRequestValidator()
+    {
+        Rule(x => x.RightArmCm);
+        Rule(x => x.LeftArmCm);
+        Rule(x => x.RightLegCm);
+        Rule(x => x.LeftLegCm);
+        Rule(x => x.TorsoCm);
+        Rule(x => x.BustDiameterCm);
+        Rule(x => x.WaistDiameterCm);
+    }
+
+    private void Rule(System.Linq.Expressions.Expression<System.Func<CompletePhysiologicalRequest, decimal>> selector)
+        => RuleFor(selector)
+            .GreaterThan(0m)
+            .LessThanOrEqualTo(999.9m)
+            .WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+}

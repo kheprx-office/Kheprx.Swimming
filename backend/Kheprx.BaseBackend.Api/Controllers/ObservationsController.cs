@@ -1,6 +1,8 @@
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Health.Application.DTOs;
 using Kheprx.BaseBackend.Health.Application.Resources;
 using Kheprx.BaseBackend.Health.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Identity.Application.Resources;
 using Kheprx.BaseBackend.SharedKernel.Resources;
 using Kheprx.BaseBackend.SharedKernel.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -14,13 +16,23 @@ namespace Kheprx.BaseBackend.Api.Controllers;
 public sealed class ObservationsController : BaseApiController
 {
     private readonly IObservationService _service;
-    public ObservationsController(IObservationService service) => _service = service;
+    private readonly ISwimmerSelfAccessGuard _access;
+
+    public ObservationsController(IObservationService service, ISwimmerSelfAccessGuard access)
+    {
+        _service = service;
+        _access = access;
+    }
 
     /// <summary>Lists a swimmer's data fields (observations), newest first.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ObservationDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<ObservationDto>>>> List([FromQuery] Guid swimmerId, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), swimmerId, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<IReadOnlyList<ObservationDto>>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var list = await _service.ListBySwimmerAsync(swimmerId, ct);
         return Ok(ApiResponse<IReadOnlyList<ObservationDto>>.Success(ObservationMessages.Success.Listed(AppLanguage.Current), list));
     }

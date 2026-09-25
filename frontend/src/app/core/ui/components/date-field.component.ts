@@ -10,6 +10,7 @@ import { Component, input, model } from '@angular/core';
         type="date"
         class="h-10 rounded-md border border-input bg-card px-3 text-sm text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         [value]="value()"
+        [attr.max]="max() || null"
         (input)="value.set($any($event.target).value)" />
     </label>
   `,
@@ -17,4 +18,6 @@ import { Component, input, model } from '@angular/core';
 export class DateFieldComponent {
   readonly label = input('');
   readonly value = model('');
+  // Optional upper bound (YYYY-MM-DD) for the native date picker; '' = no max.
+  readonly max = input('');
 }

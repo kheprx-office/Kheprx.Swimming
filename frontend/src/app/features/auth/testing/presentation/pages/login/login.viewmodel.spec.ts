@@ -119,6 +119,13 @@ describe('LoginViewModel', () => {
     await vm.submit();
     expect(router.navigate).toHaveBeenCalledWith(['/home']);
   });
+  it('navigates a swimmer to /my-profile after login', async () => {
+    const swimmerSession: AuthSession = { tokens: { accessToken: 'a', refreshToken: 'r' }, principal: { role: 'swimmer', userId: 'USR-SWIM' }, mustChangePassword: false };
+    (auth.signIn as jest.Mock).mockResolvedValue(ok(swimmerSession));
+    (auth.role as jest.Mock).mockReturnValue('swimmer');
+    await vm.submit();
+    expect(router.navigate).toHaveBeenCalledWith(['/my-profile']);
+  });
   it('loads roles into the selector and keeps head_coach selected by default', async () => {
     (loadRoles.run as jest.Mock).mockResolvedValue(ok([headCoach, captain]));
     await vm.loadRoles();

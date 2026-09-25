@@ -1,6 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { SwimmerProfileViewModel } from '@features/swimmer-profile/presentation/pages/swimmer-profile/swimmer-profile.viewmodel';
+import { GetMySwimmerIdUseCase } from '@features/swimmer-profile/domain/usecases/get-my-swimmer-id.use-case';
+import { ok, fail } from '@core/domain/result/result';
+import { AppError } from '@core/domain/errors/app-error';
 import { GetSwimmerProfileUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-profile.use-case';
 import { UpdateSwimmerIdentityUseCase } from '@features/swimmer-profile/domain/usecases/update-swimmer-identity.use-case';
 import { CreateMedicalExamUseCase } from '@features/swimmer-profile/domain/usecases/create-medical-exam.use-case';
@@ -43,7 +46,7 @@ const IDENTITY = { id: 's1', uid: 'SW-1', nameEn: 'Ahmed', nameAr: 'أحمد', d
 const VITALS = { id: 'e1', examDate: '2026-09-19', bloodType: null, hemoglobin: 14.8, heightCm: 182, weightKg: 74, internalMed: REF, heartAssess: REF, spineAssess: REF };
 const VITALS2 = { id: 'e2', examDate: '2024-01-01', bloodType: null, hemoglobin: 13, heightCm: 178, weightKg: 71, internalMed: REF, heartAssess: REF, spineAssess: REF };
 
-function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | null; listHealthReadings?: unknown; updateHealthReading?: unknown; deleteHealthReading?: unknown; listFeedback?: unknown; createFeedback?: unknown; updateFeedback?: unknown; deleteFeedback?: unknown; feedbackCategories?: unknown; champHistory?: unknown } = {}) {
+function build(over: { profile?: unknown; update?: unknown; create?: unknown; list?: unknown; updateExam?: unknown; deleteExam?: unknown; getGuardians?: unknown; upsertGuardians?: unknown; getBodyMeasurement?: unknown; createBodyMeasurement?: unknown; listInBody?: unknown; createInBody?: unknown; updateInBody?: unknown; deleteInBody?: unknown; role?: 'head_coach' | 'captain' | 'swimmer' | null; listHealthReadings?: unknown; updateHealthReading?: unknown; deleteHealthReading?: unknown; listFeedback?: unknown; createFeedback?: unknown; updateFeedback?: unknown; deleteFeedback?: unknown; feedbackCategories?: unknown; champHistory?: unknown; myId?: { ok: true; data: string } | { ok: false; error: AppError } } = {}) {
   const getUc = { run: jest.fn().mockResolvedValue(over.profile ?? { ok: true, data: { identity: IDENTITY, vitals: VITALS } }) };
   const updateUc = { run: jest.fn().mockResolvedValue(over.update ?? { ok: true, data: undefined }) };
   const createUc = { run: jest.fn().mockResolvedValue(over.create ?? { ok: true, data: VITALS }) };
@@ -94,9 +97,11 @@ function build(over: { profile?: unknown; update?: unknown; create?: unknown; li
   const notify = { success: jest.fn(), error: jest.fn() };
   const i18n = { t: (k: string) => k };
   const session = { role: signal(over.role === undefined ? 'head_coach' : over.role) };
+  const getMyIdUc = { run: jest.fn().mockResolvedValue(over.myId ?? ok('SW-ME')) };
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({ providers: [
     SwimmerProfileViewModel,
+    { provide: GetMySwimmerIdUseCase, useValue: getMyIdUc },
     { provide: GetSwimmerProfileUseCase, useValue: getUc },
     { provide: UpdateSwimmerIdentityUseCase, useValue: updateUc },
     { provide: CreateMedicalExamUseCase, useValue: createUc },
@@ -155,6 +160,24 @@ describe('SwimmerProfileViewModel', () => {
 
   it('canEdit is false for a null role', () => {
     const { vm } = build({ role: null });
+    expect(vm.canEdit()).toBe(false);
+  });
+
+  it('loadMe() resolves own id then loads that profile', async () => {
+    const { vm } = build({ myId: ok('SW-ME') });
+    const loadSpy = jest.spyOn(vm, 'load').mockResolvedValue(undefined);
+    await vm.loadMe();
+    expect(loadSpy).toHaveBeenCalledWith('SW-ME');
+  });
+
+  it('loadMe() sets notFound when own id cannot be resolved', async () => {
+    const { vm } = build({ myId: fail(new AppError('nope', 'validation')) });
+    await vm.loadMe();
+    expect(vm.notFound()).toBe(true);
+  });
+
+  it('canEdit() is false for a swimmer (read-only profile)', () => {
+    const { vm } = build({ role: 'swimmer' });
     expect(vm.canEdit()).toBe(false);
   });
 

@@ -11,6 +11,16 @@ public sealed record CreateInBodyReadingRequest(
     decimal BoneDensity,
     decimal BodyDensity);
 
+/// <summary>Onboarding Step 4 submission (POST /api/swimmers/me/onboarding/inbody): seven measurements; date is server-set to today.</summary>
+public sealed record CompleteInBodyRequest(
+    decimal HeightCm,
+    decimal WeightKg,
+    decimal FatPct,
+    decimal MusclePct,
+    decimal WaterPct,
+    decimal BoneDensity,
+    decimal BodyDensity);
+
 /// <summary>An InBody reading.</summary>
 public sealed record InBodyReadingDto(
     Guid Id,

@@ -19,6 +19,12 @@ internal sealed class ObservationRepository : IObservationRepository
     public Task<Observation?> GetTrackedAsync(Guid id, CancellationToken ct = default)
         => _db.Observations.FirstOrDefaultAsync(o => o.Id == id, ct);
 
+    // No ordering needed — the result feeds RemoveRange (delete-all) only.
+    public async Task<IReadOnlyList<Observation>> ListBySwimmerTrackedAsync(Guid swimmerId, CancellationToken ct = default)
+        => await _db.Observations.Where(o => o.SwimmerId == swimmerId).ToListAsync(ct);
+
+    public void RemoveRange(IEnumerable<Observation> observations) => _db.Observations.RemoveRange(observations);
+
     public void Remove(Observation observation) => _db.Observations.Remove(observation);
 
     public async Task AddAsync(Observation observation, CancellationToken ct = default)

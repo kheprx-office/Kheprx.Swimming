@@ -39,8 +39,9 @@ export class SwimmerProfilePage implements OnInit {
   ];
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id') ?? '';
-    void this.vm.load(id);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) void this.vm.load(id);
+    else void this.vm.loadMe();
   }
 
   displayName(): string {

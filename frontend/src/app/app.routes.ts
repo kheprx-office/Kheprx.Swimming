@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, firstLoginGuard, roleGuard, onboardingGuard } from '@features/auth/presentation/auth.guard';
+import { authGuard, firstLoginGuard, roleGuard, onboardingGuard, swimmerHomeRedirectGuard } from '@features/auth/presentation/auth.guard';
 import { LayoutComponent } from './layout/layout.component';
 import { LoginViewModel, AccountViewModel } from '@features/auth';
 import { RegisterSwimmerViewModel, RegisterCoachViewModel, MedicalTestsViewModel, HealthMonitoringViewModel, SwimmerDataViewModel } from '@features/captain-panel';
@@ -28,34 +28,40 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        canActivate: [firstLoginGuard],
+        canActivate: [firstLoginGuard, swimmerHomeRedirectGuard],
         loadComponent: () => import('@features/dashboard').then((m) => m.DashboardPage),
         providers: [DashboardViewModel],
       },
       // Placeholder feature routes — blank pages so the sidebar nav is fully clickable
       // while the real features are still to be built.
-      { path: 'swimmers', canActivate: [firstLoginGuard], loadComponent: () => import('@features/swimmers').then((m) => m.SwimmersPage) },
+      { path: 'swimmers', canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')], loadComponent: () => import('@features/swimmers').then((m) => m.SwimmersPage) },
       {
         path: 'swimmers/:id',
-        canActivate: [firstLoginGuard],
+        canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')],
+        loadComponent: () => import('@features/swimmer-profile').then((m) => m.SwimmerProfilePage),
+        providers: [SwimmerProfileViewModel],
+      },
+      {
+        path: 'my-profile',
+        canActivate: [firstLoginGuard, roleGuard('swimmer')],
         loadComponent: () => import('@features/swimmer-profile').then((m) => m.SwimmerProfilePage),
         providers: [SwimmerProfileViewModel],
       },
       {
         path: 'attendance',
-        canActivate: [firstLoginGuard],
+        canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')],
         loadComponent: () => import('@features/attendance').then((m) => m.AttendancePage),
         providers: [AttendanceEntryViewModel],
       },
       {
         path: 'championships',
-        canActivate: [firstLoginGuard],
+        canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')],
         loadComponent: () => import('@features/championships').then((m) => m.ChampionshipsPage),
         providers: [ChampionshipsViewModel],
       },
       {
         path: 'championships/:id',
-        canActivate: [firstLoginGuard],
+        canActivate: [firstLoginGuard, roleGuard('head_coach', 'captain')],
         loadComponent: () => import('@features/championships').then((m) => m.ChampionshipDetailPage),
         providers: [ChampionshipDetailViewModel, CompetitionDaysViewModel],
       },

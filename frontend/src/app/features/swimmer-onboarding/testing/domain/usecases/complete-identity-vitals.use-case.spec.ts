@@ -4,9 +4,9 @@ import { SWIMMER_ONBOARDING_REPOSITORY, ISwimmerOnboardingRepository } from '@fe
 import { IdentityVitalsSubmission } from '@features/swimmer-onboarding/domain/model/onboarding';
 
 const SUBMISSION: IdentityVitalsSubmission = {
-  nameEn: 'Sam', nameAr: null, genderId: 'g1', dob: '2010-01-01', trainingClubId: 'c1',
+  nameEn: 'Sam', nameAr: 'سام', genderId: 'g1', dob: '2010-01-01', trainingClubId: 'c1',
   examDate: '2026-01-01', bloodTypeId: null, hemoglobin: 14.5, heightCm: 175, weightKg: 68,
-  internalMedId: 'f1', heartAssessId: 'f1', spineAssessId: 'f1',
+  internalMedId: 'f1', heartAssessId: 'f1', spineAssessId: 'f1', phone: '01099999999',
 };
 
 function build(repo: Partial<ISwimmerOnboardingRepository>) {
@@ -21,7 +21,7 @@ describe('CompleteIdentityVitalsUseCase', () => {
     const uc = build({ completeIdentityVitals: post } as unknown as ISwimmerOnboardingRepository);
     const r = await uc.run(SUBMISSION);
     expect(r.ok).toBe(true);
-    expect(post).toHaveBeenCalledWith(expect.objectContaining({ nameEn: 'Sam', bloodTypeId: null, hemoglobin: 14.5 }));
+    expect(post).toHaveBeenCalledWith(expect.objectContaining({ nameEn: 'Sam', nameAr: 'سام', bloodTypeId: null, hemoglobin: 14.5, phone: '01099999999' }));
   });
 
   it('fails when the repository throws', async () => {

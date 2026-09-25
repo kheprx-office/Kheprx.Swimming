@@ -55,13 +55,25 @@ public sealed record StrokeSplitDto(Guid StrokeId, string Code, string NameEn, s
 
 /// <summary>Prefill for the swimmer first-login wizard, Step 1 (GET /api/swimmers/me/onboarding/identity-vitals).</summary>
 public sealed record OnboardingPrefillDto(
-    string Uid, string NameEn, string? NameAr, Guid? GenderId, DateOnly? Dob, Guid? TrainingClubId);
+    string Uid, string NameEn, string? NameAr, Guid? GenderId, DateOnly? Dob, Guid? TrainingClubId, string? Phone);
 
 /// <summary>Step 1 submission (POST /api/swimmers/me/onboarding/identity-vitals): identity edits + a new medical exam.</summary>
 public sealed record CompleteIdentityVitalsRequest(
     string NameEn, string? NameAr, Guid GenderId, DateOnly Dob, Guid TrainingClubId,
     DateOnly ExamDate, Guid? BloodTypeId, decimal Hemoglobin, decimal HeightCm, decimal WeightKg,
-    Guid InternalMedId, Guid HeartAssessId, Guid SpineAssessId);
+    Guid InternalMedId, Guid HeartAssessId, Guid SpineAssessId, string? Phone);
 
 /// <summary>Result of completing an onboarding step: the refreshed first-login flag (false once done).</summary>
 public sealed record OnboardingStepResultDto(bool MustChangePassword);
+
+/// <summary>One medical-history observation captured in onboarding Step 2 (a "Yes" answer with details).</summary>
+public sealed record OnboardingMedicalItemDto(Guid CategoryId, string FieldLabel, string Value);
+
+/// <summary>Step 2 submission (POST /api/swimmers/me/onboarding/guardian-medical): both guardians + Yes-only medical items.</summary>
+public sealed record CompleteGuardianMedicalRequest(
+    GuardianInputDto Father,
+    GuardianInputDto Mother,
+    IReadOnlyList<OnboardingMedicalItemDto> Medical);
+
+/// <summary>The caller's own swimmer profile id (GET /api/swimmers/me).</summary>
+public sealed record MySwimmerRefDto(Guid SwimmerId);

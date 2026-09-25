@@ -21,4 +21,8 @@ public interface ISwimmerService
     Task<IReadOnlyList<StrokeSplitDto>> GetStrokeSplitAsync(CancellationToken ct = default);
     Task<OnboardingPrefillDto?> GetOnboardingPrefillAsync(Guid userId, CancellationToken ct = default);
     Task<OnboardingStepResultDto?> CompleteIdentityVitalsAsync(Guid userId, CompleteIdentityVitalsRequest request, CancellationToken ct = default);
+    Task<Guid?> UpsertOnboardingGuardiansAsync(Guid userId, GuardianInputDto father, GuardianInputDto mother, CancellationToken ct = default);
+    Task<bool> CompleteOnboardingAsync(Guid userId, CancellationToken ct = default);
+    Task<bool> CompleteOnboardingPhysiologicalAsync(Guid userId, CompletePhysiologicalRequest req, CancellationToken ct = default);
+    Task<Guid?> GetSwimmerIdByUserAsync(Guid userId, CancellationToken ct = default);
 }

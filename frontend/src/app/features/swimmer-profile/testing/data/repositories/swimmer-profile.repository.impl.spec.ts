@@ -125,6 +125,12 @@ describe('SwimmerProfileRepositoryImpl', () => {
     expect((http as unknown as { delete: jest.Mock }).delete).toHaveBeenCalledWith('/api/observations/o1');
   });
 
+  it('getMySwimmerId GETs /api/swimmers/me', async () => {
+    (http.get as jest.Mock).mockResolvedValue({ data: { swimmerId: 'SW-1' } });
+    await repo.getMySwimmerId();
+    expect(http.get).toHaveBeenCalledWith('/api/swimmers/me');
+  });
+
   it('getFeedbackEntries GETs /api/swimmers/{id}/feedback-entries', async () => {
     (http.get as jest.Mock).mockResolvedValue({ data: [] });
     await repo.getFeedbackEntries('s1');

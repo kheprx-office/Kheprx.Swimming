@@ -320,6 +320,7 @@
     "activeClub": { "label": "النادي النشط", "value": "نادي النجار المائي" },
     "nav": {
       "groups": { "overview": "نظرة عامة", "coaching": "التدريب", "administration": "الإدارة" },
+      "myProfile": "ملفي",
       "dashboard": "الرئيسية", "swimmers": "السباحون", "attendance": "الحضور",
       "championships": "البطولات", "captainPanel": "لوحة الكابتن", "settings": "الإعدادات"
     }
@@ -454,13 +455,13 @@
     }
   },
   "onboarding": {
-    "title": "انضم إلى أكاديمية الواحة",
+    "title": "انضم إلى أكاديمية النجار",
     "subtitle": "دعنا نُعدّ ملفك الشخصي لانطلاقة موفّقة في المسبح",
     "steps": { "identity": "الهوية والمؤشرات الحيوية", "guardian": "ولي الأمر والبيانات الطبية", "physiological": "القياسات الفسيولوجية", "inbody": "InBody", "done": "اكتمل" },
     "sectionTitle": "الهوية والمؤشرات الحيوية",
-    "fullName": "الاسم الكامل",
-    "sport": "الرياضة",
-    "sportLocked": "السباحة (مُقفل)",
+    "fullName": "الاسم الكامل (بالإنجليزية)",
+    "nameAr": "الاسم الكامل (بالعربية)",
+    "phone": "رقم الهاتف",
     "trainingClub": "نادي التدريب",
     "gender": "الجنس",
     "dob": "تاريخ الميلاد",
@@ -476,6 +477,35 @@
     "next": "الخطوة التالية",
     "completed": "أهلاً بك! تم إعداد ملفك الشخصي بنجاح.",
     "saveFailed": "تعذّر حفظ بياناتك. يرجى المحاولة مرة أخرى.",
-    "loadFailed": "تعذّر تحميل بياناتك. يرجى المحاولة مرة أخرى."
+    "loadFailed": "تعذّر تحميل بياناتك. يرجى المحاولة مرة أخرى.",
+    "back": "رجوع",
+    "guardianInfo": "بيانات ولي الأمر",
+    "medicalHistory": "التاريخ الطبي",
+    "fatherName": "اسم الأب",
+    "fatherNationalId": "الرقم القومي للأب",
+    "fatherPhone": "هاتف الأب",
+    "motherName": "اسم الأم",
+    "motherNationalId": "الرقم القومي للأم",
+    "motherPhone": "هاتف الأم",
+    "allergies": "الحساسية",
+    "surgeries": "عمليات جراحية سابقة",
+    "chronic": "أمراض مزمنة",
+    "autoimmune": "أمراض مناعية ذاتية",
+    "details": "تفاصيل",
+    "yes": "نعم",
+    "no": "لا",
+    "rightArm": "الذراع اليمنى",
+    "leftArm": "الذراع اليسرى",
+    "leftLeg": "الساق اليسرى",
+    "rightLeg": "الساق اليمنى",
+    "torsoLength": "طول الجذع",
+    "bustDiameter": "محيط الصدر",
+    "waistDiameter": "محيط الخصر",
+    "fatPercentage": "نسبة الدهون (٪)",
+    "musclePercentage": "نسبة العضلات (٪)",
+    "waterPercentage": "نسبة الماء (٪)",
+    "boneDensity": "كثافة العظام",
+    "bodyDensity": "كثافة الجسم",
+    "submit": "إرسال"
   }
 }

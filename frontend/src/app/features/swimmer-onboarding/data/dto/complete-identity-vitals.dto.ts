@@ -14,6 +14,7 @@ export interface CompleteIdentityVitalsDtoRq {
   internalMedId: string;
   heartAssessId: string;
   spineAssessId: string;
+  phone: string | null;
 }
 export interface OnboardingResultDtoRs { mustChangePassword: boolean; }
 export interface CompleteIdentityVitalsItemDtoRs extends BaseResponseRs<OnboardingResultDtoRs> {}

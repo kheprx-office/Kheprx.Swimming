@@ -1,3 +1,6 @@
+using Kheprx.BaseBackend.Api.Security;
+using Kheprx.BaseBackend.Health.Application.DTOs;
+using Kheprx.BaseBackend.Health.Application.Services.Interfaces;
 using Kheprx.BaseBackend.Identity.Application.DTOs;
 using Kheprx.BaseBackend.Identity.Application.Resources;
 using Kheprx.BaseBackend.Identity.Application.Services.Interfaces;
@@ -14,14 +17,20 @@ public sealed class SwimmersController : BaseApiController
     #region Fields
 
     private readonly ISwimmerService _service;
+    private readonly IObservationService _observations;
+    private readonly IInBodyReadingService _inbody;
+    private readonly ISwimmerSelfAccessGuard _access;
 
     #endregion
 
     #region Constructor
 
-    public SwimmersController(ISwimmerService service)
+    public SwimmersController(ISwimmerService service, IObservationService observations, IInBodyReadingService inbody, ISwimmerSelfAccessGuard access)
     {
         _service = service;
+        _observations = observations;
+        _inbody = inbody;
+        _access = access;
     }
 
     #endregion
@@ -78,6 +87,10 @@ public sealed class SwimmersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<SwimmerProfileDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<SwimmerProfileDto>>> GetById(Guid id, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), id, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<SwimmerProfileDto>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var dto = await _service.GetProfileAsync(id, ct);
         if (dto is null)
         {
@@ -172,6 +185,10 @@ public sealed class SwimmersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<SwimmerVitalsDto>>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<SwimmerVitalsDto>>>> ListExams(Guid id, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), id, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<IReadOnlyList<SwimmerVitalsDto>>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var exams = await _service.ListExamsAsync(id, ct);
         if (exams is null)
         {
@@ -230,6 +247,10 @@ public sealed class SwimmersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<SwimmerGuardiansDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<SwimmerGuardiansDto>>> GetGuardians(Guid id, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), id, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<SwimmerGuardiansDto>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var dto = await _service.GetGuardiansAsync(id, ct);
         if (dto is null)
         {
@@ -270,6 +291,10 @@ public sealed class SwimmersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<SwimmerBodyMeasurementDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<SwimmerBodyMeasurementDto>>> GetLatestBodyMeasurement(Guid id, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), id, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<SwimmerBodyMeasurementDto>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var dto = await _service.GetBodyMeasurementAsync(id, ct);
         if (dto is null)
         {
@@ -299,6 +324,27 @@ public sealed class SwimmersController : BaseApiController
 
     #endregion
 
+    #region Self-reference — GET api/swimmers/me
+
+    /// <summary>Returns the calling swimmer's own profile id. Swimmer self-service.</summary>
+    /// <response code="200">The caller's swimmer id.</response>
+    /// <response code="404">The caller has no swimmer profile.</response>
+    [HttpGet("me")]
+    [Authorize(Roles = "swimmer")]
+    [ProducesResponseType(typeof(ApiResponse<MySwimmerRefDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<MySwimmerRefDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<MySwimmerRefDto>>> GetMe(CancellationToken ct)
+    {
+        var id = await _service.GetSwimmerIdByUserAsync(CurrentUserId(), ct);
+        if (id is null)
+            return StatusCode(StatusCodes.Status404NotFound,
+                ApiResponse<MySwimmerRefDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found"));
+        return Ok(ApiResponse<MySwimmerRefDto>.Success(
+            SwimmerMessages.Success.ProfileRetrieved(AppLanguage.Current), new MySwimmerRefDto(id.Value)));
+    }
+
+    #endregion
+
     #region Onboarding (self-service) — GET/POST api/swimmers/me/onboarding/identity-vitals
 
     /// <summary>Prefill for the swimmer's own first-login wizard, Step 1. Swimmer only; resolved from the JWT.</summary>
@@ -319,8 +365,8 @@ public sealed class SwimmersController : BaseApiController
         return Ok(ApiResponse<OnboardingPrefillDto>.Success(SwimmerMessages.Success.OnboardingPrefillRetrieved(AppLanguage.Current), dto));
     }
 
-    /// <summary>Completes the swimmer's own first-login Step 1 (identity + first medical exam), clearing first-login. Swimmer only.</summary>
-    /// <response code="200">Completed; returns the refreshed first-login flag (false).</response>
+    /// <summary>Saves the swimmer's own first-login Step 1 (identity + medical exam), idempotently, and advances to Step 2. Does NOT clear first-login. Swimmer only.</summary>
+    /// <response code="200">Saved; first-login stays true until the InBody step completes onboarding.</response>
     /// <response code="404">The caller is not a swimmer / has no profile.</response>
     [HttpPost("me/onboarding/identity-vitals")]
     [Authorize(Roles = "swimmer")]
@@ -336,6 +382,94 @@ public sealed class SwimmersController : BaseApiController
             return StatusCode(StatusCodes.Status404NotFound, nf);
         }
         return Ok(ApiResponse<OnboardingStepResultDto>.Success(SwimmerMessages.Success.OnboardingCompleted(AppLanguage.Current), result));
+    }
+
+    /// <summary>Saves the swimmer's first-login Step 3 (physiological measurements), idempotently, and advances to Step 4. Does NOT clear first-login. Swimmer only.</summary>
+    /// <response code="200">Saved; first-login stays true until the InBody step completes onboarding.</response>
+    /// <response code="404">The caller is not a swimmer / has no profile.</response>
+    [HttpPost("me/onboarding/physiological")]
+    [Authorize(Roles = "swimmer")]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<OnboardingStepResultDto>>> CompleteOnboardingPhysiological(
+        CompletePhysiologicalRequest request, CancellationToken ct)
+    {
+        var ok = await _service.CompleteOnboardingPhysiologicalAsync(CurrentUserId(), request, ct);
+        if (!ok)
+        {
+            var nf = ApiResponse<OnboardingStepResultDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+        return Ok(ApiResponse<OnboardingStepResultDto>.Success(
+            SwimmerMessages.Success.OnboardingCompleted(AppLanguage.Current), new OnboardingStepResultDto(false)));
+    }
+
+    /// <summary>Completes the swimmer's first-login Step 4 (InBody reading), clearing first-login. Swimmer only.</summary>
+    /// <response code="200">Completed; returns the refreshed first-login flag (false).</response>
+    /// <response code="404">The caller is not a swimmer / has no profile.</response>
+    [HttpPost("me/onboarding/inbody")]
+    [Authorize(Roles = "swimmer")]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<OnboardingStepResultDto>>> CompleteOnboardingInBody(
+        CompleteInBodyRequest request, CancellationToken ct)
+    {
+        var userId = CurrentUserId();
+
+        // 1) Resolve the swimmer (Identity); null → not a swimmer.
+        var swimmerId = await _service.GetSwimmerIdByUserAsync(userId, ct);
+        if (swimmerId is null)
+        {
+            var nf = ApiResponse<OnboardingStepResultDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+
+        // 2) Save the InBody reading (Health) — update the latest reading if one exists (idempotent
+        //    Back→edit→Next / resume re-run), else insert. Date server-set to today, recorded by the swimmer.
+        var reading = new CreateInBodyReadingRequest(DateOnly.FromDateTime(DateTime.UtcNow),
+            request.HeightCm, request.WeightKg, request.FatPct, request.MusclePct, request.WaterPct, request.BoneDensity, request.BodyDensity);
+        var existing = await _inbody.ListAsync(swimmerId.Value, ct);
+        if (existing.Count > 0)
+            await _inbody.UpdateAsync(swimmerId.Value, existing[0].Id, reading, ct);
+        else
+            await _inbody.CreateAsync(swimmerId.Value, reading, userId, ct);
+
+        // 3) Clear first-login LAST — the commit point for onboarding.
+        await _service.CompleteOnboardingAsync(userId, ct);
+
+        return Ok(ApiResponse<OnboardingStepResultDto>.Success(
+            SwimmerMessages.Success.OnboardingCompleted(AppLanguage.Current), new OnboardingStepResultDto(false)));
+    }
+
+    /// <summary>Completes the swimmer's first-login Step 2 (guardians + medical history), advancing to Step 3. Swimmer only.</summary>
+    /// <response code="200">Saved; returns the first-login flag (still true until Step 3 completes).</response>
+    /// <response code="404">The caller is not a swimmer / has no profile.</response>
+    [HttpPost("me/onboarding/guardian-medical")]
+    [Authorize(Roles = "swimmer")]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<OnboardingStepResultDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<OnboardingStepResultDto>>> CompleteOnboardingGuardianMedical(
+        CompleteGuardianMedicalRequest request, CancellationToken ct)
+    {
+        var userId = CurrentUserId();
+
+        // 1) Guardians (Identity). Returns the swimmer id needed for observations; null → not a swimmer.
+        var swimmerId = await _service.UpsertOnboardingGuardiansAsync(userId, request.Father, request.Mother, ct);
+        if (swimmerId is null)
+        {
+            var nf = ApiResponse<OnboardingStepResultDto>.Failure(SwimmerMessages.Errors.ProfileNotFound(AppLanguage.Current), "not_found");
+            return StatusCode(StatusCodes.Status404NotFound, nf);
+        }
+
+        // 2) Medical history (Health) — replace the swimmer's observations with the current "Yes" set (idempotent).
+        var items = request.Medical
+            .Select(m => new CreateObservationRequest(swimmerId.Value, m.CategoryId, m.FieldLabel, m.Value))
+            .ToList();
+        await _observations.ReplaceForSwimmerAsync(swimmerId.Value, items, userId, ct);
+
+        // Onboarding is NOT completed here — Step 4 (InBody) is the finish line.
+        return Ok(ApiResponse<OnboardingStepResultDto>.Success(
+            SwimmerMessages.Success.OnboardingCompleted(AppLanguage.Current), new OnboardingStepResultDto(false)));
     }
 
     #endregion

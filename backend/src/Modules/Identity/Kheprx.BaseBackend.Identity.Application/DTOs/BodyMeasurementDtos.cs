@@ -24,3 +24,13 @@ public sealed record CreateBodyMeasurementRequest(
     decimal TorsoCm,
     decimal BustDiameterCm,
     decimal WaistDiameterCm);
+
+/// <summary>Step 3 onboarding submission (POST /api/swimmers/me/onboarding/physiological): seven body-measurement values, stored 1:1 (matches the profile Body Measurements tab).</summary>
+public sealed record CompletePhysiologicalRequest(
+    decimal RightArmCm,
+    decimal LeftArmCm,
+    decimal RightLegCm,
+    decimal LeftLegCm,
+    decimal TorsoCm,
+    decimal BustDiameterCm,
+    decimal WaistDiameterCm);

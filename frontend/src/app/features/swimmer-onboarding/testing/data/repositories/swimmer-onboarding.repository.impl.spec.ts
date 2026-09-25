@@ -20,7 +20,7 @@ describe('SwimmerOnboardingRepositoryImpl', () => {
 
   it('completeIdentityVitals POSTs the me onboarding endpoint with the body', async () => {
     (http.post as jest.Mock).mockResolvedValue({ data: { mustChangePassword: false } });
-    const rq = { nameEn: 'Sam', nameAr: null, genderId: 'g1', dob: '2010-01-01', trainingClubId: 'c1', examDate: '2026-01-01', bloodTypeId: null, hemoglobin: 14.5, heightCm: 175, weightKg: 68, internalMedId: 'f1', heartAssessId: 'f1', spineAssessId: 'f1' };
+    const rq = { nameEn: 'Sam', nameAr: null, genderId: 'g1', dob: '2010-01-01', trainingClubId: 'c1', examDate: '2026-01-01', bloodTypeId: null, hemoglobin: 14.5, heightCm: 175, weightKg: 68, internalMedId: 'f1', heartAssessId: 'f1', spineAssessId: 'f1', phone: null };
     await repo.completeIdentityVitals(rq);
     expect(http.post).toHaveBeenCalledWith('/api/swimmers/me/onboarding/identity-vitals', { body: rq });
   });

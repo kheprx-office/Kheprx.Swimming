@@ -45,7 +45,7 @@ public class SwimmerServiceTests
         var fitness = new Mock<IFitnessAssessmentRepository>(); fitness.Setup(f => f.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(refsExist);
 
         var hasher = new Mock<IPasswordHasher>(); hasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("HASH");
-        var opts = Microsoft.Extensions.Options.Options.Create(new AccountCreationOptions { GenericPassword = "Oasis2026!" });
+        var opts = Microsoft.Extensions.Options.Options.Create(new AccountCreationOptions { GenericPassword = "12345679" });
 
         var svc = new SwimmerService(swimmers.Object, users.Object, roles.Object,
             clubs.Object, strokes.Object, genders.Object, fitness.Object, bloodTypes.Object, hasher.Object, opts);
@@ -72,7 +72,7 @@ public class SwimmerServiceTests
         Assert.NotNull(result);
         Assert.Equal("SW-0007", result!.Uid);          // max 6 + 1
         Assert.Equal("mona.ali", result.Username);
-        Assert.Equal("Oasis2026!", result.TemporaryPassword);
+        Assert.Equal("12345679", result.TemporaryPassword);
         users.Verify(u => u.AddAsync(It.Is<AppUser>(a => a.Username == "mona.ali" && a.IsFirstLogin), It.IsAny<CancellationToken>()), Times.Once);
         swimmers.Verify(s => s.AddAsync(It.IsAny<SwimmerProfile>(), It.IsAny<CancellationToken>()), Times.Once);
         swimmers.Verify(s => s.AddSpecializationsAsync(It.IsAny<IEnumerable<SwimmerSpecialization>>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -261,7 +261,7 @@ public class SwimmerServiceTests
     private static CompleteIdentityVitalsRequest CompleteReq() => new(
         "Ahmed Ali", null, Guid.NewGuid(), new DateOnly(2010, 1, 1), Guid.NewGuid(),
         new DateOnly(2026, 1, 1), null, 14.5m, 175m, 68m,
-        Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Phone: "01012345678");
 
     [Fact]
     public async Task ListExams_returns_null_when_swimmer_missing()
@@ -544,7 +544,7 @@ public class SwimmerServiceTests
         swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
         var genderId = Guid.NewGuid();
         users.Setup(u => u.GetByIdAsync(profile.UserId, It.IsAny<CancellationToken>()))
-             .ReturnsAsync(new AppUser("s.swimmer", "Sam", Guid.NewGuid(), nameAr: "سام", genderId: genderId, dob: new DateOnly(2011, 3, 4)));
+             .ReturnsAsync(new AppUser("s.swimmer", "Sam", Guid.NewGuid(), nameAr: "سام", genderId: genderId, dob: new DateOnly(2011, 3, 4), phone: "01012345678"));
 
         var dto = await svc.GetOnboardingPrefillAsync(userId);
 
@@ -554,6 +554,7 @@ public class SwimmerServiceTests
         Assert.Equal("سام", dto.NameAr);
         Assert.Equal(genderId, dto.GenderId);
         Assert.Equal(clubId, dto.TrainingClubId);
+        Assert.Equal("01012345678", dto.Phone);
     }
 
     // ── CompleteIdentityVitals tests ─────────────────────────────────────────
@@ -568,7 +569,7 @@ public class SwimmerServiceTests
     }
 
     [Fact]
-    public async Task CompleteIdentityVitals_updates_identity_inserts_exam_and_clears_first_login()
+    public async Task CompleteIdentityVitals_updates_identity_inserts_exam_and_keeps_first_login()
     {
         var (svc, swimmers, users) = Build();
         var userId = Guid.NewGuid();
@@ -581,10 +582,10 @@ public class SwimmerServiceTests
         var result = await svc.CompleteIdentityVitalsAsync(userId, CompleteReq() with { NameEn = "New Name", TrainingClubId = newClub });
 
         Assert.NotNull(result);
-        Assert.False(result!.MustChangePassword);
         Assert.Equal("New Name", user.NameEn);
+        Assert.Equal("01012345678", user.Phone);     // persisted from the request
         Assert.Equal("s@x.io", user.Email);          // preserved
-        Assert.False(user.IsFirstLogin);             // cleared
+        Assert.True(user.IsFirstLogin);              // NOT cleared — Step 2 completes onboarding
         Assert.Equal(newClub, profile.TrainingClubId);
         swimmers.Verify(r => r.AddExamAsync(It.IsAny<MedicalExam>(), It.IsAny<CancellationToken>()), Times.Once);
         swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -613,5 +614,165 @@ public class SwimmerServiceTests
         users.Setup(u => u.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new AppUser("s", "S", Guid.NewGuid(), email: "s@x.io"));
         await Assert.ThrowsAnyAsync<Exception>(() => svc.CompleteIdentityVitalsAsync(userId, CompleteReq()));
+    }
+
+    [Fact]
+    public async Task CompleteIdentityVitals_updates_latest_exam_when_one_exists()
+    {
+        var (svc, swimmers, users) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        var user = new AppUser("s", "S", Guid.NewGuid(), email: "s@x.io", isFirstLogin: true);
+        users.Setup(u => u.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+
+        var examId = Guid.NewGuid();
+        var im = Guid.NewGuid();
+        swimmers.Setup(r => r.GetLatestExamAsync(profile.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MedicalExamRow(examId, new DateOnly(2020, 1, 1), 10m, 100m, 40m,
+                    null, null, null, null, im, "fit", "Fit", "لائق", im, "fit", "Fit", "لائق", im, "fit", "Fit", "لائق"));
+        var trackedExam = new MedicalExam(profile.Id, new DateOnly(2020, 1, 1), im, im, im, null, 10m, 100m, 40m);
+        swimmers.Setup(r => r.GetExamTrackedAsync(examId, It.IsAny<CancellationToken>())).ReturnsAsync(trackedExam);
+
+        var result = await svc.CompleteIdentityVitalsAsync(userId, CompleteReq());
+
+        Assert.NotNull(result);
+        Assert.Equal(new DateOnly(2026, 1, 1), trackedExam.ExamDate);   // updated in place // CompleteReq().ExamDate
+        Assert.Equal(14.5m, trackedExam.Hemoglobin);
+        Assert.True(user.IsFirstLogin);   // Step 1 must NOT clear first-login on the update path
+        swimmers.Verify(r => r.AddExamAsync(It.IsAny<MedicalExam>(), It.IsAny<CancellationToken>()), Times.Never);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── Onboarding Step 2 (guardian + complete) tests ────────────────────────
+
+    [Fact]
+    public async Task UpsertOnboardingGuardians_returns_null_when_not_a_swimmer()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SwimmerProfile?)null);
+        var father = new GuardianInputDto("Ahmed", "12345678901234", "010");
+        var mother = new GuardianInputDto("Sara", "43210987654321", "011");
+        Assert.Null(await svc.UpsertOnboardingGuardiansAsync(Guid.NewGuid(), father, mother));
+    }
+
+    [Fact]
+    public async Task UpsertOnboardingGuardians_inserts_both_and_returns_swimmer_id()
+    {
+        var (svc, swimmers, _) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        var fatherRel = Guid.NewGuid(); var motherRel = Guid.NewGuid();
+        swimmers.Setup(r => r.GetGuardianRelationIdByCodeAsync("father", It.IsAny<CancellationToken>())).ReturnsAsync(fatherRel);
+        swimmers.Setup(r => r.GetGuardianRelationIdByCodeAsync("mother", It.IsAny<CancellationToken>())).ReturnsAsync(motherRel);
+        swimmers.Setup(r => r.GetGuardianTrackedAsync(profile.Id, It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((Guardian?)null);
+
+        var result = await svc.UpsertOnboardingGuardiansAsync(userId,
+            new GuardianInputDto("Ahmed", "12345678901234", "010"),
+            new GuardianInputDto("Sara", "43210987654321", "011"));
+
+        Assert.Equal(profile.Id, result);
+        swimmers.Verify(r => r.AddGuardianAsync(It.Is<Guardian>(g => g.RelationId == fatherRel && g.Name == "Ahmed"), It.IsAny<CancellationToken>()), Times.Once);
+        swimmers.Verify(r => r.AddGuardianAsync(It.Is<Guardian>(g => g.RelationId == motherRel && g.Name == "Sara"), It.IsAny<CancellationToken>()), Times.Once);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompleteOnboarding_clears_first_login()
+    {
+        var (svc, swimmers, users) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        var user = new AppUser("s", "S", Guid.NewGuid(), email: "s@x.io", isFirstLogin: true);
+        users.Setup(u => u.GetByIdAsync(profile.UserId, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+
+        Assert.True(await svc.CompleteOnboardingAsync(userId));
+        Assert.False(user.IsFirstLogin);
+        users.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompleteOnboarding_returns_false_when_not_a_swimmer()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SwimmerProfile?)null);
+        Assert.False(await svc.CompleteOnboardingAsync(Guid.NewGuid()));
+    }
+
+    // ── Onboarding Step 3 (physiological) tests ──────────────────────────────
+
+    [Fact]
+    public async Task CompleteOnboardingPhysiological_returns_false_when_not_a_swimmer()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SwimmerProfile?)null);
+        Assert.False(await svc.CompleteOnboardingPhysiologicalAsync(Guid.NewGuid(), new CompletePhysiologicalRequest(32.5m, 31.0m, 95m, 94m, 60m, 90m, 75m)));
+    }
+
+    [Fact]
+    public async Task CompleteOnboardingPhysiological_stores_all_seven_limbs_and_keeps_first_login()
+    {
+        var (svc, swimmers, users) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        swimmers.Setup(r => r.GetLatestBodyMeasurementTrackedAsync(profile.Id, It.IsAny<CancellationToken>())).ReturnsAsync((BodyMeasurement?)null);
+
+        var ok = await svc.CompleteOnboardingPhysiologicalAsync(userId, new CompletePhysiologicalRequest(32.5m, 31.0m, 95m, 94m, 60m, 90m, 75m));
+
+        Assert.True(ok);
+        swimmers.Verify(r => r.AddBodyMeasurementAsync(It.Is<BodyMeasurement>(m =>
+            m.SwimmerId == profile.Id &&
+            m.RightArmCm == 32.5m && m.LeftArmCm == 31.0m &&
+            m.RightLegCm == 95m && m.LeftLegCm == 94m &&
+            m.TorsoCm == 60m && m.BustDiameterCm == 90m && m.WaistDiameterCm == 75m),
+            It.IsAny<CancellationToken>()), Times.Once);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        users.Verify(u => u.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never); // no longer clears first-login
+    }
+
+    [Fact]
+    public async Task CompleteOnboardingPhysiological_updates_latest_measurement_when_one_exists()
+    {
+        var (svc, swimmers, _) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        var existing = new BodyMeasurement(profile.Id, 1m, 2m, 3m, 4m, 5m, 6m, 7m);
+        swimmers.Setup(r => r.GetLatestBodyMeasurementTrackedAsync(profile.Id, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
+
+        var ok = await svc.CompleteOnboardingPhysiologicalAsync(userId, new CompletePhysiologicalRequest(32.5m, 31.0m, 95m, 94m, 60m, 90m, 75m));
+
+        Assert.True(ok);
+        Assert.Equal(32.5m, existing.RightArmCm);            // updated in place
+        Assert.Equal(75m, existing.WaistDiameterCm);
+        swimmers.Verify(r => r.AddBodyMeasurementAsync(It.IsAny<BodyMeasurement>(), It.IsAny<CancellationToken>()), Times.Never);
+        swimmers.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── Onboarding Step 4 (InBody) — GetSwimmerIdByUser tests ────────────────
+
+    [Fact]
+    public async Task GetSwimmerIdByUser_returns_profile_id()
+    {
+        var (svc, swimmers, _) = Build();
+        var userId = Guid.NewGuid();
+        var profile = new SwimmerProfile(userId, "SW-0001", Guid.NewGuid());
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(profile);
+        Assert.Equal(profile.Id, await svc.GetSwimmerIdByUserAsync(userId));
+    }
+
+    [Fact]
+    public async Task GetSwimmerIdByUser_returns_null_when_not_a_swimmer()
+    {
+        var (svc, swimmers, _) = Build();
+        swimmers.Setup(r => r.GetByUserIdTrackedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SwimmerProfile?)null);
+        Assert.Null(await svc.GetSwimmerIdByUserAsync(Guid.NewGuid()));
     }
 }

@@ -1,6 +1,8 @@
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Health.Application.DTOs;
 using Kheprx.BaseBackend.Health.Application.Resources;
 using Kheprx.BaseBackend.Health.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Identity.Application.Resources;
 using Kheprx.BaseBackend.SharedKernel.Resources;
 using Kheprx.BaseBackend.SharedKernel.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +15,13 @@ namespace Kheprx.BaseBackend.Api.Controllers;
 public sealed class InBodyReadingsController : BaseApiController
 {
     private readonly IInBodyReadingService _service;
-    public InBodyReadingsController(IInBodyReadingService service) => _service = service;
+    private readonly ISwimmerSelfAccessGuard _access;
+
+    public InBodyReadingsController(IInBodyReadingService service, ISwimmerSelfAccessGuard access)
+    {
+        _service = service;
+        _access = access;
+    }
 
     /// <summary>Lists a swimmer's InBody readings, newest first.</summary>
     [HttpGet]
@@ -21,6 +29,10 @@ public sealed class InBodyReadingsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<InBodyReadingDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<InBodyReadingDto>>>> List(Guid id, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), id, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<IReadOnlyList<InBodyReadingDto>>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var list = await _service.ListAsync(id, ct);
         return Ok(ApiResponse<IReadOnlyList<InBodyReadingDto>>.Success(InBodyReadingMessages.Success.Listed(AppLanguage.Current), list));
     }

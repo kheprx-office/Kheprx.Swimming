@@ -78,4 +78,44 @@ public class ObservationServiceTests
         repo.Verify(r => r.Remove(existing), Times.Once);
         Assert.False(await svc.DeleteAsync(Guid.NewGuid()));
     }
+
+    [Fact]
+    public async Task ReplaceForSwimmer_removes_existing_then_inserts_new_set()
+    {
+        var repo = new Mock<IObservationRepository>();
+        var sw = Guid.NewGuid();
+        var recordedBy = Guid.NewGuid();
+        var stale = new List<Observation> { new(sw, Guid.NewGuid(), "Old", "Value", Guid.NewGuid()) };
+        repo.Setup(r => r.ListBySwimmerTrackedAsync(sw, It.IsAny<CancellationToken>())).ReturnsAsync(stale);
+        var added = new List<Observation>();
+        repo.Setup(r => r.AddAsync(It.IsAny<Observation>(), It.IsAny<CancellationToken>()))
+            .Callback<Observation, CancellationToken>((o, _) => added.Add(o)).Returns(Task.CompletedTask);
+        var svc = new ObservationService(repo.Object);
+
+        var cat = Guid.NewGuid();
+        var items = new List<CreateObservationRequest> { new(sw, cat, "Allergies", "Peanuts") };
+        await svc.ReplaceForSwimmerAsync(sw, items, recordedBy);
+
+        repo.Verify(r => r.RemoveRange(stale), Times.Once);
+        Assert.Single(added);
+        Assert.Equal("Peanuts", added[0].Value);
+        Assert.Equal(recordedBy, added[0].RecordedBy);
+        repo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReplaceForSwimmer_with_empty_set_deletes_all_and_inserts_none()
+    {
+        var repo = new Mock<IObservationRepository>();
+        var sw = Guid.NewGuid();
+        var stale = new List<Observation> { new(sw, Guid.NewGuid(), "Old", "Value", Guid.NewGuid()) };
+        repo.Setup(r => r.ListBySwimmerTrackedAsync(sw, It.IsAny<CancellationToken>())).ReturnsAsync(stale);
+        var svc = new ObservationService(repo.Object);
+
+        await svc.ReplaceForSwimmerAsync(sw, System.Array.Empty<CreateObservationRequest>(), Guid.NewGuid());
+
+        repo.Verify(r => r.RemoveRange(stale), Times.Once);
+        repo.Verify(r => r.AddAsync(It.IsAny<Observation>(), It.IsAny<CancellationToken>()), Times.Never);
+        repo.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

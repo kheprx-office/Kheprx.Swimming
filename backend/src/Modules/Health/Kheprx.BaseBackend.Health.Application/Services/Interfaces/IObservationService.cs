@@ -8,4 +8,5 @@ public interface IObservationService
     Task<IReadOnlyList<ObservationDto>> ListBySwimmerAsync(Guid swimmerId, CancellationToken ct = default);
     Task<ObservationDto?> UpdateAsync(Guid id, UpdateObservationRequest request, CancellationToken ct = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+    Task ReplaceForSwimmerAsync(Guid swimmerId, IReadOnlyList<CreateObservationRequest> items, Guid recordedBy, CancellationToken ct = default);
 }

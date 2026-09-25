@@ -1,6 +1,8 @@
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Championships.Application.DTOs;
 using Kheprx.BaseBackend.Championships.Application.Resources;
 using Kheprx.BaseBackend.Championships.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Identity.Application.Resources;
 using Kheprx.BaseBackend.Identity.Application.Services.Interfaces;
 using Kheprx.BaseBackend.SharedKernel.Resources;
 using Kheprx.BaseBackend.SharedKernel.Responses;
@@ -16,11 +18,13 @@ public sealed class ChampionshipsController : BaseApiController
 {
     private readonly IChampionshipService _service;
     private readonly IReferenceService _reference;
+    private readonly ISwimmerSelfAccessGuard _access;
 
-    public ChampionshipsController(IChampionshipService service, IReferenceService reference)
+    public ChampionshipsController(IChampionshipService service, IReferenceService reference, ISwimmerSelfAccessGuard access)
     {
         _service = service;
         _reference = reference;
+        _access = access;
     }
 
     /// <summary>Lists all championship events (newest start first), with status code + names resolved.</summary>
@@ -214,6 +218,10 @@ public sealed class ChampionshipsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>>> GetSwimmerHistory(Guid swimmerId, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), swimmerId, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var rows = await _service.GetSwimmerHistoryAsync(swimmerId, ct);
         return Ok(ApiResponse<IReadOnlyList<ChampionshipSwimmerHistoryDto>>.Success(
             ChampionshipMessages.SwimmerHistorySuccess.Retrieved(AppLanguage.Current), rows));

@@ -162,6 +162,12 @@ internal sealed class SwimmerProfileRepository : ISwimmerProfileRepository
                   m.TorsoCm, m.BustDiameterCm, m.WaistDiameterCm))
               .FirstOrDefaultAsync(ct);
 
+    public Task<BodyMeasurement?> GetLatestBodyMeasurementTrackedAsync(Guid swimmerId, CancellationToken ct = default)
+        => _db.BodyMeasurements
+              .Where(m => m.SwimmerId == swimmerId)
+              .OrderByDescending(m => m.MeasuredAt).ThenByDescending(m => m.Id)
+              .FirstOrDefaultAsync(ct);
+
     public Task AddBodyMeasurementAsync(BodyMeasurement measurement, CancellationToken ct = default)
         => _db.BodyMeasurements.AddAsync(measurement, ct).AsTask();
 

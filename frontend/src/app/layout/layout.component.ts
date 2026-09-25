@@ -18,6 +18,7 @@ import {
   LucideMapPin,
   LucidePanelLeftClose,
   LucideLock,
+  LucideUser,
 } from '@lucide/angular';
 import { AuthSessionStore } from '@features/auth/presentation/auth-session.store';
 import { UserRole } from '@core/domain/roles';
@@ -96,14 +97,17 @@ export class LayoutComponent {
   private readonly allGroups: NavGroup[] = [
     {
       header: 'shell.nav.groups.overview',
-      items: [{ label: 'shell.nav.dashboard', icon: LucideLayoutDashboard, route: '/home' }],
+      items: [
+        { label: 'shell.nav.myProfile', icon: LucideUser, route: '/my-profile', roles: ['swimmer'] },
+        { label: 'shell.nav.dashboard', icon: LucideLayoutDashboard, route: '/home', roles: ['head_coach', 'captain'] },
+      ],
     },
     {
       header: 'shell.nav.groups.coaching',
       items: [
-        { label: 'shell.nav.swimmers', icon: LucideUsers, route: '/swimmers' },
-        { label: 'shell.nav.attendance', icon: LucideCalendarCheck, route: '/attendance' },
-        { label: 'shell.nav.championships', icon: LucideTrophy, route: '/championships' },
+        { label: 'shell.nav.swimmers', icon: LucideUsers, route: '/swimmers', roles: ['head_coach', 'captain'] },
+        { label: 'shell.nav.attendance', icon: LucideCalendarCheck, route: '/attendance', roles: ['head_coach', 'captain'] },
+        { label: 'shell.nav.championships', icon: LucideTrophy, route: '/championships', roles: ['head_coach', 'captain'] },
       ],
     },
     {

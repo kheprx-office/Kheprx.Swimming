@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { SwimmerProfileViewModel } from '@features/swimmer-profile/presentation/pages/swimmer-profile/swimmer-profile.viewmodel';
+import { GetMySwimmerIdUseCase } from '@features/swimmer-profile/domain/usecases/get-my-swimmer-id.use-case';
+import { ok } from '@core/domain/result/result';
 import { GetSwimmerProfileUseCase } from '@features/swimmer-profile/domain/usecases/get-swimmer-profile.use-case';
 import { UpdateSwimmerIdentityUseCase } from '@features/swimmer-profile/domain/usecases/update-swimmer-identity.use-case';
 import { CreateMedicalExamUseCase } from '@features/swimmer-profile/domain/usecases/create-medical-exam.use-case';
@@ -129,6 +131,8 @@ function build(overrides: {
   const loadDistancesUc    = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
   const loadStrokesUc      = { run: jest.fn().mockResolvedValue({ ok: true, data: [] }) };
 
+  const getMyIdUc = { run: jest.fn().mockResolvedValue(ok('SW-ME')) };
+
   const notify  = { success: jest.fn(), error: jest.fn() };
   const i18n    = { t: (k: string) => k };
   const session = { role: signal<'head_coach' | 'captain' | null>('head_coach') };
@@ -137,6 +141,7 @@ function build(overrides: {
   TestBed.configureTestingModule({
     providers: [
       SwimmerProfileViewModel,
+      { provide: GetMySwimmerIdUseCase,              useValue: getMyIdUc },
       { provide: GetSwimmerProfileUseCase,           useValue: getUc },
       { provide: UpdateSwimmerIdentityUseCase,        useValue: updateUc },
       { provide: CreateMedicalExamUseCase,            useValue: createUc },

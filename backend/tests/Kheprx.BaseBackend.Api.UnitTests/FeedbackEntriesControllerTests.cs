@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Kheprx.BaseBackend.Api.Controllers;
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Health.Application.DTOs;
 using Kheprx.BaseBackend.Health.Application.Services.Interfaces;
 using Kheprx.BaseBackend.Identity.Application.DTOs;
@@ -14,12 +15,21 @@ namespace Kheprx.BaseBackend.Api.UnitTests;
 
 public class FeedbackEntriesControllerTests
 {
-    private static FeedbackEntriesController Controller(IFeedbackService svc, IUserService users, Guid? userId = null)
+    // Permissive guard: CanReadAsync always returns true — keeps all pre-existing tests passing.
+    private static ISwimmerSelfAccessGuard PermissiveGuard()
+    {
+        var m = new Mock<ISwimmerSelfAccessGuard>();
+        m.Setup(a => a.CanReadAsync(It.IsAny<bool>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+         .ReturnsAsync(true);
+        return m.Object;
+    }
+
+    private static FeedbackEntriesController Controller(IFeedbackService svc, IUserService users, Guid? userId = null, ISwimmerSelfAccessGuard? access = null)
     {
         var identity = userId is null
             ? new ClaimsIdentity()
             : new ClaimsIdentity(new[] { new Claim("sub", userId.Value.ToString()) }, "jwt");
-        return new FeedbackEntriesController(svc, users)
+        return new FeedbackEntriesController(svc, users, access ?? PermissiveGuard())
         {
             ControllerContext = new ControllerContext
             {

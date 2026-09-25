@@ -11,5 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Kheprx.BaseBackend.Api\Kheprx.BaseBackend.Api.csproj" />
     <ProjectReference Include="..\..\src\Modules\Identity\Kheprx.BaseBackend.Identity.Application\Kheprx.BaseBackend.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Health\Kheprx.BaseBackend.Health.Application\Kheprx.BaseBackend.Health.Application.csproj" />
   </ItemGroup>
 </Project>

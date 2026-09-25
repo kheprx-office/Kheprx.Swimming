@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Kheprx.BaseBackend.Api.Controllers;
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Attendance.Application.DTOs;
 using Kheprx.BaseBackend.Attendance.Application.Services.Interfaces;
 using Kheprx.BaseBackend.Identity.Application.DTOs;
@@ -28,12 +29,21 @@ public class AttendanceRecordsControllerSessionTests
         new CodedLookupDto(Excused, "excused", "Excused", "معذور"),
     };
 
+    // Permissive guard: CanReadAsync always returns true — keeps all pre-existing tests passing.
+    private static ISwimmerSelfAccessGuard PermissiveGuard()
+    {
+        var m = new Mock<ISwimmerSelfAccessGuard>();
+        m.Setup(a => a.CanReadAsync(It.IsAny<bool>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+         .ReturnsAsync(true);
+        return m.Object;
+    }
+
     private static AttendanceRecordsController Build(
         Mock<IAttendanceService> svc, Mock<ISwimmerService> swimmers, Mock<IReferenceService> reference,
         Guid? userId = null)
     {
         var users = new Mock<IUserService>();
-        var controller = new AttendanceRecordsController(svc.Object, users.Object, swimmers.Object, reference.Object);
+        var controller = new AttendanceRecordsController(svc.Object, users.Object, swimmers.Object, reference.Object, PermissiveGuard());
         var claims = userId is { } id
             ? new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(JwtRegisteredClaimNames.Sub, id.ToString()) }))
             : new ClaimsPrincipal(new ClaimsIdentity());

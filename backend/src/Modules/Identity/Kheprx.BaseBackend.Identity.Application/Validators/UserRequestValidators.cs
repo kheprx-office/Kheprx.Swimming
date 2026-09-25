@@ -176,5 +176,23 @@ public sealed class CompleteIdentityVitalsRequestValidator : AbstractValidator<C
         RuleFor(x => x.Hemoglobin).GreaterThan(0m).LessThan(30m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
         RuleFor(x => x.HeightCm).GreaterThan(0m).LessThan(300m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
         RuleFor(x => x.WeightKg).GreaterThan(0m).LessThan(500m).WithMessage(_ => SwimmerMessages.Errors.MeasurementInvalid(AppLanguage.Current));
+        RuleFor(x => x.Phone)
+            .Matches(UserValidationRules.PhonePattern).WithMessage(_ => UserMessages.Errors.PhoneInvalid(AppLanguage.Current))
+            .When(x => !string.IsNullOrEmpty(x.Phone));
+    }
+}
+
+public sealed class CompleteGuardianMedicalRequestValidator : AbstractValidator<CompleteGuardianMedicalRequest>
+{
+    public CompleteGuardianMedicalRequestValidator()
+    {
+        RuleFor(x => x.Father).NotNull().SetValidator(new GuardianInputDtoValidator());
+        RuleFor(x => x.Mother).NotNull().SetValidator(new GuardianInputDtoValidator());
+        RuleForEach(x => x.Medical).ChildRules(item =>
+        {
+            item.RuleFor(i => i.CategoryId).NotEmpty();
+            item.RuleFor(i => i.FieldLabel).NotEmpty();
+            item.RuleFor(i => i.Value).NotEmpty();
+        });
     }
 }

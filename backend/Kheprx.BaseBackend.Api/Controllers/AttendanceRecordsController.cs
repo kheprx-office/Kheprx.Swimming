@@ -1,6 +1,8 @@
+using Kheprx.BaseBackend.Api.Security;
 using Kheprx.BaseBackend.Attendance.Application.DTOs;
 using Kheprx.BaseBackend.Attendance.Application.Resources;
 using Kheprx.BaseBackend.Attendance.Application.Services.Interfaces;
+using Kheprx.BaseBackend.Identity.Application.Resources;
 using Kheprx.BaseBackend.Identity.Application.Services.Interfaces;
 using Kheprx.BaseBackend.SharedKernel.Resources;
 using Kheprx.BaseBackend.SharedKernel.Responses;
@@ -18,14 +20,16 @@ public sealed class AttendanceRecordsController : BaseApiController
     private readonly IUserService _users;
     private readonly ISwimmerService _swimmers;
     private readonly IReferenceService _reference;
+    private readonly ISwimmerSelfAccessGuard _access;
 
     public AttendanceRecordsController(IAttendanceService service, IUserService users,
-        ISwimmerService swimmers, IReferenceService reference)
+        ISwimmerService swimmers, IReferenceService reference, ISwimmerSelfAccessGuard access)
     {
         _service = service;
         _users = users;
         _swimmers = swimmers;
         _reference = reference;
+        _access = access;
     }
 
     /// <summary>Lists a swimmer's attendance records (newest first), with recorder names resolved.</summary>
@@ -33,6 +37,10 @@ public sealed class AttendanceRecordsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AttendanceRecordDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<AttendanceRecordDto>>>> List([FromQuery] Guid swimmerId, CancellationToken ct)
     {
+        if (!await _access.CanReadAsync(User.IsInRole("swimmer"), CurrentUserId(), swimmerId, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                ApiResponse<IReadOnlyList<AttendanceRecordDto>>.Failure(SwimmerMessages.Errors.Forbidden(AppLanguage.Current), "forbidden"));
+
         var rows = await _service.ListBySwimmerAsync(swimmerId, ct);
         var enriched = await EnrichRecorders(rows, ct);
         return Ok(ApiResponse<IReadOnlyList<AttendanceRecordDto>>.Success(

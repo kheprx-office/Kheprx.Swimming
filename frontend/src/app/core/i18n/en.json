@@ -320,6 +320,7 @@
     "activeClub": { "label": "Active club", "value": "El Nagar Aquatics" },
     "nav": {
       "groups": { "overview": "Overview", "coaching": "Coaching", "administration": "Administration" },
+      "myProfile": "My Profile",
       "dashboard": "Dashboard", "swimmers": "Swimmers", "attendance": "Attendance",
       "championships": "Championships", "captainPanel": "Captain Panel", "settings": "Settings"
     }
@@ -454,13 +455,13 @@
     }
   },
   "onboarding": {
-    "title": "Join Oasis Academy",
+    "title": "Join El Nagar Academy",
     "subtitle": "Let's get you set up for the pool",
     "steps": { "identity": "Identity & Vitals", "guardian": "Guardian & Medical", "physiological": "Physiological", "inbody": "InBody", "done": "Done" },
     "sectionTitle": "Identity & Vitals",
-    "fullName": "Full Name",
-    "sport": "Sport",
-    "sportLocked": "Swimming (Locked)",
+    "fullName": "Full Name (English)",
+    "nameAr": "Full Name (Arabic)",
+    "phone": "Phone Number",
     "trainingClub": "Training Club",
     "gender": "Gender",
     "dob": "Date of Birth",
@@ -476,6 +477,35 @@
     "next": "Next Step",
     "completed": "Welcome aboard! Your profile is set up.",
     "saveFailed": "Could not save your details. Please try again.",
-    "loadFailed": "Could not load your details. Please try again."
+    "loadFailed": "Could not load your details. Please try again.",
+    "back": "Back",
+    "guardianInfo": "Guardian Information",
+    "medicalHistory": "Medical History",
+    "fatherName": "Father Full Name",
+    "fatherNationalId": "Father National ID",
+    "fatherPhone": "Father Phone",
+    "motherName": "Mother Full Name",
+    "motherNationalId": "Mother National ID",
+    "motherPhone": "Mother Phone",
+    "allergies": "Allergies",
+    "surgeries": "Previous Surgeries",
+    "chronic": "Chronic Diseases",
+    "autoimmune": "Autoimmune Diseases",
+    "details": "Details",
+    "yes": "Yes",
+    "no": "No",
+    "rightArm": "Right Arm",
+    "leftArm": "Left Arm",
+    "leftLeg": "Left Leg",
+    "rightLeg": "Right Leg",
+    "torsoLength": "Torso Length",
+    "bustDiameter": "Bust Diameter",
+    "waistDiameter": "Waist Diameter",
+    "fatPercentage": "Fat Percentage (%)",
+    "musclePercentage": "Muscle Percentage (%)",
+    "waterPercentage": "Water Percentage (%)",
+    "boneDensity": "Bone Density",
+    "bodyDensity": "Body Density",
+    "submit": "Submit"
   }
 }

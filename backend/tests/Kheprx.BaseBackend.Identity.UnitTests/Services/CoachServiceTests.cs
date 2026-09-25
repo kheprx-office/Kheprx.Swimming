@@ -38,7 +38,7 @@ public class CoachServiceTests
         genders.Setup(g => g.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(genderExists);
 
         var hasher = new Mock<IPasswordHasher>(); hasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("HASH");
-        var opts = Options.Create(new AccountCreationOptions { GenericPassword = "Oasis2026!" });
+        var opts = Options.Create(new AccountCreationOptions { GenericPassword = "12345679" });
 
         var svc = new CoachService(users.Object, roles.Object, coaches.Object, genders.Object, hasher.Object, opts);
         return (svc, users, coaches);
@@ -52,7 +52,7 @@ public class CoachServiceTests
 
         Assert.NotNull(result);
         Assert.Equal("captain", result!.Role);
-        Assert.Equal("Oasis2026!", result.TemporaryPassword);
+        Assert.Equal("12345679", result.TemporaryPassword);
         users.Verify(u => u.AddAsync(It.Is<AppUser>(a => a.Username == "dave.coach" && a.IsFirstLogin), It.IsAny<CancellationToken>()), Times.Once);
         coaches.Verify(c => c.AddCaptainAsync(It.IsAny<CaptainProfile>(), It.IsAny<CancellationToken>()), Times.Once);
         coaches.Verify(c => c.AddHeadCoachAsync(It.IsAny<HeadCoachProfile>(), It.IsAny<CancellationToken>()), Times.Never);
